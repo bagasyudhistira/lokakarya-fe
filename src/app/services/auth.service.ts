@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -6,12 +8,12 @@ import { Injectable } from '@angular/core';
 export class AuthService {
   private roles: string[] = [];
 
-  constructor() {
+  constructor(private storageService: StorageService) {
     this.loadRoles();
   }
 
-  private loadRoles() {
-    const token = sessionStorage.getItem('auth-token');
+  loadRoles(): void {
+    const token = this.storageService.getItem('auth-token');
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.roles = payload.roles || [];

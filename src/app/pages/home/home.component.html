@@ -1,10 +1,18 @@
-<div *ngIf="menuNames.length > 0; else noMenus">
-  <h2>Available Menus</h2>
-  <ul>
-    <li *ngFor="let menu of menuNames">{{ menu }}</li>
-  </ul>
-</div>
+<div class="home-container">
+  <h1>Welcome to the Home Page</h1>
 
-<ng-template #noMenus>
-  <p>{{ errorMessage || "No menus available for the assigned roles." }}</p>
-</ng-template>
+  <div *ngIf="loading" class="loading-message">
+    Loading menus, please wait...
+  </div>
+
+  <div *ngIf="!loading && errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!loading && !errorMessage">
+    <h2>Available Menus</h2>
+    <ul>
+      <li *ngFor="let menu of menuNames">{{ menu }}</li>
+    </ul>
+  </div>
+</div>

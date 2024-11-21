@@ -1,31 +1,62 @@
-<div class="login-container">
-  <h2>Login</h2>
-  <form (ngSubmit)="onSubmit()">
-    <div>
-      <label for="username">Username:</label>
-      <input
-        type="text"
-        id="username"
-        [(ngModel)]="username"
-        name="username"
-        required
-        [disabled]="isLoading"
-      />
+<div class="p-fluid login-container">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="p-text-center">Login</h2>
+      <p *ngIf="warningMessage" class="p-warning p-text-center">
+        {{ warningMessage }}
+      </p>
     </div>
-    <div>
-      <label for="password">Password:</label>
-      <input
-        type="password"
-        id="password"
-        [(ngModel)]="password"
-        name="password"
-        required
-        [disabled]="isLoading"
-      />
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()">
+        <div class="p-field">
+          <label for="username">Username:</label>
+          <input
+            pInputText
+            type="text"
+            id="username"
+            [(ngModel)]="username"
+            name="username"
+            required
+            [disabled]="isLoading"
+            placeholder="Enter your username"
+          />
+        </div>
+        <div class="p-field">
+          <label for="password">Password:</label>
+          <div class="p-inputgroup">
+            <input
+              pInputText
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              [(ngModel)]="password"
+              name="password"
+              required
+              [disabled]="isLoading"
+              placeholder="Enter your password"
+            />
+            <button
+              pButton
+              type="button"
+              icon="{{ showPassword ? 'pi pi-eye-slash' : 'pi pi-eye' }}"
+              class="p-button-text p-inputgroup-addon"
+              (click)="togglePasswordMask()"
+              aria-label="Toggle password visibility"
+            ></button>
+          </div>
+        </div>
+        <div class="p-field">
+          <button
+            pButton
+            type="submit"
+            [disabled]="!username || !password || isLoading"
+            label="{{ isLoading ? 'Logging in...' : 'Login' }}"
+            class="p-button-rounded p-button-primary p-button-block"
+          ></button>
+        </div>
+      </form>
+      <p *ngIf="errorMessage" class="p-error p-text-center">
+        {{ errorMessage }}
+      </p>
     </div>
-    <button type="submit" [disabled]="isLoading">
-      {{ isLoading ? "Loading..." : "Login" }}
-    </button>
-  </form>
-  <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+  </div>
 </div>

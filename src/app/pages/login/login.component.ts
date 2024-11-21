@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../shared/primeng/primeng.module';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -16,11 +17,31 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
+  warningMessage: string = '';
   isLoading: boolean = false; // Tracks the loading state
 
-  constructor(private http: HttpClient, private router: Router) {}
-
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.route.queryParams.subscribe((params) => {
+      this.warningMessage = params['warning'] || null;
+    });
+  }
+  togglePasswordMask() {
+    this.showPassword = !this.showPassword;
+  }
+  showPassword: boolean = false;
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (params['warning']) {
+        this.warningMessage = params['warning'];
+      }
+    });
+  }
   onSubmit() {
+    sessionStorage.clear();
     this.isLoading = true;
     this.errorMessage = '';
     const loginPayload = { username: this.username, password: this.password };

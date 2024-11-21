@@ -1,0 +1,29 @@
+.home-container {
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 600px;
+
+  .loading-message {
+    color: #ff9800;
+    font-weight: bold;
+    margin: 1rem 0;
+  }
+
+  .error-message {
+    color: #f44336;
+    font-weight: bold;
+    margin: 1rem 0;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+
+    li {
+      margin: 0.5rem 0;
+      background: #e3f2fd;
+      padding: 0.75rem;
+      border-radius: 5px;
+    }
+  }
+}
