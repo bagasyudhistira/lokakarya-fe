@@ -6,7 +6,7 @@ import { Observable, forkJoin } from 'rxjs';
   providedIn: 'root',
 })
 export class MenuManagerService {
-  private baseUrl = 'http://localhost:8081/approlemenu/role';
+  private baseUrl = 'http://localhost:8081/auth/role';
 
   constructor(private http: HttpClient) {}
 
