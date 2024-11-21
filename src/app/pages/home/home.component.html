@@ -1,6 +1,16 @@
 <div class="home-container">
   <h1>Welcome to the Home Page</h1>
 
+  <button
+    pButton
+    type="button"
+    label="Logout"
+    class="logout-button"
+    (click)="logout()"
+  >
+    Logout
+  </button>
+
   <div *ngIf="loading" class="loading-message">
     Loading menus, please wait...
   </div>
