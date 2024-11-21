@@ -1,23 +1,12 @@
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { HttpInterceptorFn } from '@angular/common/http';
-import {
-  HttpErrorResponse,
-  HttpRequest,
-  HttpHandlerFn,
-  HttpEvent,
-} from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, throwError } from 'rxjs';
 
-export const authInterceptor: HttpInterceptorFn = (
-  req: HttpRequest<any>,
-  next: HttpHandlerFn
-): Observable<HttpEvent<any>> => {
+export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
-  const token = sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('auth-token');
 
-  // Clone the request to include the token if available
   const clonedRequest = token
     ? req.clone({
         setHeaders: {
@@ -27,9 +16,9 @@ export const authInterceptor: HttpInterceptorFn = (
     : req;
 
   return next(clonedRequest).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        sessionStorage.clear();
+    catchError((error) => {
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        sessionStorage.clear(); // Optional: Clear session data
         router.navigate(['/login']);
       }
       return throwError(() => error);

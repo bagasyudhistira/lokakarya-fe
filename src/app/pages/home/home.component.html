@@ -1,1 +1,10 @@
-<p>home works!</p>
+<div *ngIf="menuNames.length > 0; else noMenus">
+  <h2>Available Menus</h2>
+  <ul>
+    <li *ngFor="let menu of menuNames">{{ menu }}</li>
+  </ul>
+</div>
+
+<ng-template #noMenus>
+  <p>{{ errorMessage || "No menus available for the assigned roles." }}</p>
+</ng-template>

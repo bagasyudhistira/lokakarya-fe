@@ -1,28 +1,28 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private authUrl = 'http://localhost:8081/auth/sign-in'; // API endpoint
+  private roles: string[] = [];
 
-  constructor(private http: HttpClient) {}
-
-  login(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post(this.authUrl, credentials);
+  constructor() {
+    this.loadRoles();
   }
 
-  storeToken(token: string): void {
-    sessionStorage.setItem('token', token);
+  private loadRoles() {
+    const token = sessionStorage.getItem('auth-token');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      this.roles = payload.roles || [];
+    }
   }
 
-  getToken(): string | null {
-    return sessionStorage.getItem('token');
+  public getUserRoles(): string[] {
+    return this.roles;
   }
 
-  decodeToken(token: string): any {
-    const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
+  public hasRole(role: string): boolean {
+    return this.roles.includes(role);
   }
 }
