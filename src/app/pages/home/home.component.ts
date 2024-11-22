@@ -4,11 +4,12 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { PrimeNgModule } from '../../shared/primeng/primeng.module';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PrimeNgModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -35,18 +36,20 @@ export class HomeComponent {
     const payload = JSON.parse(atob(token!.split('.')[1]));
     const userId = payload.userId;
 
-    this.http.get(`http://localhost:8081/appuser/get/${userId}`).subscribe({
-      next: (response: any) => {
-        this.userDetails = response.content;
-      },
-      error: (err) => {
-        this.errorMessage = 'Failed to load user details.';
-        console.error(err);
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
+    this.http
+      .get(`https://lokakarya-be.up.railway.app/appuser/get/${userId}`)
+      .subscribe({
+        next: (response: any) => {
+          this.userDetails = response.content;
+        },
+        error: (err) => {
+          this.errorMessage = 'Failed to load user details.';
+          console.error(err);
+        },
+        complete: () => {
+          this.loading = false;
+        },
+      });
   }
 
   fetchMenuNames() {
@@ -69,5 +72,10 @@ export class HomeComponent {
     this.router.navigate(['/login'], {
       queryParams: { warning: 'You have been successfully logged out.' },
     });
+  }
+
+  navigateTo(menu: string): void {
+    const route = `/${menu}`; // Adjust this to match your routing structure
+    this.router.navigate([route]);
   }
 }

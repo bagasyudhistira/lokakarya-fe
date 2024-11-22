@@ -47,7 +47,7 @@ export class LoginComponent {
     const loginPayload = { username: this.username, password: this.password };
 
     this.http
-      .post('http://localhost:8081/auth/sign-in', loginPayload, {
+      .post('https://lokakarya-be.up.railway.app/auth/sign-in', loginPayload, {
         responseType: 'text',
       })
       .subscribe({

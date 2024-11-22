@@ -6,9 +6,7 @@
       label="Logout"
       class="logout-button"
       (click)="logout()"
-    >
-      Logout
-    </button>
+    ></button>
   </div>
 
   <h1 *ngIf="!loading && !errorMessage">Hello, {{ userDetails?.full_name }}</h1>
@@ -29,8 +27,15 @@
     </div>
 
     <h2>Available Menus</h2>
-    <ul>
-      <li *ngFor="let menu of menuNames">{{ menu }}</li>
-    </ul>
+    <div class="menu-buttons">
+      <button
+        *ngFor="let menu of menuNames"
+        pButton
+        type="button"
+        [label]="menu"
+        (click)="navigateTo(menu)"
+        class="p-button-rounded p-button-primary p-button-outlined menu-button"
+      ></button>
+    </div>
   </div>
 </div>
