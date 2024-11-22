@@ -18,7 +18,7 @@ export class LoginComponent {
   password: string = '';
   errorMessage: string = '';
   warningMessage: string = '';
-  isLoading: boolean = false; // Tracks the loading state
+  isLoading: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -65,7 +65,7 @@ export class LoginComponent {
         error: (err) => {
           console.error('Login error:', err);
           this.errorMessage =
-            err.status === 401
+            err.status === 401 || err.status === 500
               ? 'Invalid username or password'
               : 'An unexpected error occurred.';
           this.isLoading = false;

@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-home',
@@ -13,37 +14,55 @@ import { Router } from '@angular/router';
 })
 export class HomeComponent {
   menuNames: string[] = [];
+  userDetails: any = null;
   errorMessage: string = '';
   loading: boolean = true;
 
   constructor(
     private authService: AuthService,
     private menuManagerService: MenuManagerService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
-    const roles = this.authService.getUserRoles();
+    this.fetchUserDetails();
+    this.fetchMenuNames();
+  }
 
-    if (roles.length > 0) {
-      this.menuManagerService.getMenusByRoles(roles).subscribe({
-        next: (responses: any[]) => {
-          const allMenus = responses.flatMap((response: any) =>
-            response.content.map((menu: any) => menu.menu_name)
-          );
-          this.menuNames = [...new Set(allMenus)];
-          this.loading = false;
-        },
-        error: (err) => {
-          this.errorMessage = 'Failed to load menus for roles.';
-          console.error(err);
-          this.loading = false;
-        },
-      });
-    } else {
-      this.errorMessage = 'No roles found.';
-      this.loading = false;
-    }
+  fetchUserDetails() {
+    const token = sessionStorage.getItem('auth-token');
+    const payload = JSON.parse(atob(token!.split('.')[1]));
+    const userId = payload.userId;
+
+    this.http.get(`http://localhost:8081/appuser/get/${userId}`).subscribe({
+      next: (response: any) => {
+        this.userDetails = response.content;
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load user details.';
+        console.error(err);
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
+  }
+
+  fetchMenuNames() {
+    const roles = this.authService.getUserRoles();
+    this.menuManagerService.getMenusByRoles(roles).subscribe({
+      next: (responses: any[]) => {
+        const allMenus = responses.flatMap((response: any) =>
+          response.content.map((menu: any) => menu.menu_name)
+        );
+        this.menuNames = [...new Set(allMenus)];
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load menus for roles.';
+        console.error(err);
+      },
+    });
   }
   logout(): void {
     sessionStorage.clear(); // Clear session storage
