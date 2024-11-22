@@ -13,9 +13,10 @@
       icon="pi pi-plus"
       class="create-button"
       (click)="openCreateDialog()"
+      [disabled]="isProcessing"
     ></button>
   </div>
-
+  <p-confirmDialog></p-confirmDialog>
   <p-table
     [value]="employees"
     [lazy]="true"
@@ -128,19 +129,23 @@
         </div>
         <div class="p-field">
           <label>Roles</label>
-          <div *ngIf="roles?.length; else noRoles">
+          <div *ngIf="roles?.length && !isProcessing; else loadingRoles">
             <div
               *ngFor="let role of roles; let i = index"
               class="role-checkbox"
             >
               <p-checkbox
                 [binary]="true"
-                [formControl]="rolesFormArray.at(i) as FormControl"
+                [formControl]="getRoleFormControl(i)"
                 [label]="role.rolename"
               ></p-checkbox>
             </div>
           </div>
-          <ng-template #noRoles>No roles available.</ng-template>
+          <ng-template #loadingRoles>
+            <div class="loading-overlay">
+              <i class="pi pi-spin pi-spinner"></i> Loading roles...
+            </div>
+          </ng-template>
         </div>
 
         <div class="p-field">
