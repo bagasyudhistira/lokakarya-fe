@@ -72,7 +72,7 @@ export class ManageUserComponent implements OnInit {
       join_date: ['', Validators.required],
       enabled: [true],
       division_id: ['', Validators.required],
-      password: ['', this.mode === 'create' ? Validators.required : null],
+      password: ['', Validators.required],
       roles: this.fb.array([]),
     });
     console.log('Form Initialized:', this.editForm.value);
@@ -203,13 +203,13 @@ export class ManageUserComponent implements OnInit {
           const employee = employeeResponse.content;
           this.editForm.patchValue({
             ...employee,
+            password: '',
             join_date: new Date(employee.join_date),
           });
 
-          // Fetch and update roles dynamically
           this.fetchUserRoles(employeeId);
 
-          this.displayEditDialog = true; // Show the dialog only after roles are updated
+          this.displayEditDialog = true;
         },
         error: (error) => {
           console.error('Error Fetching Employee or Divisions:', error);
@@ -249,12 +249,30 @@ export class ManageUserComponent implements OnInit {
 
   saveEmployee(): void {
     console.log('Saving Employee. Mode:', this.mode);
+
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please fill in all required fields.',
+      });
       return;
     }
 
     this.isProcessing = true; // Start processing
+    const userId = this.editForm.get('id')?.value;
+    const rolesToAssign = this.roles
+      .map((role, index) => (this.rolesFormArray.value[index] ? role.id : null))
+      .filter((roleId) => roleId !== null);
+    const uncheckedRoles = this.roles
+      .map((role, index) =>
+        !this.rolesFormArray.value[index] ? role.id : null
+      )
+      .filter((roleId) => roleId !== null);
+    console.log('Roles to Assign:', rolesToAssign);
+    console.log('Unchecked Roles:', uncheckedRoles);
+
     const request$ =
       this.mode === 'create'
         ? this.http.post(
@@ -267,15 +285,25 @@ export class ManageUserComponent implements OnInit {
           );
 
     request$
-      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
+      .pipe(
+        finalize(() => (this.isProcessing = false)) // Ensure processing stops
+      )
       .subscribe({
-        next: (response) => {
-          console.log('Employee Saved:', response);
-          this.displayEditDialog = false;
-          this.fetchEmployees(); // Refresh employee list
+        next: () => {
+          console.log('Employee Saved Successfully');
 
-          // Assign roles after saving the employee
-          this.assignRolesToUser(this.editForm.get('id')?.value);
+          // Handle role assignments and removals
+          if (this.mode === 'edit') {
+            this.updateUserRoles(userId, rolesToAssign, uncheckedRoles);
+          }
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Employee saved successfully.',
+          });
+          this.displayEditDialog = false;
+          this.fetchEmployees(); // Refresh the employee list
         },
         error: (error) => {
           console.error('Error Saving Employee:', error);
@@ -289,7 +317,7 @@ export class ManageUserComponent implements OnInit {
   }
 
   fetchRoles(): void {
-    this.isProcessing = true; // Start processing
+    this.isProcessing = true;
     this.http
       .get<any>('https://lokakarya-be.up.railway.app/approle/all')
       .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
@@ -318,6 +346,7 @@ export class ManageUserComponent implements OnInit {
   get rolesFormArray(): FormArray {
     return this.editForm.get('roles') as FormArray;
   }
+
   fetchUserRoles(userId: string): void {
     this.isProcessing = true; // Start processing
     this.http
@@ -327,10 +356,10 @@ export class ManageUserComponent implements OnInit {
       .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
       .subscribe({
         next: (response) => {
-          const userRoles = response.content.map((role: any) => role.role_id); // Extract role IDs
-          this.rolesFormArray.clear(); // Clear previous controls
+          console.log('User Roles Fetched:', response);
+          const userRoles = response.content.map((role: any) => role.role_id);
+          this.rolesFormArray.clear();
 
-          // Add a checkbox for each role and check if it matches the user's roles
           this.roles.forEach((role) =>
             this.rolesFormArray.push(
               this.fb.control(userRoles.includes(role.id))
@@ -350,7 +379,6 @@ export class ManageUserComponent implements OnInit {
   }
 
   assignRolesToUser(userId: string): void {
-    // Extract selected role IDs based on the checkboxes
     const rolesToAssign = this.roles
       .map((role, index) => (this.rolesFormArray.value[index] ? role.id : null))
       .filter((roleId) => roleId !== null); // Filter out unselected roles
@@ -364,36 +392,179 @@ export class ManageUserComponent implements OnInit {
       return;
     }
 
-    // Prepare requests for each selected role
     const roleRequests = rolesToAssign.map((roleId) =>
-      this.http.post('https://lokakarya-be.up.railway.app/appuserrole/create', {
-        role_id: roleId,
-        user_id: userId,
-      })
+      this.http
+        .get<any>(
+          `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
+        )
+        .pipe(
+          finalize(() => (this.isProcessing = false)), // Stop processing after each request
+          finalize(() => console.log(`Check for role ${roleId} completed.`)) // Logging
+        )
+        .toPromise()
+        .then((response) => {
+          if (response?.content) {
+            console.log(`Role already assigned: ${roleId}`);
+            return null; // Role already assigned, skip
+          } else {
+            // Role not assigned, create it
+            return this.http
+              .post('https://lokakarya-be.up.railway.app/appuserrole/create', {
+                role_id: roleId,
+                user_id: userId,
+              })
+              .toPromise()
+              .then(() => {
+                console.log(`Role assigned successfully: ${roleId}`);
+              });
+          }
+        })
     );
 
     this.isProcessing = true; // Start processing
 
-    // Execute all requests in parallel
-    forkJoin(roleRequests)
-      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing after requests are complete
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Roles assigned successfully!',
-          });
-          console.log('Roles assigned successfully:', rolesToAssign);
-        },
-        error: (err) => {
-          console.error('Failed to assign roles:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to assign roles.',
-          });
-        },
+    Promise.all(roleRequests)
+      .then(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Roles assigned successfully!',
+        });
+        console.log('All roles assigned successfully:', rolesToAssign);
+      })
+      .catch((err) => {
+        console.error('Failed to assign some roles:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to assign roles.',
+        });
+      })
+      .finally(() => {
+        this.isProcessing = false;
       });
+  }
+
+  private updateUserRoles(
+    userId: string,
+    rolesToAssign: string[],
+    uncheckedRoles: string[]
+  ): void {
+    const addRoleRequests = rolesToAssign.map((roleId) =>
+      this.http
+        .get<any>(
+          `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
+        )
+        .toPromise()
+        .then((response) => {
+          if (response?.content) {
+            console.log(`Role ${roleId} already assigned to user ${userId}.`);
+            return null;
+          } else {
+            console.log(`Assigning role ${roleId} to user ${userId}.`);
+            return this.http
+              .post('https://lokakarya-be.up.railway.app/appuserrole/create', {
+                role_id: roleId,
+                user_id: userId,
+              })
+              .toPromise();
+          }
+        })
+    );
+
+    const deleteRoleRequests = uncheckedRoles.map((roleId) =>
+      this.http
+        .get<any>(
+          `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
+        )
+        .toPromise()
+        .then((response) => {
+          if (response?.content) {
+            const appUserRoleId = response.content;
+            console.log(`Deleting role ${roleId} for user ${userId}.`);
+            return this.http
+              .delete(
+                `https://lokakarya-be.up.railway.app/appuserrole/${appUserRoleId}`
+              )
+              .toPromise();
+          } else {
+            console.log(
+              `Role ${roleId} is not assigned to user ${userId}, skipping.`
+            );
+            return null;
+          }
+        })
+    );
+
+    this.isProcessing = true; // Start processing
+
+    Promise.all([...addRoleRequests, ...deleteRoleRequests])
+      .then(() => {
+        console.log('Role updates completed successfully.');
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Roles updated successfully.',
+        });
+      })
+      .catch((err) => {
+        console.error('Error updating roles:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to update roles.',
+        });
+      })
+      .finally(() => {
+        this.isProcessing = false; // Ensure processing stops
+      });
+  }
+
+  private deleteAppUserRole(userId: string, roleId: string): void {
+    const url = `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`;
+
+    this.http.get<any>(url).subscribe({
+      next: (response) => {
+        if (response?.content) {
+          const appUserRoleId = response.content;
+          console.log(
+            `Role assignment exists with ID: ${appUserRoleId}, deleting...`
+          );
+
+          this.http
+            .delete(
+              `https://lokakarya-be.up.railway.app/appuserrole/${appUserRoleId}`
+            )
+            .subscribe({
+              next: () => {
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Success',
+                  detail: 'Role unassigned successfully!',
+                });
+                console.log('Role unassigned successfully:', roleId);
+              },
+              error: (err) => {
+                console.error('Error deleting role assignment:', err);
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Error',
+                  detail: 'Failed to unassign role.',
+                });
+              },
+            });
+        } else {
+          console.log('Role assignment does not exist, no deletion needed.');
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching role assignment:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch role assignment.',
+        });
+      },
+    });
   }
 }

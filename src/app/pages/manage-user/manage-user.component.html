@@ -76,7 +76,7 @@
   >
     <form [formGroup]="editForm" (ngSubmit)="saveEmployee()">
       <div class="p-fluid">
-        <div class="p-field">
+        <div *ngIf="mode === 'create'" class="p-field">
           <label for="username">Username</label>
           <input
             id="username"
@@ -183,7 +183,7 @@
             [appendTo]="'body'"
           ></p-calendar>
         </div>
-        <div *ngIf="mode === 'create'" class="p-field">
+        <div class="p-field">
           <label for="password">Password</label>
           <input
             id="password"
@@ -191,7 +191,6 @@
             type="password"
             formControlName="password"
             [disabled]="isProcessing"
-            placeholder="Enter password for new employee"
           />
         </div>
       </div>
