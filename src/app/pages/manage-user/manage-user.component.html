@@ -49,7 +49,7 @@
         <td>
           <button
             pButton
-            icon="pi pi-pencil"
+            [icon]="isProcessing ? 'pi pi-spin pi-spinner' : 'pi pi-pencil'"
             class="p-button-rounded p-button-primary"
             (click)="editEmployee(employee.id)"
             [disabled]="isProcessing"
