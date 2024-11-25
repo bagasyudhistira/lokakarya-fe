@@ -145,3 +145,8 @@ td button:last-child {
   display: flex; /* Ensures the checkbox and label align properly */
   align-items: center; /* Aligns the label and checkbox vertically */
 }
+
+.page-title {
+  text-align: center;
+  margin: 1rem auto;
+}

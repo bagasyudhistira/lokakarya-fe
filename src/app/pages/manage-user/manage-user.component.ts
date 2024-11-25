@@ -31,7 +31,7 @@ export class ManageUserComponent implements OnInit {
   totalRecords: number = 0;
   loading: boolean = false;
   isProcessing: boolean = false;
-  rowsPerPage: number = 10;
+  rowsPerPage: number = 5;
   maxDate: Date = new Date();
   divisions: any[] = [];
   currentYear: string = new Date().getFullYear().toString();
