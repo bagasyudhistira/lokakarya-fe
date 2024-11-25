@@ -572,10 +572,14 @@ export class ManageUserComponent implements OnInit {
   ): Promise<boolean> {
     return new Promise((resolve) => {
       this.http
-        .post('https://lokakarya-be.up.railway.app/auth/sign-in', {
-          username,
-          password,
-        })
+        .post(
+          'https://lokakarya-be.up.railway.app/auth/sign-in',
+          {
+            username,
+            password,
+          },
+          { responseType: 'text' }
+        )
         .subscribe({
           next: (response: any) => {
             console.log('Password validation response:', response);
