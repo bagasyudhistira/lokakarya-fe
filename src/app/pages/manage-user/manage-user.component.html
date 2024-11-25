@@ -13,7 +13,7 @@
       icon="pi pi-plus"
       class="create-button"
       (click)="openCreateDialog()"
-      [disabled]="isProcessing"
+      [disabled]="isProcessing || isEditFormLoading"
     ></button>
   </div>
   <h1 class="page-title">Manage User</h1>
@@ -50,17 +50,25 @@
         <td>
           <button
             pButton
-            [icon]="isProcessing ? 'pi pi-spin pi-spinner' : 'pi pi-pencil'"
+            [icon]="
+              isEditFormLoading || isProcessing
+                ? 'pi pi-spin pi-spinner'
+                : 'pi pi-pencil'
+            "
             class="p-button-rounded p-button-primary"
             (click)="editEmployee(employee.id)"
-            [disabled]="isProcessing"
+            [disabled]="isEditFormLoading || isProcessing"
           ></button>
           <button
             pButton
-            [icon]="isProcessing ? 'pi pi-spin pi-spinner' : 'pi pi-trash'"
+            [icon]="
+              isEditFormLoading || isProcessing
+                ? 'pi pi-spin pi-spinner'
+                : 'pi pi-trash'
+            "
             class="p-button-rounded p-button-danger"
             (click)="deleteEmployee(employee.id)"
-            [disabled]="isProcessing"
+            [disabled]="isEditFormLoading || isProcessing"
           ></button>
         </td>
       </tr>

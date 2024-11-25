@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { MenuManagerService } from '../../services/menu-manager.service';
 import { AuthService } from '../../services/auth.service';
 import { TitleCasePipe } from '@angular/common';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -28,56 +29,49 @@ export class HomeComponent {
   ) {}
 
   ngOnInit(): void {
-    this.fetchUserDetails();
-    this.fetchMenuNames();
+    this.loadPageData();
   }
 
-  fetchUserDetails() {
+  loadPageData(): void {
     const token = sessionStorage.getItem('auth-token');
     const payload = JSON.parse(atob(token!.split('.')[1]));
     const userId = payload.userId;
 
-    this.http
-      .get(`https://lokakarya-be.up.railway.app/appuser/get/${userId}`)
-      .subscribe({
-        next: (response: any) => {
-          this.userDetails = response.content;
-        },
-        error: (err) => {
-          this.errorMessage = 'Failed to load user details.';
-          console.error(err);
-        },
-        complete: () => {
-          this.loading = false;
-        },
-      });
-  }
+    const userDetailsRequest = this.http.get(
+      `https://lokakarya-be.up.railway.app/appuser/get/${userId}`
+    );
 
-  fetchMenuNames() {
     const roles = this.authService.getUserRoles();
-    this.menuManagerService.getMenusByRoles(roles).subscribe({
-      next: (responses: any[]) => {
-        const allMenus = responses.flatMap((response: any) =>
+    const menuNamesRequest = this.menuManagerService.getMenusByRoles(roles);
+
+    forkJoin([userDetailsRequest, menuNamesRequest]).subscribe({
+      next: ([userDetailsResponse, menuResponses]: [any, any[]]) => {
+        this.userDetails = userDetailsResponse.content;
+
+        const allMenus = menuResponses.flatMap((response: any) =>
           response.content.map((menu: any) => menu.menu_name)
         );
         this.menuNames = [...new Set(allMenus)];
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load menus for roles.';
+        this.errorMessage = 'Failed to load page data.';
         console.error(err);
+      },
+      complete: () => {
+        this.loading = false;
       },
     });
   }
 
   logout(): void {
-    sessionStorage.clear(); // Clear session storage
+    sessionStorage.clear();
     this.router.navigate(['/login'], {
       queryParams: { warning: 'You have been successfully logged out.' },
     });
   }
 
   navigateTo(menu: string): void {
-    const route = `/${menu}`; // Adjust this to match your routing structure
+    const route = `/${menu}`;
     this.router.navigate([route]);
   }
 

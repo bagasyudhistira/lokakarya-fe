@@ -39,7 +39,7 @@ export class ManageUserComponent implements OnInit {
   roles: any[] = []; // Stores the available roles
   selectedRoles: { [roleId: string]: boolean } = {};
   currentUserId: string = '';
-
+  isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
 
@@ -205,6 +205,7 @@ export class ManageUserComponent implements OnInit {
 
   editEmployee(employeeId: string): void {
     console.log('Editing Employee with ID:', employeeId);
+    this.isEditFormLoading = true; // Start loading form
     this.isProcessing = true; // Start processing
     this.mode = 'edit';
 
@@ -214,6 +215,9 @@ export class ManageUserComponent implements OnInit {
     const divisionsRequest = this.http.get<any>(
       `https://lokakarya-be.up.railway.app/division/all`
     );
+
+    // Reset the edit form dialog visibility
+    this.displayEditDialog = false;
 
     forkJoin([employeeRequest, divisionsRequest])
       .pipe(finalize(() => (this.isProcessing = false))) // Stop processing after all operations
@@ -232,14 +236,17 @@ export class ManageUserComponent implements OnInit {
 
           this.editForm.patchValue({
             ...employee,
-            password: '',
+            password: '', // Clear the password field
             join_date: new Date(employee.join_date),
             updated_by: this.currentUserId,
           });
 
-          this.fetchUserRoles(employeeId);
-
-          this.displayEditDialog = true;
+          // Fetch user roles and then open the dialog
+          this.fetchUserRoles(employeeId).then(() => {
+            console.log('User roles loaded successfully.');
+            this.displayEditDialog = true; // Open the dialog after roles are loaded
+            this.isEditFormLoading = false; // Form is now fully loaded
+          });
         },
         error: (error) => {
           console.error('Error Fetching Employee or Divisions:', error);
@@ -248,6 +255,7 @@ export class ManageUserComponent implements OnInit {
             summary: 'Error',
             detail: 'Failed to fetch employee or division details.',
           });
+          this.isEditFormLoading = false; // Stop loading in case of error
         },
       });
   }
@@ -392,38 +400,42 @@ export class ManageUserComponent implements OnInit {
     return this.editForm.get('roles') as FormArray;
   }
 
-  fetchUserRoles(userId: string): void {
+  fetchUserRoles(userId: string): Promise<void> {
     console.log('Fetching user roles...');
     this.isProcessing = true; // Start processing
 
-    this.http
-      .get<any>(
-        `https://lokakarya-be.up.railway.app/appuserrole/get2/${userId}`
-      )
-      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
-      .subscribe({
-        next: (response) => {
-          console.log('User Roles Fetched:', response);
-          const userRoles = response.content.map((role: any) => role.role_id);
+    return new Promise((resolve, reject) => {
+      this.http
+        .get<any>(
+          `https://lokakarya-be.up.railway.app/appuserrole/get2/${userId}`
+        )
+        .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
+        .subscribe({
+          next: (response) => {
+            console.log('User Roles Fetched:', response);
+            const userRoles = response.content.map((role: any) => role.role_id);
 
-          // Clear and update roles in the form array
-          this.rolesFormArray.clear();
-          this.roles.forEach((role) =>
-            this.rolesFormArray.push(
-              this.fb.control(userRoles.includes(role.id))
-            )
-          );
-          console.log('Roles patched for User:', this.rolesFormArray.value);
-        },
-        error: (err) => {
-          console.error('Failed to fetch user roles:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch user roles.',
-          });
-        },
-      });
+            // Clear and update roles in the form array
+            this.rolesFormArray.clear();
+            this.roles.forEach((role) =>
+              this.rolesFormArray.push(
+                this.fb.control(userRoles.includes(role.id))
+              )
+            );
+            console.log('Roles patched for User:', this.rolesFormArray.value);
+            resolve(); // Notify success
+          },
+          error: (err) => {
+            console.error('Failed to fetch user roles:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to fetch user roles.',
+            });
+            reject(err); // Notify failure
+          },
+        });
+    });
   }
 
   assignRolesToUser(userId: string): void {
