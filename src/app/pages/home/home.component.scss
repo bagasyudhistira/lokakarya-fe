@@ -4,119 +4,121 @@
   align-items: center;
   padding: 2rem;
   min-height: 100vh;
-  background: var(--surface-b, #f0f8ff); /* Light background */
+  background: var(--surface-b, #f0f8ff);
 
-  .logout-container {
-    display: flex;
-    justify-content: flex-start;
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    margin-bottom: 1rem;
-  }
+    background: #007bff;
+    padding: 0.5rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 
-  .logout-button {
-    position: relative;
-    margin-left: 1rem;
-    margin-top: 1rem;
-    font-size: 1.2rem;
-    padding: 0.75rem 1.5rem;
-    color: #ffffff;
-    background-color: #d32f2f;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-
-    &:hover {
-      background-color: #b71c1c;
-      transform: scale(1.05);
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
-  }
-
-  h1 {
-    font-size: 2rem;
-    color: #2c3e50; /* Dark gray-blue */
-    margin-bottom: 1rem;
-  }
-
-  .content-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    width: 100%;
-    max-width: 1200px;
-    margin-top: 2rem;
-  }
-
-  .profile-card {
-    flex: 0 0 45%;
-    padding: 2rem;
-    background: #e3f2fd; /* Soft blue background */
-    border-radius: 12px;
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); /* Elevated shadow */
-    text-align: left;
-    margin-bottom: 1.5rem; /* Ensure spacing between cards */
-
-    .card-title {
-      margin-bottom: 1rem;
-      font-size: 2rem;
-      font-weight: 700;
-      text-align: center;
-      color: #1565c0; /* Stronger blue for the title */
-    }
-
-    p {
-      margin: 1rem 0;
-      font-size: 1.2rem;
-      color: #0d47a1; /* Deep blue for text */
-    }
-  }
-
-  .menu-list {
-    flex: 0 0 45%;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-    margin-bottom: 1.5rem;
-
-    h2 {
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    ul {
+    .navbar-menu {
+      display: flex;
+      justify-content: space-between; /* Space out the logout button and menu items */
+      align-items: center;
       list-style: none;
-      padding: 0;
+      margin: 0;
+      padding: 0 1rem;
+      gap: 1rem;
 
-      li {
-        font-size: 1.2rem;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #dcdcdc;
+      .logout-item {
+        margin-right: auto; /* Push the logout button to the far left */
+      }
 
-        &:last-child {
-          border-bottom: none;
+      .logout-button {
+        background-color: #d32f2f;
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+
+        &:hover {
+          background-color: #b71c1c;
+          transform: scale(1.05);
         }
+
+        &:active {
+          transform: scale(0.95);
+        }
+
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+
+      .navbar-item {
+        display: inline-block;
+        background-color: #ffffff;
+        color: #007bff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: capitalize;
+        text-align: center;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #007bff;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s;
+
+        &:hover {
+          background-color: #0056b3;
+          color: #ffffff;
+          transform: translateY(-2px);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
       }
     }
   }
 
+  h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-top: 6rem; /* Offset for navbar */
+  }
+
+  .profile-card {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #e3f2fd;
+    border-radius: 12px;
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    text-align: left;
+
+    .card-title {
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1565c0;
+      text-align: center;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: #0d47a1;
+    }
+  }
+
   .loading-message {
+    margin-top: 6rem;
     font-size: 1.5rem;
     color: #6c757d;
-    margin-top: 2rem;
   }
 
   .error-message {
+    margin-top: 6rem;
     color: #d9534f;
     font-weight: bold;
     text-align: center;
-    margin-top: 2rem;
   }
 }

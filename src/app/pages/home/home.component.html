@@ -1,13 +1,24 @@
 <div class="home-container">
-  <div class="logout-container">
-    <button
-      pButton
-      type="button"
-      label="Logout"
-      class="logout-button"
-      (click)="logout()"
-    ></button>
-  </div>
+  <nav class="navbar">
+    <ul class="navbar-menu">
+      <li class="logout-item">
+        <button
+          pButton
+          type="button"
+          label="Logout"
+          class="logout-button"
+          (click)="logout()"
+        ></button>
+      </li>
+      <li
+        class="navbar-item"
+        *ngFor="let menu of menuNames"
+        (click)="navigateTo(menu)"
+      >
+        {{ formatMenuName(menu) }}
+      </li>
+    </ul>
+  </nav>
 
   <h1 *ngIf="!loading && !errorMessage">Hello, {{ userDetails?.full_name }}</h1>
 
@@ -24,18 +35,6 @@
       <h2 class="card-title">Profile</h2>
       <p><strong>Position:</strong> {{ userDetails?.position }}</p>
       <p><strong>Division:</strong> {{ userDetails?.division_name }}</p>
-    </div>
-
-    <h2>Available Menus</h2>
-    <div class="menu-buttons">
-      <button
-        *ngFor="let menu of menuNames"
-        pButton
-        type="button"
-        [label]="menu"
-        (click)="navigateTo(menu)"
-        class="p-button-rounded p-button-primary p-button-outlined menu-button"
-      ></button>
     </div>
   </div>
 </div>

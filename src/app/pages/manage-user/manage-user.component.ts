@@ -601,15 +601,30 @@ export class ManageUserComponent implements OnInit {
   submitEmployee(): void {
     console.log('Submitting Employee. Mode:', this.mode);
 
-    this.isProcessing = true; // Start processing feedback
+    this.isProcessing = true;
 
-    if (this.mode === 'edit') {
+    const username = this.editForm.get('username')?.value;
+
+    if (this.mode === 'create') {
+      this.validateUsername(username).then((isUnique) => {
+        if (!isUnique) {
+          this.isProcessing = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail:
+              'Username already exists. Please choose a different username.',
+          });
+          return;
+        }
+        this.saveEmployee();
+      });
+    } else if (this.mode === 'edit') {
       const password = this.editForm.get('password')?.value;
-      const username = this.editForm.get('username')?.value;
 
       this.validatePassword(username, password).then((isValid) => {
         if (!isValid) {
-          this.isProcessing = false; // Stop processing
+          this.isProcessing = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -619,8 +634,30 @@ export class ManageUserComponent implements OnInit {
         }
         this.saveEmployee();
       });
-    } else {
-      this.saveEmployee();
     }
+  }
+
+  private validateUsername(username: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.http
+        .get<any>(
+          `https://lokakarya-be.up.railway.app/appuser/user/${username}`
+        )
+        .subscribe({
+          next: (response: any) => {
+            console.log('Username validation response:', response);
+            resolve(response.content === null);
+          },
+          error: (err) => {
+            console.error('Unexpected error during username validation:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'An error occurred while validating the username.',
+            });
+            resolve(false);
+          },
+        });
+    });
   }
 }

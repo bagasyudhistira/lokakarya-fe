@@ -129,7 +129,7 @@
         </div>
         <div class="p-field">
           <label>Roles</label>
-          <div *ngIf="roles?.length && !isProcessing; else loadingRoles">
+          <div class="roles-container">
             <div
               *ngFor="let role of roles; let i = index"
               class="role-checkbox"

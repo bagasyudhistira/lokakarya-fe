@@ -1,15 +1,16 @@
-import { MenuManagerService } from './../../services/menu-manager.service';
 import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { PrimeNgModule } from '../../shared/primeng/primeng.module';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { PrimeNgModule } from '../../shared/primeng/primeng.module';
+import { MenuManagerService } from '../../services/menu-manager.service';
+import { AuthService } from '../../services/auth.service';
+import { TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, PrimeNgModule],
+  imports: [CommonModule, PrimeNgModule, TitleCasePipe],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -67,6 +68,7 @@ export class HomeComponent {
       },
     });
   }
+
   logout(): void {
     sessionStorage.clear(); // Clear session storage
     this.router.navigate(['/login'], {
@@ -77,5 +79,12 @@ export class HomeComponent {
   navigateTo(menu: string): void {
     const route = `/${menu}`; // Adjust this to match your routing structure
     this.router.navigate([route]);
+  }
+
+  formatMenuName(menu: string): string {
+    return menu
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }
