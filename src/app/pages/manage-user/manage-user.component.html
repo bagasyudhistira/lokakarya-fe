@@ -74,7 +74,7 @@
     [style]="{ width: '50vw' }"
     [resizable]="false"
   >
-    <form [formGroup]="editForm" (ngSubmit)="saveEmployee()">
+    <form [formGroup]="editForm" (ngSubmit)="submitEmployee()">
       <div class="p-fluid">
         <div *ngIf="mode === 'create'" class="p-field">
           <label for="username">Username</label>
@@ -184,7 +184,10 @@
           ></p-calendar>
         </div>
         <div class="p-field">
-          <label for="password">Password</label>
+          <label *ngIf="mode === 'create'" for="password">Password</label>
+          <label *ngIf="mode === 'edit'" for="password"
+            >Confirm Current Password</label
+          >
           <input
             id="password"
             pInputText
@@ -193,6 +196,7 @@
             [disabled]="isProcessing"
           />
         </div>
+        <p-toast></p-toast>
       </div>
 
       <div class="dialog-footer">

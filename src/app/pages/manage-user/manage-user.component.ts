@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import {
   FormBuilder,
@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { FormArray } from '@angular/forms';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-manage-user',
@@ -36,7 +37,8 @@ export class ManageUserComponent implements OnInit {
   currentYear: string = new Date().getFullYear().toString();
   mode: 'create' | 'edit' = 'create';
   roles: any[] = []; // Stores the available roles
-  selectedRoles: { [roleId: string]: boolean } = {}; // Tracks selected roles
+  selectedRoles: { [roleId: string]: boolean } = {};
+  currentUserId: string = '';
 
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
@@ -59,6 +61,29 @@ export class ManageUserComponent implements OnInit {
     this.fetchRoles();
     console.log('Component Initialized');
   }
+  private decodeJWT(): string | null {
+    const token = sessionStorage.getItem('auth-token');
+
+    if (!token) {
+      console.error('No JWT found in session storage.');
+      return null;
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      if (decoded && decoded.userId) {
+        console.log('Decoded userId:', decoded.userId);
+        return decoded.userId;
+      } else {
+        console.error('userId not found in JWT.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
 
   private initializeForm() {
     console.log('Initializing Edit Form...');
@@ -75,6 +100,8 @@ export class ManageUserComponent implements OnInit {
       password: ['', Validators.required],
       roles: this.fb.array([]),
     });
+    this.currentUserId = this.decodeJWT() || '';
+
     console.log('Form Initialized:', this.editForm.value);
   }
 
@@ -140,7 +167,6 @@ export class ManageUserComponent implements OnInit {
       return;
     }
 
-    // Show confirmation dialog
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this employee?',
       accept: () => {
@@ -199,12 +225,16 @@ export class ManageUserComponent implements OnInit {
           });
 
           this.divisions = divisionsResponse.content;
-
           const employee = employeeResponse.content;
+
+          this.currentUserId = this.decodeJWT() || '';
+          console.log('Current User ID:', this.currentUserId);
+
           this.editForm.patchValue({
             ...employee,
             password: '',
             join_date: new Date(employee.join_date),
+            updated_by: this.currentUserId,
           });
 
           this.fetchUserRoles(employeeId);
@@ -252,6 +282,7 @@ export class ManageUserComponent implements OnInit {
 
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
+      this.isProcessing = false; // Stop processing
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -260,42 +291,56 @@ export class ManageUserComponent implements OnInit {
       return;
     }
 
-    this.isProcessing = true; // Start processing
-    const userId = this.editForm.get('id')?.value;
-    const rolesToAssign = this.roles
-      .map((role, index) => (this.rolesFormArray.value[index] ? role.id : null))
-      .filter((roleId) => roleId !== null);
-    const uncheckedRoles = this.roles
-      .map((role, index) =>
-        !this.rolesFormArray.value[index] ? role.id : null
-      )
-      .filter((roleId) => roleId !== null);
-    console.log('Roles to Assign:', rolesToAssign);
-    console.log('Unchecked Roles:', uncheckedRoles);
+    // Prepare payload
+    const payload = {
+      ...this.editForm.value,
+      ...(this.mode === 'create'
+        ? { created_by: this.currentUserId }
+        : { updated_by: this.currentUserId }),
+    };
 
     const request$ =
       this.mode === 'create'
         ? this.http.post(
             'https://lokakarya-be.up.railway.app/appuser/create',
-            this.editForm.value
+            payload
           )
         : this.http.put(
             'https://lokakarya-be.up.railway.app/appuser/update',
-            this.editForm.value
+            payload
           );
 
     request$
-      .pipe(
-        finalize(() => (this.isProcessing = false)) // Ensure processing stops
-      )
+      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing feedback
       .subscribe({
-        next: () => {
-          console.log('Employee Saved Successfully');
+        next: (response: any) => {
+          console.log('Employee Saved Successfully:', response);
 
-          // Handle role assignments and removals
-          if (this.mode === 'edit') {
-            this.updateUserRoles(userId, rolesToAssign, uncheckedRoles);
+          const userId =
+            this.mode === 'create'
+              ? response?.content?.id
+              : this.editForm.get('id')?.value;
+
+          if (!userId) {
+            console.error('User ID could not be determined.');
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to retrieve user ID after saving.',
+            });
+            return;
           }
+
+          console.log('User ID:', userId);
+
+          // Update user roles based on current role assignments
+          const rolesToAssign = this.rolesFormArray.value
+            .map((checked: boolean, index: number) =>
+              checked ? this.roles[index].id : null
+            )
+            .filter((id: string | null) => id !== null);
+
+          this.updateUserRoles(userId, rolesToAssign, []);
 
           this.messageService.add({
             severity: 'success',
@@ -303,7 +348,7 @@ export class ManageUserComponent implements OnInit {
             detail: 'Employee saved successfully.',
           });
           this.displayEditDialog = false;
-          this.fetchEmployees(); // Refresh the employee list
+          this.fetchEmployees(); // Refresh employee list
         },
         error: (error) => {
           console.error('Error Saving Employee:', error);
@@ -348,7 +393,9 @@ export class ManageUserComponent implements OnInit {
   }
 
   fetchUserRoles(userId: string): void {
+    console.log('Fetching user roles...');
     this.isProcessing = true; // Start processing
+
     this.http
       .get<any>(
         `https://lokakarya-be.up.railway.app/appuserrole/get2/${userId}`
@@ -358,8 +405,9 @@ export class ManageUserComponent implements OnInit {
         next: (response) => {
           console.log('User Roles Fetched:', response);
           const userRoles = response.content.map((role: any) => role.role_id);
-          this.rolesFormArray.clear();
 
+          // Clear and update roles in the form array
+          this.rolesFormArray.clear();
           this.roles.forEach((role) =>
             this.rolesFormArray.push(
               this.fb.control(userRoles.includes(role.id))
@@ -381,7 +429,7 @@ export class ManageUserComponent implements OnInit {
   assignRolesToUser(userId: string): void {
     const rolesToAssign = this.roles
       .map((role, index) => (this.rolesFormArray.value[index] ? role.id : null))
-      .filter((roleId) => roleId !== null); // Filter out unselected roles
+      .filter((roleId) => roleId !== null);
 
     if (rolesToAssign.length === 0) {
       this.messageService.add({
@@ -398,16 +446,15 @@ export class ManageUserComponent implements OnInit {
           `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
         )
         .pipe(
-          finalize(() => (this.isProcessing = false)), // Stop processing after each request
-          finalize(() => console.log(`Check for role ${roleId} completed.`)) // Logging
+          finalize(() => (this.isProcessing = false)),
+          finalize(() => console.log(`Check for role ${roleId} completed.`))
         )
         .toPromise()
         .then((response) => {
           if (response?.content) {
             console.log(`Role already assigned: ${roleId}`);
-            return null; // Role already assigned, skip
+            return null;
           } else {
-            // Role not assigned, create it
             return this.http
               .post('https://lokakarya-be.up.railway.app/appuserrole/create', {
                 role_id: roleId,
@@ -421,7 +468,7 @@ export class ManageUserComponent implements OnInit {
         })
     );
 
-    this.isProcessing = true; // Start processing
+    this.isProcessing = true;
 
     Promise.all(roleRequests)
       .then(() => {
@@ -516,55 +563,64 @@ export class ManageUserComponent implements OnInit {
         });
       })
       .finally(() => {
-        this.isProcessing = false; // Ensure processing stops
+        this.isProcessing = false;
       });
   }
+  private validatePassword(
+    username: string,
+    password: string
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.http
+        .post('https://lokakarya-be.up.railway.app/auth/sign-in', {
+          username,
+          password,
+        })
+        .subscribe({
+          next: (response: any) => {
+            console.log('Password validation response:', response);
+            resolve(true);
+          },
+          error: (error) => {
+            console.error('Password validation failed:', error);
 
-  private deleteAppUserRole(userId: string, roleId: string): void {
-    const url = `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`;
-
-    this.http.get<any>(url).subscribe({
-      next: (response) => {
-        if (response?.content) {
-          const appUserRoleId = response.content;
-          console.log(
-            `Role assignment exists with ID: ${appUserRoleId}, deleting...`
-          );
-
-          this.http
-            .delete(
-              `https://lokakarya-be.up.railway.app/appuserrole/${appUserRoleId}`
-            )
-            .subscribe({
-              next: () => {
-                this.messageService.add({
-                  severity: 'success',
-                  summary: 'Success',
-                  detail: 'Role unassigned successfully!',
-                });
-                console.log('Role unassigned successfully:', roleId);
-              },
-              error: (err) => {
-                console.error('Error deleting role assignment:', err);
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: 'Failed to unassign role.',
-                });
-              },
-            });
-        } else {
-          console.log('Role assignment does not exist, no deletion needed.');
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching role assignment:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch role assignment.',
+            if (error.status != 500) {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail:
+                  'An unexpected error occurred while validating the password.',
+              });
+            }
+            resolve(false);
+          },
         });
-      },
     });
+  }
+
+  submitEmployee(): void {
+    console.log('Submitting Employee. Mode:', this.mode);
+
+    this.isProcessing = true; // Start processing feedback
+
+    if (this.mode === 'edit') {
+      const password = this.editForm.get('password')?.value;
+      const username = this.editForm.get('username')?.value;
+
+      this.validatePassword(username, password).then((isValid) => {
+        if (!isValid) {
+          this.isProcessing = false; // Stop processing
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Invalid password. Please try again.',
+          });
+          return;
+        }
+        this.saveEmployee();
+      });
+    } else {
+      this.saveEmployee();
+    }
   }
 }
