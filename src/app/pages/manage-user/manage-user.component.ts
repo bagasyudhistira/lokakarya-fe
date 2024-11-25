@@ -42,6 +42,7 @@ export class ManageUserComponent implements OnInit {
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
+  allEmployees: any[] = [];
 
   constructor(
     private http: HttpClient,
@@ -111,28 +112,37 @@ export class ManageUserComponent implements OnInit {
   }
 
   fetchEmployees(event?: any): void {
-    this.loading = true; // Start loading
-    const page = event?.first ? event.first / this.rowsPerPage : 0;
+    if (!this.allEmployees.length) {
+      this.loading = true;
 
-    this.http
-      .get<any>(
-        `https://lokakarya-be.up.railway.app/appuser/get/all?page=${page}&size=${this.rowsPerPage}`
-      )
-      .pipe(finalize(() => (this.loading = false))) // Stop loading after request
-      .subscribe({
-        next: (response) => {
-          this.employees = response.content;
-          this.totalRecords = response.total_rows;
-        },
-        error: (error) => {
-          console.error('Error Fetching Employees:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch employees.',
-          });
-        },
-      });
+      this.http
+        .get<any>('https://lokakarya-be.up.railway.app/appuser/get/all')
+        .pipe(finalize(() => (this.loading = false)))
+        .subscribe({
+          next: (response) => {
+            this.allEmployees = response.content || [];
+            this.totalRecords = this.allEmployees.length;
+            this.paginateEmployees(event);
+          },
+          error: (error) => {
+            console.error('Error Fetching Employees:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to fetch employees.',
+            });
+          },
+        });
+    } else {
+      this.paginateEmployees(event);
+    }
+  }
+
+  paginateEmployees(event?: any): void {
+    const startIndex = event?.first || 0;
+    const endIndex = startIndex + this.rowsPerPage;
+
+    this.employees = this.allEmployees.slice(startIndex, endIndex);
   }
 
   openCreateDialog(): void {
