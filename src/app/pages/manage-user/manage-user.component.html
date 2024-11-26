@@ -20,7 +20,6 @@
       ></button>
     </div>
     <h1 class="page-title">Manage User</h1>
-    <!-- Search Input -->
     <div class="search-container">
       <span class="p-input-icon-left">
         <i class="pi pi-search"></i>
@@ -29,76 +28,78 @@
           type="text"
           placeholder="Search..."
           [(ngModel)]="globalFilterValue"
-          (input)="dt.filterGlobal(globalFilterValue, 'contains')"
+          (input)="onSearch()"
         />
       </span>
     </div>
-    <p-card>
-      <div class="p-table-container">
-        <p-table
-          #dt
-          [value]="employees"
-          [lazy]="true"
-          [paginator]="true"
-          [rows]="rowsPerPage"
-          [totalRecords]="totalRecords"
-          [loading]="loading"
-          (onLazyLoad)="fetchEmployees($event)"
-          [resizableColumns]="true"
-          responsiveLayout="scroll"
-          [globalFilterFields]="[
-            'username',
-            'full_name',
-            'email_address',
-            'division_name'
-          ]"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Username</th>
-              <th>Full Name</th>
-              <th>Position</th>
-              <th>Email Address</th>
-              <th>Division</th>
-              <th>Actions</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-employee>
-            <tr [ngClass]="{ 'disabled-row': employee.enabled === false }">
-              <td>{{ employee.username }}</td>
-              <td>{{ employee.full_name }}</td>
-              <td>{{ employee.position }}</td>
-              <td>{{ employee.email_address }}</td>
-              <td>{{ employee.division_name }}</td>
-              <td>
-                <button
-                  pButton
-                  [icon]="
-                    isEditFormLoading || isProcessing
-                      ? 'pi pi-spin pi-spinner'
-                      : 'pi pi-pencil'
-                  "
-                  class="p-button-rounded p-button-primary"
-                  (click)="editEmployee(employee.id)"
-                  [disabled]="isEditFormLoading || isProcessing"
-                ></button>
-                <button
-                  pButton
-                  [icon]="
-                    isEditFormLoading || isProcessing
-                      ? 'pi pi-spin pi-spinner'
-                      : 'pi pi-trash'
-                  "
-                  class="p-button-rounded p-button-danger"
-                  (click)="deleteEmployee(employee.id)"
-                  [disabled]="isEditFormLoading || isProcessing"
-                ></button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </div>
-    </p-card>
+    <p-table
+      #dt
+      [value]="employees"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="rowsPerPage"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      (onLazyLoad)="fetchEmployees($event)"
+      [resizableColumns]="true"
+      responsiveLayout="scroll"
+      [sortMode]="'single'"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="username">
+            Username <p-sortIcon field="username"></p-sortIcon>
+          </th>
+          <th pSortableColumn="full_name">
+            Full Name <p-sortIcon field="full_name"></p-sortIcon>
+          </th>
+          <th pSortableColumn="position">
+            Position <p-sortIcon field="position"></p-sortIcon>
+          </th>
+          <th pSortableColumn="email_address">
+            Email Address <p-sortIcon field="email_address"></p-sortIcon>
+          </th>
+          <th pSortableColumn="division_name">
+            Division <p-sortIcon field="division_name"></p-sortIcon>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-employee>
+        <tr [ngClass]="{ 'disabled-row': employee.enabled === false }">
+          <td>{{ employee.username }}</td>
+          <td>{{ employee.full_name }}</td>
+          <td>{{ employee.position }}</td>
+          <td>{{ employee.email_address }}</td>
+          <td>{{ employee.division_name }}</td>
+          <td>
+            <button
+              pButton
+              [icon]="
+                isEditFormLoading || isProcessing
+                  ? 'pi pi-spin pi-spinner'
+                  : 'pi pi-pencil'
+              "
+              class="p-button-rounded p-button-primary"
+              (click)="editEmployee(employee.id)"
+              [disabled]="isEditFormLoading || isProcessing"
+            ></button>
+            <button
+              pButton
+              [icon]="
+                isEditFormLoading || isProcessing
+                  ? 'pi pi-spin pi-spinner'
+                  : 'pi pi-trash'
+              "
+              class="p-button-rounded p-button-danger"
+              (click)="deleteEmployee(employee.id)"
+              [disabled]="isEditFormLoading || isProcessing"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
     <p-dialog
       header="{{ mode === 'create' ? 'Create Employee' : 'Edit Employee' }}"
       [(visible)]="displayEditDialog"

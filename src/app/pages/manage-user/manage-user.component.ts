@@ -118,9 +118,9 @@ export class ManageUserComponent implements OnInit {
     console.log('Navigating to Home');
     this.router.navigate(['/home']);
   }
-
   fetchEmployees(event?: any): void {
     console.log('Fetching Employees...');
+
     if (!this.allEmployees.length || this.allEmployees.length > 0) {
       this.loading = true;
 
@@ -131,7 +131,9 @@ export class ManageUserComponent implements OnInit {
           next: (response) => {
             this.allEmployees = response.content || [];
             this.totalRecords = this.allEmployees.length;
-            this.paginateEmployees(event);
+
+            // Apply filtering, sorting, and pagination
+            this.applyFiltersAndPagination(event);
           },
           error: (error) => {
             console.error('Error Fetching Employees:', error);
@@ -143,8 +145,44 @@ export class ManageUserComponent implements OnInit {
           },
         });
     } else {
-      this.paginateEmployees(event);
+      this.applyFiltersAndPagination(event);
     }
+  }
+
+  applyFiltersAndPagination(event?: any): void {
+    const startIndex = event?.first || 0;
+    const endIndex = startIndex + this.rowsPerPage;
+
+    // Apply global filtering (search)
+    let filteredEmployees = this.globalFilterValue
+      ? this.allEmployees.filter((employee) =>
+          Object.values(employee).some((value) =>
+            String(value)
+              .toLowerCase()
+              .includes(this.globalFilterValue.toLowerCase())
+          )
+        )
+      : [...this.allEmployees]; // Clone array for sorting
+
+    if (event?.sortField) {
+      const sortOrder = event.sortOrder || 1; // 1 = ascending, -1 = descending
+      filteredEmployees.sort((a, b) => {
+        const valueA = a[event.sortField];
+        const valueB = b[event.sortField];
+
+        if (valueA == null || valueB == null) return 0; // Handle null/undefined values
+
+        return (
+          valueA.toString().localeCompare(valueB.toString()) * sortOrder || 0
+        );
+      });
+    }
+
+    // Apply pagination
+    this.employees = filteredEmployees.slice(startIndex, endIndex);
+
+    // Update totalRecords for pagination
+    this.totalRecords = filteredEmployees.length;
   }
 
   paginateEmployees(event?: any): void {
@@ -339,36 +377,16 @@ export class ManageUserComponent implements OnInit {
       next: (response: any) => {
         console.log('Employee Saved Successfully:', response);
 
-        const userId =
-          this.mode === 'create'
-            ? response?.content?.id
-            : this.editForm.get('id')?.value;
-
-        if (!userId) {
-          console.error('User ID could not be determined.');
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to retrieve user ID after saving.',
-          });
-          return;
-        }
-
-        console.log('User ID:', userId);
-
-        const rolesToAssign = this.rolesFormArray.value
-          .map((checked: boolean, index: number) =>
-            checked ? this.roles[index].id : null
-          )
-          .filter((id: string | null) => id !== null);
-
-        this.updateUserRoles(userId, rolesToAssign, []);
-
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
           detail: 'Employee saved successfully.',
         });
+
+        // Reset sort and filter
+        this.resetSortAndFilter();
+
+        // Close dialog and fetch employees
         this.displayEditDialog = false;
         this.fetchEmployees();
       },
@@ -381,6 +399,20 @@ export class ManageUserComponent implements OnInit {
         });
       },
     });
+  }
+
+  resetSortAndFilter(): void {
+    console.log('Resetting sort and filter...');
+
+    this.globalFilterValue = '';
+
+    const dt = document.querySelector('p-table') as any;
+    if (dt) {
+      dt.sortField = null;
+      dt.sortOrder = null;
+    }
+
+    this.applyFiltersAndPagination({ first: 0 });
   }
 
   fetchRoles(): void {
@@ -683,6 +715,10 @@ export class ManageUserComponent implements OnInit {
           },
         });
     });
+  }
+  onSearch(): void {
+    console.log('Applying global search:', this.globalFilterValue);
+    this.applyFiltersAndPagination({ first: 0 });
   }
 
   filterGlobal(event: Event): void {
