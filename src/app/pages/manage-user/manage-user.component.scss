@@ -150,3 +150,23 @@ td button:last-child {
   text-align: center;
   margin: 1rem auto;
 }
+.p-table-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* Total height for the table (header + body + footer) */
+}
+.disabled-row {
+  color: red;
+}
+.search-container {
+  margin-bottom: 1rem;
+}
+
+.search-container .p-input-icon-left {
+  width: 100%;
+}
+
+.search-container input {
+  width: 100%;
+  max-width: 400px;
+}

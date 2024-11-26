@@ -17,13 +17,20 @@ import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { FormArray } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 @Component({
   selector: 'app-manage-user',
   standalone: true,
   templateUrl: './manage-user.component.html',
   styleUrls: ['./manage-user.component.scss'],
-  imports: [CommonModule, PrimeNgModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    PrimeNgModule,
+    FormsModule,
+    ReactiveFormsModule,
+    InputSwitchModule,
+  ],
   providers: [ConfirmationService, MessageService],
 })
 export class ManageUserComponent implements OnInit {
@@ -43,6 +50,7 @@ export class ManageUserComponent implements OnInit {
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
   allEmployees: any[] = [];
+  globalFilterValue: string = '';
 
   constructor(
     private http: HttpClient,
@@ -112,7 +120,8 @@ export class ManageUserComponent implements OnInit {
   }
 
   fetchEmployees(event?: any): void {
-    if (!this.allEmployees.length) {
+    console.log('Fetching Employees...');
+    if (!this.allEmployees.length || this.allEmployees.length > 0) {
       this.loading = true;
 
       this.http
@@ -251,7 +260,6 @@ export class ManageUserComponent implements OnInit {
             updated_by: this.currentUserId,
           });
 
-          // Fetch user roles and then open the dialog
           this.fetchUserRoles(employeeId).then(() => {
             console.log('User roles loaded successfully.');
             this.displayEditDialog = true; // Open the dialog after roles are loaded
@@ -300,7 +308,7 @@ export class ManageUserComponent implements OnInit {
 
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
-      this.isProcessing = false; // Stop processing
+      this.isProcessing = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -309,7 +317,6 @@ export class ManageUserComponent implements OnInit {
       return;
     }
 
-    // Prepare payload
     const payload = {
       ...this.editForm.value,
       ...(this.mode === 'create'
@@ -328,68 +335,64 @@ export class ManageUserComponent implements OnInit {
             payload
           );
 
-    request$
-      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing feedback
-      .subscribe({
-        next: (response: any) => {
-          console.log('Employee Saved Successfully:', response);
+    request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
+      next: (response: any) => {
+        console.log('Employee Saved Successfully:', response);
 
-          const userId =
-            this.mode === 'create'
-              ? response?.content?.id
-              : this.editForm.get('id')?.value;
+        const userId =
+          this.mode === 'create'
+            ? response?.content?.id
+            : this.editForm.get('id')?.value;
 
-          if (!userId) {
-            console.error('User ID could not be determined.');
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to retrieve user ID after saving.',
-            });
-            return;
-          }
-
-          console.log('User ID:', userId);
-
-          // Update user roles based on current role assignments
-          const rolesToAssign = this.rolesFormArray.value
-            .map((checked: boolean, index: number) =>
-              checked ? this.roles[index].id : null
-            )
-            .filter((id: string | null) => id !== null);
-
-          this.updateUserRoles(userId, rolesToAssign, []);
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Employee saved successfully.',
-          });
-          this.displayEditDialog = false;
-          this.fetchEmployees(); // Refresh employee list
-        },
-        error: (error) => {
-          console.error('Error Saving Employee:', error);
+        if (!userId) {
+          console.error('User ID could not be determined.');
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to save employee.',
+            detail: 'Failed to retrieve user ID after saving.',
           });
-        },
-      });
+          return;
+        }
+
+        console.log('User ID:', userId);
+
+        const rolesToAssign = this.rolesFormArray.value
+          .map((checked: boolean, index: number) =>
+            checked ? this.roles[index].id : null
+          )
+          .filter((id: string | null) => id !== null);
+
+        this.updateUserRoles(userId, rolesToAssign, []);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Employee saved successfully.',
+        });
+        this.displayEditDialog = false;
+        this.fetchEmployees();
+      },
+      error: (error) => {
+        console.error('Error Saving Employee:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to save employee.',
+        });
+      },
+    });
   }
 
   fetchRoles(): void {
     this.isProcessing = true;
     this.http
       .get<any>('https://lokakarya-be.up.railway.app/approle/all')
-      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
+      .pipe(finalize(() => (this.isProcessing = false)))
       .subscribe({
         next: (response) => {
           this.roles = response.content;
           console.log('Roles fetched:', this.roles);
 
-          // Initialize FormArray with a control for each role
           this.rolesFormArray.clear();
           this.roles.forEach(() =>
             this.rolesFormArray.push(this.fb.control(false))
@@ -570,11 +573,6 @@ export class ManageUserComponent implements OnInit {
     Promise.all([...addRoleRequests, ...deleteRoleRequests])
       .then(() => {
         console.log('Role updates completed successfully.');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Roles updated successfully.',
-        });
       })
       .catch((err) => {
         console.error('Error updating roles:', err);
@@ -685,5 +683,15 @@ export class ManageUserComponent implements OnInit {
           },
         });
     });
+  }
+
+  filterGlobal(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    const table = document.querySelector('p-table') as any;
+    table.filterGlobal(filterValue, 'contains');
+  }
+
+  applyGlobalFilter(): void {
+    console.log('Global filter applied:', this.globalFilterValue);
   }
 }
