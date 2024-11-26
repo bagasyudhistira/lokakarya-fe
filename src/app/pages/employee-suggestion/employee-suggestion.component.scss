@@ -1,0 +1,162 @@
+.manage-user-container {
+  padding: 2rem;
+
+  .header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .create-button,
+    .home-button {
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+    }
+  }
+
+  .p-table {
+    margin-top: 1rem;
+    min-height: 400px;
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .p-field {
+    margin-bottom: 2rem;
+  }
+
+  .dialog-footer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  p-calendar {
+    .ui-datepicker {
+      font-size: 0.75rem; /* Smaller overall font */
+      padding: 0.4rem; /* Minimized padding for the container */
+    }
+
+    .ui-datepicker-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.2rem 0.4rem; /* Compact header padding */
+      font-size: 0.8rem; /* Slightly larger header font for clarity */
+    }
+
+    .ui-datepicker-title {
+      font-size: 0.75rem; /* Compact title font size */
+      margin: 0;
+    }
+
+    .ui-datepicker-calendar {
+      font-size: 0.7rem;
+      gap: 0.1rem;
+    }
+
+    .ui-datepicker-calendar th,
+    .ui-datepicker-calendar td {
+      padding: 0.2rem;
+      min-width: 1.5rem;
+      min-height: 1.5rem;
+    }
+
+    .ui-datepicker-next,
+    .ui-datepicker-prev {
+      font-size: 0.7rem;
+      padding: 0.2rem;
+    }
+
+    .ui-datepicker-today-button,
+    .ui-datepicker-clear-button {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.5rem;
+    }
+
+    .ui-datepicker-year,
+    .ui-datepicker-month {
+      font-size: 0.7rem;
+      padding: 0.2rem;
+    }
+  }
+
+  .p-dropdown {
+    width: 100%;
+  }
+
+  .input {
+    padding: 0.75rem;
+  }
+  .radio-buttons {
+    display: flex;
+    align-items: center;
+    gap: 2rem; /* Generous spacing between buttons */
+
+    p-radioButton {
+      margin: 0;
+
+      .p-radiobutton-box {
+        border-radius: 50%;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+
+        &:focus-within {
+          box-shadow: none; /* Remove focus shadow */
+          outline: none; /* Remove any outline */
+        }
+
+        &:hover {
+          border-color: var(--primary-color, #007ad9);
+        }
+
+        &:active {
+          box-shadow: inset 0 0 4px var(--primary-color, #007ad9);
+        }
+      }
+    }
+
+    .p-radiobutton-input {
+      outline: none !important; /* Eliminate persistent browser focus styling */
+    }
+  }
+}
+td button {
+  margin-right: 0.5rem;
+}
+
+td button:last-child {
+  margin-right: 0;
+}
+
+.page-title {
+  text-align: center;
+  margin: 1rem auto;
+}
+.p-table-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* Total height for the table (header + body + footer) */
+}
+.disabled-row {
+  color: #a7a5a5;
+}
+.search-container {
+  margin-bottom: 1rem;
+}
+
+.search-container .p-input-icon-left {
+  width: 100%;
+}
+
+.search-container input {
+  width: 100%;
+  max-width: 400px;
+}
+.p-dialog {
+  display: flex;
+}
