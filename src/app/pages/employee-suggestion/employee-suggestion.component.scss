@@ -3,21 +3,32 @@
 
   .header-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* Stack elements vertically */
+    gap: 0.5rem;
     margin-bottom: 1rem;
-    flex-wrap: wrap; /* Allows wrapping on smaller screens */
 
-    .search-container {
-      flex: 1; /* Take up all available space */
-      max-width: 400px; /* Set a maximum width for the search bar */
+    .top-row {
+      display: flex;
+      justify-content: space-between; /* Align search and button */
+      align-items: center;
+      width: 100%;
+
+      .search-container {
+        flex: 1; /* Allow the search bar to expand */
+        max-width: 400px;
+      }
+
+      .create-button {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+      }
     }
 
-    .create-button {
-      margin-left: auto; /* Push the button to the far right */
-      font-size: 1rem;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+    .checkbox-container {
+      display: flex;
+      justify-content: flex-start; /* Align checkbox to the left */
+      margin-top: 0.5rem;
     }
   }
 
@@ -32,32 +43,26 @@
     gap: 1rem;
     margin-top: 1rem;
   }
+
   .p-field {
     margin-bottom: 2rem;
   }
 
-  .dialog-footer {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-
   p-calendar {
     .ui-datepicker {
-      font-size: 0.75rem; /* Smaller overall font */
-      padding: 0.4rem; /* Minimized padding for the container */
+      font-size: 0.75rem;
+      padding: 0.4rem;
     }
 
     .ui-datepicker-header {
       display: flex;
       justify-content: space-between;
-      padding: 0.2rem 0.4rem; /* Compact header padding */
-      font-size: 0.8rem; /* Slightly larger header font for clarity */
+      padding: 0.2rem 0.4rem;
+      font-size: 0.8rem;
     }
 
     .ui-datepicker-title {
-      font-size: 0.75rem; /* Compact title font size */
+      font-size: 0.75rem;
       margin: 0;
     }
 
@@ -92,45 +97,11 @@
     }
   }
 
-  .p-dropdown {
-    width: 100%;
-  }
-
   .input {
     padding: 0.75rem;
   }
-  .radio-buttons {
-    display: flex;
-    align-items: center;
-    gap: 2rem; /* Generous spacing between buttons */
-
-    p-radioButton {
-      margin: 0;
-
-      .p-radiobutton-box {
-        border-radius: 50%;
-        transition: box-shadow 0.3s ease, border-color 0.3s ease;
-
-        &:focus-within {
-          box-shadow: none; /* Remove focus shadow */
-          outline: none; /* Remove any outline */
-        }
-
-        &:hover {
-          border-color: var(--primary-color, #007ad9);
-        }
-
-        &:active {
-          box-shadow: inset 0 0 4px var(--primary-color, #007ad9);
-        }
-      }
-    }
-
-    .p-radiobutton-input {
-      outline: none !important; /* Eliminate persistent browser focus styling */
-    }
-  }
 }
+
 td button {
   margin-right: 0.5rem;
 }
@@ -143,16 +114,19 @@ td button:last-child {
   text-align: center;
   margin: 1rem auto;
 }
+
 .p-table-container {
   display: flex;
   flex-direction: column;
-  min-height: 400px; /* Total height for the table (header + body + footer) */
+  min-height: 400px;
 }
+
 .disabled-row {
   color: #a7a5a5;
 }
+
 .search-container {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .search-container .p-input-icon-left {
@@ -163,6 +137,11 @@ td button:last-child {
   width: 100%;
   max-width: 400px;
 }
+
+.checkbox-container {
+  margin-top: 0.5rem;
+}
+
 .p-dialog {
   display: flex;
 }

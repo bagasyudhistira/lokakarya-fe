@@ -79,6 +79,7 @@ export class EmployeeSuggestionComponent implements OnInit {
   allEmpSuggestions: any[] = [];
   globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
+  showOnlyMine: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -149,7 +150,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     console.log('Initializing Edit Form...');
     this.editForm = this.fb.group({
       id: [''],
-      user_id: ['', Validators.required],
+      user_id: [''],
       suggestion: ['', Validators.required],
       assessment_year: ['', Validators.required],
     });
@@ -210,7 +211,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     const endIndex = startIndex + this.rowsPerPage;
 
     // Apply global filtering (search)
-    let filteredEmployees = this.globalFilterValue
+    let filteredSuggestions = this.globalFilterValue
       ? this.allEmpSuggestions.filter((empSuggestion) =>
           Object.values(empSuggestion).some((value) =>
             String(value)
@@ -220,9 +221,15 @@ export class EmployeeSuggestionComponent implements OnInit {
         )
       : [...this.allEmpSuggestions];
 
+    if (this.showOnlyMine) {
+      filteredSuggestions = filteredSuggestions.filter(
+        (suggestion) => suggestion.user_id === this.currentUserId
+      );
+    }
+
     if (event?.sortField) {
       const sortOrder = event.sortOrder || 1;
-      filteredEmployees.sort((a, b) => {
+      filteredSuggestions.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
@@ -235,16 +242,15 @@ export class EmployeeSuggestionComponent implements OnInit {
     }
 
     // Apply pagination
-    this.empSuggestions = filteredEmployees.slice(startIndex, endIndex);
+    this.empSuggestions = filteredSuggestions.slice(startIndex, endIndex);
 
     // Update totalRecords for pagination
-    this.totalRecords = filteredEmployees.length;
+    this.totalRecords = filteredSuggestions.length;
   }
 
   openCreateDialog(): void {
     console.log('Opening Create Dialog');
     this.mode = 'create';
-    this.isProcessing = true;
     this.editForm.reset({
       id: '',
       user_id: '',
@@ -252,11 +258,8 @@ export class EmployeeSuggestionComponent implements OnInit {
       assessment_year: '',
     });
 
-    this.fetchEmployees(() => {
-      console.log('Employees Fetched for Create');
-      this.displayEditDialog = true;
-      this.isProcessing = false;
-    });
+    this.displayEditDialog = true;
+    this.isProcessing = false;
   }
 
   deleteEmpSuggestion(suggestionId: string): void {
@@ -311,112 +314,49 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.isProcessing = true;
     this.mode = 'update';
 
+    // Fetch the employee suggestion details
     const empSuggestionRequest = this.http.get<any>(
       `https://lokakarya-be.up.railway.app/empsuggestion/${suggestionId}`
     );
-    const employeesRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/appuser/get/common/all`
-    );
 
-    this.displayEditDialog = false;
+    this.displayEditDialog = false; // Ensure the dialog is closed before loading data
 
-    forkJoin([empSuggestionRequest, employeesRequest])
-      .pipe(finalize(() => (this.isProcessing = false)))
+    empSuggestionRequest
+      .pipe(finalize(() => (this.isProcessing = false))) // Reset processing state
       .subscribe({
-        next: ([employeeSuggestionResponse, employeesResponse]) => {
-          console.log('Employee Suggestion and Employees Fetched:', {
-            employeeSuggestion: employeeSuggestionResponse,
-            employees: employeesResponse,
-          });
-
-          this.employees = employeesResponse.content;
+        next: (employeeSuggestionResponse) => {
+          console.log(
+            'Employee Suggestion Fetched:',
+            employeeSuggestionResponse
+          );
           const empSuggestion = employeeSuggestionResponse.content;
 
           this.currentUserId = this.extractCurrentUserId() || '';
           console.log('Current User ID:', this.currentUserId);
 
+          // Patch the form with fetched suggestion data
           this.editForm.patchValue({
             ...empSuggestion,
-            assessment_year: new Date(empSuggestion.assessment_year, 0, 1),
+            assessment_year: new Date(empSuggestion.assessment_year, 0, 1), // Set to Jan 1 of the year
             updated_by: this.currentUserId,
           });
 
-          this.displayEditDialog = true;
-          this.isEditFormLoading = false;
+          this.displayEditDialog = true; // Show the dialog after data is ready
+          this.isEditFormLoading = false; // Stop the loading indicator
         },
         error: (error) => {
-          console.error(
-            'Error Fetching Employee Suggestion or Employees:',
-            error
-          );
+          console.error('Error Fetching Employee Suggestion:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch employee suggestion or employee details.',
+            detail: 'Failed to fetch employee suggestion details.',
           });
-          this.isEditFormLoading = false;
+          this.isEditFormLoading = false; // Stop the loading indicator
         },
       });
   }
 
-  fetchEmployees(callback: () => void): void {
-    if (!this.currentUserId) {
-      console.error('Current user ID is not set.');
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to fetch employees: Missing user ID.',
-      });
-      return;
-    }
-
-    const filterUrl = `https://lokakarya-be.up.railway.app/empsuggestion/by/${this.currentUserId}`;
-
-    this.http.get<any>(filterUrl).subscribe({
-      next: (filterResponse) => {
-        const filteredUserIds = filterResponse.content.map(
-          (filtered: any) => filtered.user_id
-        );
-
-        filteredUserIds.push(this.currentUserId);
-
-        console.log('Filtered User IDs:', filteredUserIds);
-
-        this.http
-          .get<any>(
-            'https://lokakarya-be.up.railway.app/appuser/get/common/all'
-          )
-          .subscribe({
-            next: (response) => {
-              this.employees = response.content.filter(
-                (employee: any) => !filteredUserIds.includes(employee.id)
-              );
-
-              console.log('Filtered Employees:', this.employees);
-              callback();
-            },
-            error: (error) => {
-              console.error('Error Fetching Employees:', error);
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to fetch employees.',
-              });
-            },
-          });
-      },
-      error: (error) => {
-        console.error('Error Fetching Suggestions:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch suggestions.',
-        });
-      },
-    });
-  }
-
-  saveEmployeeSuggestion(): void {
+  async saveEmployeeSuggestion(): Promise<void> {
     console.log('Saving Employee Suggestion. Mode:', this.mode);
 
     if (!this.editForm.valid) {
@@ -429,11 +369,36 @@ export class EmployeeSuggestionComponent implements OnInit {
       });
       return;
     }
+
     const date = new Date(this.editForm.value.assessment_year);
     const assessmentYear = date.getFullYear();
 
+    try {
+      const isDuplicate = await this.confirmDuplicate(
+        this.currentUserId,
+        assessmentYear
+      );
+      console.log('Duplicate Check Result:', isDuplicate);
+      if (isDuplicate) {
+        console.log(this.currentUserId, assessmentYear);
+        this.isProcessing = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'You have already submitted an employee suggestion for this year.',
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Error during duplicate check:', error);
+      this.isProcessing = false;
+      return;
+    }
+
     const payload = {
       ...this.editForm.value,
+      user_id: this.currentUserId,
       assessment_year: assessmentYear,
       ...(this.mode === 'create'
         ? { created_by: this.currentUserId }
@@ -478,6 +443,39 @@ export class EmployeeSuggestionComponent implements OnInit {
       },
     });
   }
+  async confirmDuplicate(
+    userId: string,
+    assessmentYear: number
+  ): Promise<boolean> {
+    try {
+      const response = await this.http
+        .get<{ content: boolean }>(
+          `https://lokakarya-be.up.railway.app/empsuggestion/${userId}/${assessmentYear}`
+        )
+        .toPromise();
+
+      if (response && response.content !== undefined) {
+        return response.content;
+      } else {
+        console.error('Unexpected API response:', response);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'Unexpected response from the server while checking duplicates.',
+        });
+        return false; // Default to no duplicates if response is invalid
+      }
+    } catch (error) {
+      console.error('Error Checking Duplicate:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to check for duplicates.',
+      });
+      throw error; // Propagate the error to handle it in the calling function
+    }
+  }
 
   resetSortAndFilter(): void {
     console.log('Resetting sort and filter...');
@@ -495,7 +493,6 @@ export class EmployeeSuggestionComponent implements OnInit {
 
   submitEmployeeSuggestion(): void {
     console.log('Submitting Employee Suggestion. Mode:', this.mode);
-
     this.isProcessing = true;
     this.saveEmployeeSuggestion();
   }

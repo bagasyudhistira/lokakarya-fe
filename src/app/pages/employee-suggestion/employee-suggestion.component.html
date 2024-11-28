@@ -5,27 +5,38 @@
   <div class="manage-user-container">
     <h1 class="page-title">Employee Suggestion</h1>
     <div class="header-actions">
-      <div class="search-container">
-        <span class="p-input-icon-left">
-          <i class="pi pi-search"></i>
-          <input
-            pInputText
-            type="text"
-            placeholder="Search..."
-            [(ngModel)]="globalFilterValue"
-            (input)="onSearch()"
-          />
-        </span>
+      <div class="top-row">
+        <div class="search-container">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="globalFilterValue"
+              (input)="onSearch()"
+            />
+          </span>
+        </div>
+        <button
+          pButton
+          label="Create"
+          icon="pi pi-plus"
+          class="create-button"
+          (click)="openCreateDialog()"
+          [disabled]="isProcessing || isEditFormLoading"
+        ></button>
       </div>
-      <button
-        pButton
-        label="Create"
-        icon="pi pi-plus"
-        class="create-button"
-        (click)="openCreateDialog()"
-        [disabled]="isProcessing || isEditFormLoading"
-      ></button>
+      <div class="checkbox-container" *ngIf="currentRoles.includes('HR')">
+        <p-checkbox
+          binary="true"
+          [(ngModel)]="showOnlyMine"
+          (onChange)="applyFiltersAndPagination()"
+          label="Show Only Mine"
+        ></p-checkbox>
+      </div>
     </div>
+
     <p-card>
       <p-table
         #dt
@@ -42,7 +53,7 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="full_name">
+            <th *ngIf="currentRoles.includes('HR')" pSortableColumn="full_name">
               Full Name <p-sortIcon field="full_name"></p-sortIcon>
             </th>
             <th pSortableColumn="suggestion">
@@ -56,11 +67,18 @@
         </ng-template>
         <ng-template pTemplate="body" let-empSuggestion>
           <tr>
-            <td>{{ empSuggestion.full_name }}</td>
+            <td *ngIf="currentRoles.includes('HR')">
+              {{ empSuggestion.full_name }}
+            </td>
             <td>{{ empSuggestion.suggestion }}</td>
             <td>{{ empSuggestion.assessment_year }}</td>
             <td>
               <button
+                *ngIf="
+                  !currentRoles.includes('HR') ||
+                  (currentRoles.includes('HR') &&
+                    empSuggestion.user_id === currentUserId)
+                "
                 pButton
                 [icon]="
                   isEditFormLoading || isProcessing
@@ -104,31 +122,18 @@
       <form [formGroup]="editForm" (ngSubmit)="submitEmployeeSuggestion()">
         <div class="p-fluid">
           <div *ngIf="mode === 'create'" class="p-field"></div>
-
-          <div class="p-field">
-            <label for="user_id">Full Name</label>
-            <div style="padding: 0.5rem 0">
-              <p-dropdown
-                id="user_id"
-                [options]="employees"
-                optionLabel="full_name"
-                optionValue="id"
-                formControlName="user_id"
-                [disabled]="mode === 'update'"
-                placeholder="Select an Employee"
-              ></p-dropdown>
-            </div>
-          </div>
-
           <div class="p-field">
             <label for="suggestion">Suggestion</label>
             <div style="padding: 0.5rem 0">
-              <input
+              <textarea
                 id="suggestion"
                 pInputTextarea
                 formControlName="suggestion"
                 [disabled]="isProcessing"
-              />
+                rows="5"
+                cols="30"
+                style="width: 100%; resize: none"
+              ></textarea>
             </div>
           </div>
 
