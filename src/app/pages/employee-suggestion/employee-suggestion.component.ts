@@ -69,7 +69,7 @@ export class EmployeeSuggestionComponent implements OnInit {
   employees: any[] = [];
   currentYear: string = new Date().getFullYear().toString();
   mode: 'create' | 'update' = 'create';
-  roles: any[] = []; // Stores the available roles
+  roles: any[] = [];
   selectedRoles: { [roleId: string]: boolean } = {};
   currentUserId: string = '';
   isEditFormLoading: boolean = false;
@@ -77,6 +77,7 @@ export class EmployeeSuggestionComponent implements OnInit {
   editForm!: FormGroup;
   allEmpSuggestions: any[] = [];
   globalFilterValue: string = '';
+  currentRoles: any[] = this.extractCurrentRoles() || [];
 
   constructor(
     private http: HttpClient,
@@ -96,7 +97,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     console.log('Component Initialized');
   }
 
-  private decodeJWT(): string | null {
+  private extractCurrentUserId(): string | null {
     const token = sessionStorage.getItem('auth-token');
 
     if (!token) {
@@ -119,6 +120,29 @@ export class EmployeeSuggestionComponent implements OnInit {
       return null;
     }
   }
+  private extractCurrentRoles(): any | null {
+    const token = sessionStorage.getItem('auth-token');
+
+    if (!token) {
+      console.error('No JWT found in session storage.');
+      return null;
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      if (decoded && decoded.roles) {
+        console.log('Decoded roles:', decoded.roles);
+        return decoded.roles;
+      } else {
+        console.error('roles not found in JWT.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
 
   private initializeForm() {
     console.log('Initializing Edit Form...');
@@ -128,7 +152,7 @@ export class EmployeeSuggestionComponent implements OnInit {
       suggestion: ['', Validators.required],
       assessment_year: ['', Validators.required],
     });
-    this.currentUserId = this.decodeJWT() || '';
+    this.currentUserId = this.extractCurrentUserId() || '';
 
     console.log('Form Initialized:', this.editForm.value);
   }
@@ -144,8 +168,19 @@ export class EmployeeSuggestionComponent implements OnInit {
     if (!this.allEmpSuggestions.length || this.allEmpSuggestions.length > 0) {
       this.loading = true;
 
+      let suggestionUrl = '';
+      if (this.currentRoles.includes('HR')) {
+        suggestionUrl =
+          'https://lokakarya-be.up.railway.app/empsuggestion/get/all';
+      } else {
+        suggestionUrl =
+          'https://lokakarya-be.up.railway.app/empsuggestion/get/by/' +
+          this.currentUserId;
+      }
+      console.log('Suggestion URL:', suggestionUrl);
+
       this.http
-        .get<any>('https://lokakarya-be.up.railway.app/empsuggestion/get/all')
+        .get<any>(suggestionUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
@@ -297,7 +332,7 @@ export class EmployeeSuggestionComponent implements OnInit {
           this.employees = employeesResponse.content;
           const empSuggestion = employeeSuggestionResponse.content;
 
-          this.currentUserId = this.decodeJWT() || '';
+          this.currentUserId = this.extractCurrentUserId() || '';
           console.log('Current User ID:', this.currentUserId);
 
           this.editForm.patchValue({
