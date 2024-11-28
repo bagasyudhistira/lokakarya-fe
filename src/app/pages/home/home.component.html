@@ -1,29 +1,12 @@
-<div class="home-container">
-  <nav class="navbar">
-    <ul class="navbar-menu">
-      <li class="logout-item">
-        <button
-          pButton
-          type="button"
-          label="Logout"
-          class="logout-button"
-          (click)="logout()"
-        ></button>
-      </li>
-      <li
-        class="navbar-item"
-        *ngFor="let menu of menuNames"
-        (click)="navigateTo(menu)"
-      >
-        {{ formatMenuName(menu) }}
-      </li>
-    </ul>
-  </nav>
+<app-navbar (onLogout)="logout()"></app-navbar>
 
-  <h1 *ngIf="!loading && !errorMessage">Hello, {{ userDetails?.full_name }}</h1>
+<div class="home-container">
+  <h1 *ngIf="!loading && !errorMessage">
+    Welcome, {{ userDetails?.full_name }}
+  </h1>
 
   <div *ngIf="loading" class="loading-message">
-    Loading menus and profile, please wait...
+    Loading profile, please wait...
   </div>
 
   <div *ngIf="!loading && errorMessage" class="error-message">

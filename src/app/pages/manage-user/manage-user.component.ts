@@ -18,6 +18,7 @@ import { forkJoin } from 'rxjs';
 import { FormArray } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-manage-user',
@@ -30,6 +31,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
     FormsModule,
     ReactiveFormsModule,
     InputSwitchModule,
+    NavbarComponent,
   ],
   providers: [ConfirmationService, MessageService],
 })

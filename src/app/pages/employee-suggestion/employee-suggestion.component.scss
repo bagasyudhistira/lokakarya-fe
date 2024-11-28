@@ -6,9 +6,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
 
-    .create-button,
-    .home-button {
+    .search-container {
+      flex: 1; /* Take up all available space */
+      max-width: 400px; /* Set a maximum width for the search bar */
+    }
+
+    .create-button {
+      margin-left: auto; /* Push the button to the far right */
       font-size: 1rem;
       padding: 0.75rem 1.5rem;
       border-radius: 8px;

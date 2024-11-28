@@ -31,6 +31,7 @@ import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-employee-suggestion',
@@ -54,6 +55,7 @@ import { forkJoin } from 'rxjs';
     TableModule,
     ToastModule,
     PrimeNgModule,
+    NavbarComponent,
   ],
   templateUrl: './employee-suggestion.component.html',
   styleUrl: './employee-suggestion.component.scss',

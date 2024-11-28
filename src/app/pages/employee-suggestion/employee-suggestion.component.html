@@ -1,15 +1,22 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
+<app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
+    <h1 class="page-title">Employee Suggestion</h1>
     <div class="header-actions">
-      <button
-        pButton
-        label="Home"
-        icon="pi pi-home"
-        class="home-button"
-        (click)="navigateHome()"
-      ></button>
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            placeholder="Search..."
+            [(ngModel)]="globalFilterValue"
+            (input)="onSearch()"
+          />
+        </span>
+      </div>
       <button
         pButton
         label="Create"
@@ -18,19 +25,6 @@
         (click)="openCreateDialog()"
         [disabled]="isProcessing || isEditFormLoading"
       ></button>
-    </div>
-    <h1 class="page-title">Employee Suggestion</h1>
-    <div class="search-container">
-      <span class="p-input-icon-left">
-        <i class="pi pi-search"></i>
-        <input
-          pInputText
-          type="text"
-          placeholder="Search..."
-          [(ngModel)]="globalFilterValue"
-          (input)="onSearch()"
-        />
-      </span>
     </div>
     <p-card>
       <p-table

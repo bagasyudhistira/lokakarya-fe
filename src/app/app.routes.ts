@@ -4,6 +4,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { authGuard } from './guard/auth.guard';
 import { ManageUserComponent } from './pages/manage-user/manage-user.component';
 import { EmployeeSuggestionComponent } from './pages/employee-suggestion/employee-suggestion.component';
+import { ManageDevPlanComponent } from './pages/manage-dev-plan/manage-dev-plan.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -20,6 +21,11 @@ export const routes: Routes = [
   {
     path: 'employee-suggestion',
     component: EmployeeSuggestionComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'manage-dev-plan',
+    component: ManageDevPlanComponent,
     canActivate: [authGuard],
   },
   { path: '**', redirectTo: '/login' },

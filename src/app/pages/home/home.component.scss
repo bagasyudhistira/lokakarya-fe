@@ -5,120 +5,45 @@
   padding: 2rem;
   min-height: 100vh;
   background: var(--surface-b, #f0f8ff);
+}
 
-  .navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #007bff;
-    padding: 0.5rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-top: 6rem; /* Offset for navbar */
+}
 
-    .navbar-menu {
-      display: flex;
-      justify-content: space-between; /* Space out the logout button and menu items */
-      align-items: center;
-      list-style: none;
-      margin: 0;
-      padding: 0 1rem;
-      gap: 1rem;
+.profile-card {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #e3f2fd;
+  border-radius: 12px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  text-align: left;
 
-      .logout-item {
-        margin-right: auto; /* Push the logout button to the far left */
-      }
-
-      .logout-button {
-        background-color: #d32f2f;
-        color: #ffffff;
-        font-size: 0.9rem;
-        font-weight: bold;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-
-        &:hover {
-          background-color: #b71c1c;
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
-
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
-      }
-
-      .navbar-item {
-        display: inline-block;
-        background-color: #ffffff;
-        color: #007bff;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-transform: capitalize;
-        text-align: center;
-        padding: 0.5rem 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #007bff;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s;
-
-        &:hover {
-          background-color: #0056b3;
-          color: #ffffff;
-          transform: translateY(-2px);
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
-
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
-      }
-    }
-  }
-
-  h1 {
-    font-size: 2rem;
-    color: #2c3e50;
-    margin-top: 6rem; /* Offset for navbar */
-  }
-
-  .profile-card {
-    margin-top: 2rem;
-    padding: 2rem;
-    background: #e3f2fd;
-    border-radius: 12px;
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-    text-align: left;
-
-    .card-title {
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #1565c0;
-      text-align: center;
-    }
-
-    p {
-      font-size: 1.2rem;
-      color: #0d47a1;
-    }
-  }
-
-  .loading-message {
-    margin-top: 6rem;
-    font-size: 1.5rem;
-    color: #6c757d;
-  }
-
-  .error-message {
-    margin-top: 6rem;
-    color: #d9534f;
-    font-weight: bold;
+  .card-title {
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1565c0;
     text-align: center;
   }
+
+  p {
+    font-size: 1.2rem;
+    color: #0d47a1;
+  }
+}
+
+.loading-message {
+  margin-top: 6rem;
+  font-size: 1.5rem;
+  color: #6c757d;
+}
+
+.error-message {
+  margin-top: 6rem;
+  color: #d9534f;
+  font-weight: bold;
+  text-align: center;
 }
