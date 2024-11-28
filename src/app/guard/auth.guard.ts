@@ -5,8 +5,8 @@ import { Router } from '@angular/router';
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
-  // Ensure window and sessionStorage are available
-  if (typeof window === 'undefined' || !window.sessionStorage) {
+  // Ensure window and localStorage are available
+  if (typeof window === 'undefined' || !window.localStorage) {
     console.error('Session storage is not available.');
     router.navigate(['/login'], {
       queryParams: { warning: 'Session unavailable. Please log in again.' },
@@ -15,7 +15,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   // Safely retrieve token
-  const token = sessionStorage.getItem('auth-token');
+  const token = localStorage.getItem('auth-token');
 
   const isTokenExpired = (token: string): boolean => {
     try {

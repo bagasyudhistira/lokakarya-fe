@@ -98,7 +98,7 @@ export class EmployeeSuggestionComponent implements OnInit {
   }
 
   private extractCurrentUserId(): string | null {
-    const token = sessionStorage.getItem('auth-token');
+    const token = localStorage.getItem('auth-token');
 
     if (!token) {
       console.error('No JWT found in session storage.');
@@ -121,7 +121,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     }
   }
   private extractCurrentRoles(): any | null {
-    const token = sessionStorage.getItem('auth-token');
+    const token = localStorage.getItem('auth-token');
 
     if (!token) {
       console.error('No JWT found in session storage.');

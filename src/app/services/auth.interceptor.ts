@@ -7,7 +7,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const excludedEndpoints = ['/auth/sign-in'];
-  const token = sessionStorage.getItem('auth-token');
+  const token = localStorage.getItem('auth-token');
 
   const isTokenExpired = (token: string): boolean => {
     try {
@@ -21,7 +21,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (!token || isTokenExpired(token)) {
     if (!excludedEndpoints.some((url) => req.url.includes(url))) {
-      sessionStorage.clear();
+      localStorage.clear();
       router.navigate(['/login'], {
         queryParams: {
           warning: 'Your session has expired. Please log in again.',
@@ -42,7 +42,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   return next(clonedRequest).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        sessionStorage.clear();
+        localStorage.clear();
         router.navigate(['/login'], {
           queryParams: { warning: 'Unauthorized access. Please log in again.' },
         });

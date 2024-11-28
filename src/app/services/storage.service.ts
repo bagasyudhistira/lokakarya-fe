@@ -9,26 +9,26 @@ export class StorageService {
 
   setItem(key: string, value: string): void {
     if (isPlatformBrowser(this.platformId)) {
-      sessionStorage.setItem(key, value);
+      localStorage.setItem(key, value);
     }
   }
 
   getItem(key: string): string | null {
     if (isPlatformBrowser(this.platformId)) {
-      return sessionStorage.getItem(key);
+      return localStorage.getItem(key);
     }
     return null;
   }
 
   removeItem(key: string): void {
     if (isPlatformBrowser(this.platformId)) {
-      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
     }
   }
 
   clear(): void {
     if (isPlatformBrowser(this.platformId)) {
-      sessionStorage.clear();
+      localStorage.clear();
     }
   }
 }

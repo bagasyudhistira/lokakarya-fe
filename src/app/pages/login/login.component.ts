@@ -41,7 +41,7 @@ export class LoginComponent {
     });
   }
   onSubmit() {
-    sessionStorage.clear();
+    localStorage.clear();
     this.isLoading = true;
     this.errorMessage = '';
     const loginPayload = { username: this.username, password: this.password };
@@ -53,14 +53,12 @@ export class LoginComponent {
       .subscribe({
         next: (token: string) => {
           console.log('JWT token received:', token);
-          sessionStorage.setItem('auth-token', token);
+          localStorage.setItem('auth-token', token);
 
-          // Decode JWT to extract data (optional)
           const payload = JSON.parse(atob(token.split('.')[1]));
           console.log('Decoded JWT payload:', payload);
 
           this.router.navigate(['/home']);
-          this.isLoading = false;
         },
         error: (err) => {
           console.error('Login error:', err);

@@ -71,7 +71,7 @@ export class ManageUserComponent implements OnInit {
     console.log('Component Initialized');
   }
   private decodeJWT(): string | null {
-    const token = sessionStorage.getItem('auth-token');
+    const token = localStorage.getItem('auth-token');
 
     if (!token) {
       console.error('No JWT found in session storage.');
@@ -375,7 +375,6 @@ export class ManageUserComponent implements OnInit {
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
-
         const userId =
           this.mode === 'create'
             ? response?.content?.id

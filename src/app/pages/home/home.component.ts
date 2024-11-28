@@ -33,8 +33,14 @@ export class HomeComponent {
   }
 
   loadPageData(): void {
-    const token = sessionStorage.getItem('auth-token');
-    const payload = JSON.parse(atob(token!.split('.')[1]));
+    const token = localStorage.getItem('auth-token');
+    if (!token) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log('Decoded JWT payload:', payload);
     const userId = payload.userId;
 
     const userDetailsRequest = this.http.get(
@@ -42,6 +48,7 @@ export class HomeComponent {
     );
 
     const roles = this.authService.getUserRoles();
+    console.log('User Roles:', roles);
     const menuNamesRequest = this.menuManagerService.getMenusByRoles(roles);
 
     forkJoin([userDetailsRequest, menuNamesRequest]).subscribe({
@@ -56,6 +63,9 @@ export class HomeComponent {
       error: (err) => {
         this.errorMessage = 'Failed to load page data.';
         console.error(err);
+        this.router.navigate(['/login'], {
+          queryParams: { warning: 'Session expired. Please log in again.' },
+        });
       },
       complete: () => {
         this.loading = false;
@@ -64,17 +74,15 @@ export class HomeComponent {
   }
 
   logout(): void {
-    sessionStorage.clear();
+    localStorage.clear();
     this.router.navigate(['/login'], {
       queryParams: { warning: 'You have been successfully logged out.' },
     });
   }
 
   navigateTo(menu: string): void {
-    console.log(menu);
     const route = `/${menu}`;
     this.router.navigate([route]);
-    console.log(route);
   }
 
   formatMenuName(menu: string): string {

@@ -1,5 +1,4 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
 import { StorageService } from './storage.service';
 
 @Injectable({
@@ -21,6 +20,7 @@ export class AuthService {
   }
 
   public getUserRoles(): string[] {
+    this.loadRoles();
     return this.roles;
   }
 
