@@ -145,10 +145,10 @@
                 id="assessment_year"
                 view="year"
                 formControlName="assessment_year"
-                yearRange="2000:{{ currentYear }}"
                 dateFormat="yy"
                 [disabled]="mode === 'update'"
-              />
+                [maxDate]="maxDate"
+              ></p-calendar>
             </div>
           </div>
         </div>

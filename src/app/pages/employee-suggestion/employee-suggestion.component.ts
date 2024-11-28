@@ -67,7 +67,6 @@ export class EmployeeSuggestionComponent implements OnInit {
   rowsPerPage: number = 5;
   maxDate: Date = new Date();
   employees: any[] = [];
-  currentYear: string = new Date().getFullYear().toString();
   mode: 'create' | 'update' = 'create';
   roles: any[] = [];
   selectedRoles: { [roleId: string]: boolean } = {};
