@@ -71,6 +71,7 @@ export class HomeComponent {
   }
 
   navigateTo(menu: string): void {
+    console.log(menu);
     const route = `/${menu}`;
     this.router.navigate([route]);
     console.log(route);

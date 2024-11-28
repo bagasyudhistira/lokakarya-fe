@@ -1,25 +1,36 @@
-import {Component, OnInit} from '@angular/core';
-import {ButtonDirective} from 'primeng/button';
-import {CalendarModule} from 'primeng/calendar';
-import {CardModule} from 'primeng/card';
-import {CheckboxModule} from 'primeng/checkbox';
-import {ConfirmDialogModule} from 'primeng/confirmdialog';
-import {DialogModule} from 'primeng/dialog';
-import {DropdownModule} from 'primeng/dropdown';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {InputSwitchModule} from 'primeng/inputswitch';
-import {InputTextModule} from 'primeng/inputtext';
-import {NgForOf, NgIf} from '@angular/common';
-import {ConfirmationService, MessageService, PrimeNGConfig, PrimeTemplate} from 'primeng/api';
-import {RadioButtonModule} from 'primeng/radiobutton';
-import {TableModule} from 'primeng/table';
-import {ToastModule} from 'primeng/toast';
-import {PrimeNgModule} from '../../shared/primeng/primeng.module';
-import {HttpClient} from '@angular/common/http';
-import {Router} from '@angular/router';
-import {jwtDecode} from 'jwt-decode';
-import {finalize} from 'rxjs/operators';
-import {forkJoin} from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { ButtonDirective } from 'primeng/button';
+import { CalendarModule } from 'primeng/calendar';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { InputTextModule } from 'primeng/inputtext';
+import { NgForOf, NgIf } from '@angular/common';
+import {
+  ConfirmationService,
+  MessageService,
+  PrimeNGConfig,
+  PrimeTemplate,
+} from 'primeng/api';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
+import { PrimeNgModule } from '../../shared/primeng/primeng.module';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
+import { finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-employee-suggestion',
@@ -42,11 +53,11 @@ import {forkJoin} from 'rxjs';
     ReactiveFormsModule,
     TableModule,
     ToastModule,
-    PrimeNgModule
+    PrimeNgModule,
   ],
   templateUrl: './employee-suggestion.component.html',
   styleUrl: './employee-suggestion.component.scss',
-  providers:[ConfirmationService, MessageService]
+  providers: [ConfirmationService, MessageService],
 })
 export class EmployeeSuggestionComponent implements OnInit {
   empSuggestions: any[] = [];
@@ -112,7 +123,7 @@ export class EmployeeSuggestionComponent implements OnInit {
   private initializeForm() {
     console.log('Initializing Edit Form...');
     this.editForm = this.fb.group({
-      id:[''],
+      id: [''],
       user_id: ['', Validators.required],
       suggestion: ['', Validators.required],
       assessment_year: ['', Validators.required],
@@ -165,21 +176,21 @@ export class EmployeeSuggestionComponent implements OnInit {
     // Apply global filtering (search)
     let filteredEmployees = this.globalFilterValue
       ? this.allEmpSuggestions.filter((empSuggestion) =>
-        Object.values(empSuggestion).some((value) =>
-          String(value)
-            .toLowerCase()
-            .includes(this.globalFilterValue.toLowerCase())
+          Object.values(empSuggestion).some((value) =>
+            String(value)
+              .toLowerCase()
+              .includes(this.globalFilterValue.toLowerCase())
+          )
         )
-      )
-      : [...this.allEmpSuggestions]; // Clone array for sorting
+      : [...this.allEmpSuggestions];
 
     if (event?.sortField) {
-      const sortOrder = event.sortOrder || 1; // 1 = ascending, -1 = descending
+      const sortOrder = event.sortOrder || 1;
       filteredEmployees.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
-        if (valueA == null || valueB == null) return 0; // Handle null/undefined values
+        if (valueA == null || valueB == null) return 0;
 
         return (
           valueA.toString().localeCompare(valueB.toString()) * sortOrder || 0
@@ -215,7 +226,6 @@ export class EmployeeSuggestionComponent implements OnInit {
   deleteEmpSuggestion(suggestionId: string): void {
     console.log('Deleting Employee Suggestion with ID:', suggestionId);
 
-    // Prevent multiple delete operations if already processing
     if (this.isProcessing) {
       console.warn('Delete action skipped - already processing');
       return;
@@ -225,9 +235,11 @@ export class EmployeeSuggestionComponent implements OnInit {
       message: 'Are you sure you want to delete this employee suggestion?',
       accept: () => {
         // User confirmed deletion
-        this.isProcessing = true; // Start processing
+        this.isProcessing = true;
         this.http
-          .delete(`https://lokakarya-be.up.railway.app/empsuggestion/${suggestionId}`)
+          .delete(
+            `https://lokakarya-be.up.railway.app/empsuggestion/${suggestionId}`
+          )
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
@@ -237,7 +249,7 @@ export class EmployeeSuggestionComponent implements OnInit {
                 summary: 'Success',
                 detail: 'Employee Suggestion Deleted Successfully!',
               });
-              this.fetchEmpSuggestions(); // Refresh the employee list
+              this.fetchEmpSuggestions();
             },
             error: (error) => {
               console.error('Error Deleting Employee:', error);
@@ -252,15 +264,15 @@ export class EmployeeSuggestionComponent implements OnInit {
       reject: () => {
         // User canceled deletion
         console.log('Delete action canceled');
-        this.isProcessing = false; // Ensure `isProcessing` is false if canceled
+        this.isProcessing = false;
       },
     });
   }
 
   editEmpSuggestion(suggestionId: string): void {
     console.log('Editing Employee Suggestion with ID:', suggestionId);
-    this.isEditFormLoading = true; // Start loading form
-    this.isProcessing = true; // Start processing
+    this.isEditFormLoading = true;
+    this.isProcessing = true;
     this.mode = 'update';
 
     const empSuggestionRequest = this.http.get<any>(
@@ -274,7 +286,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.displayEditDialog = false;
 
     forkJoin([empSuggestionRequest, employeesRequest])
-      .pipe(finalize(() => (this.isProcessing = false))) // Stop processing after all operations
+      .pipe(finalize(() => (this.isProcessing = false)))
       .subscribe({
         next: ([employeeSuggestionResponse, employeesResponse]) => {
           console.log('Employee Suggestion and Employees Fetched:', {
@@ -294,40 +306,77 @@ export class EmployeeSuggestionComponent implements OnInit {
             updated_by: this.currentUserId,
           });
 
-          this.displayEditDialog = true; // Open the dialog after roles are loaded
+          this.displayEditDialog = true;
           this.isEditFormLoading = false;
         },
         error: (error) => {
-          console.error('Error Fetching Employee Suggestion or Employees:', error);
+          console.error(
+            'Error Fetching Employee Suggestion or Employees:',
+            error
+          );
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
             detail: 'Failed to fetch employee suggestion or employee details.',
           });
-          this.isEditFormLoading = false; // Stop loading in case of error
+          this.isEditFormLoading = false;
         },
       });
   }
 
   fetchEmployees(callback: () => void): void {
-    console.log('Fetching Employees...');
-    this.http
-      .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
-      .subscribe({
-        next: (response) => {
-          this.employees = response.content;
-          console.log('Employees Fetched:', this.employees);
-          callback();
-        },
-        error: (error) => {
-          console.error('Error Fetching Employees:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch employees.',
-          });
-        },
+    if (!this.currentUserId) {
+      console.error('Current user ID is not set.');
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch employees: Missing user ID.',
       });
+      return;
+    }
+
+    const filterUrl = `https://lokakarya-be.up.railway.app/empsuggestion/by/${this.currentUserId}`;
+
+    this.http.get<any>(filterUrl).subscribe({
+      next: (filterResponse) => {
+        const filteredUserIds = filterResponse.content.map(
+          (filtered: any) => filtered.user_id
+        );
+
+        filteredUserIds.push(this.currentUserId);
+
+        console.log('Filtered User IDs:', filteredUserIds);
+
+        this.http
+          .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
+          .subscribe({
+            next: (response) => {
+              this.employees = response.content.filter(
+                (employee: any) => !filteredUserIds.includes(employee.id)
+              );
+
+              console.log('Filtered Employees:', this.employees);
+              callback();
+            },
+            error: (error) => {
+              console.error('Error Fetching Employees:', error);
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to fetch employees.',
+              });
+            },
+          });
+      },
+      error: (error) => {
+        console.error('Error Fetching Suggestions:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch suggestions.',
+        });
+      },
+    });
   }
 
   saveEmployeeSuggestion(): void {
@@ -354,18 +403,18 @@ export class EmployeeSuggestionComponent implements OnInit {
         : { updated_by: this.currentUserId }),
     };
 
-    console.log(payload)
+    console.log(payload);
 
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-          'https://lokakarya-be.up.railway.app/empsuggestion/create',
-          payload
-        )
+            'https://lokakarya-be.up.railway.app/empsuggestion/create',
+            payload
+          )
         : this.http.put(
-          'https://lokakarya-be.up.railway.app/empsuggestion/update',
-          payload
-        );
+            'https://lokakarya-be.up.railway.app/empsuggestion/update',
+            payload
+          );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
@@ -420,5 +469,4 @@ export class EmployeeSuggestionComponent implements OnInit {
     console.log('Applying global search:', this.globalFilterValue);
     this.applyFiltersAndPagination({ first: 0 });
   }
-
 }

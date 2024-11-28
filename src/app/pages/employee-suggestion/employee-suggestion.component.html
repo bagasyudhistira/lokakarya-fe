@@ -95,7 +95,11 @@
     </p-card>
 
     <p-dialog
-      header="{{ mode === 'create' ? 'Create Employee Suggestion' : 'Edit Employee Suggestion' }}"
+      header="{{
+        mode === 'create'
+          ? 'Create Employee Suggestion'
+          : 'Edit Employee Suggestion'
+      }}"
       [(visible)]="displayEditDialog"
       [modal]="true"
       [closable]="true"
@@ -105,15 +109,13 @@
     >
       <form [formGroup]="editForm" (ngSubmit)="submitEmployeeSuggestion()">
         <div class="p-fluid">
-          <div *ngIf="mode === 'create'" class="p-field">
-
-          </div>
+          <div *ngIf="mode === 'create'" class="p-field"></div>
 
           <div class="p-field">
             <label for="user_id">Full Name</label>
             <div style="padding: 0.5rem 0">
               <p-dropdown
-                id = "user_id"
+                id="user_id"
                 [options]="employees"
                 optionLabel="full_name"
                 optionValue="id"
@@ -137,15 +139,16 @@
           </div>
 
           <div class="p-field">
-            <label for="assessment_year">ASSessment Year</label>
+            <label for="assessment_year">Assessment Year</label>
             <div style="padding: 0.5rem 0">
               <p-calendar
-                id = "assessment_year"
+                id="assessment_year"
                 view="year"
-                formControlName = "assessment_year"
-                yearRange = "2000:{{currentYear}}"
+                formControlName="assessment_year"
+                yearRange="2000:{{ currentYear }}"
                 dateFormat="yy"
-                [disabled]="mode === 'update'" />
+                [disabled]="mode === 'update'"
+              />
             </div>
           </div>
         </div>
@@ -183,4 +186,3 @@
     </p-dialog>
   </div>
 </div>
-
