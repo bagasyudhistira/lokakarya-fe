@@ -122,6 +122,7 @@ export class EmployeeSuggestionComponent implements OnInit {
       return null;
     }
   }
+
   private extractCurrentRoles(): any | null {
     const token = localStorage.getItem('auth-token');
 
@@ -157,11 +158,6 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.currentUserId = this.extractCurrentUserId() || '';
 
     console.log('Form Initialized:', this.editForm.value);
-  }
-
-  navigateHome() {
-    console.log('Navigating to Home');
-    this.router.navigate(['/home']);
   }
 
   fetchEmpSuggestions(event?: any): void {
@@ -443,6 +439,7 @@ export class EmployeeSuggestionComponent implements OnInit {
       },
     });
   }
+
   async confirmDuplicate(
     userId: string,
     assessmentYear: number

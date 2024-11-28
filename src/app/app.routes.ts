@@ -5,6 +5,7 @@ import { authGuard } from './guard/auth.guard';
 import { ManageUserComponent } from './pages/manage-user/manage-user.component';
 import { EmployeeSuggestionComponent } from './pages/employee-suggestion/employee-suggestion.component';
 import { ManageDevPlanComponent } from './pages/manage-dev-plan/manage-dev-plan.component';
+import { ManageTechnicalSkillComponent } from './pages/manage-technical-skill/manage-technical-skill.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -26,6 +27,11 @@ export const routes: Routes = [
   {
     path: 'manage-dev-plan',
     component: ManageDevPlanComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'manage-technical-skill',
+    component: ManageTechnicalSkillComponent,
     canActivate: [authGuard],
   },
   { path: '**', redirectTo: '/login' },

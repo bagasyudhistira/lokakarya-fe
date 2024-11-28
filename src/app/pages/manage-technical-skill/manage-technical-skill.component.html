@@ -1,0 +1,159 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+<app-navbar></app-navbar>
+<div class="manage-user-container">
+  <div class="manage-user-container">
+    <h1 class="page-title">Manage Technical Skill</h1>
+    <div class="header-actions">
+      <div class="top-row">
+        <div class="search-container">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="globalFilterValue"
+              (input)="onSearch()"
+            />
+          </span>
+        </div>
+        <button
+          pButton
+          label="Create"
+          icon="pi pi-plus"
+          class="create-button"
+          (click)="openCreateDialog()"
+          [disabled]="isProcessing || isEditFormLoading"
+        ></button>
+      </div>
+    </div>
+
+    <p-card>
+      <p-table
+        #dt
+        [value]="techSkills"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="rowsPerPage"
+        [totalRecords]="totalRecords"
+        [loading]="loading"
+        (onLazyLoad)="fetchTechSkills($event)"
+        [resizableColumns]="true"
+        responsiveLayout="scroll"
+        [sortMode]="'single'"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="full_name">
+              Technical Skill <p-sortIcon field="full_name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="suggestion">
+              Status <p-sortIcon field="suggestion"></p-sortIcon>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-techSkill>
+          <tr [ngClass]="{ 'disabled-row': techSkill.enabled === false }">
+            <td>{{ techSkill.technical_skill }}</td>
+            <td>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-pencil'
+                "
+                class="p-button-rounded p-button-primary"
+                (click)="editTechSkill(techSkill.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-trash'
+                "
+                class="p-button-rounded p-button-danger"
+                (click)="deleteTechSkill(techSkill.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+
+    <p-dialog
+      header="{{
+        mode === 'create' ? 'Create Technical Skill' : 'Edit Technical Skill'
+      }}"
+      [(visible)]="displayEditDialog"
+      [modal]="true"
+      [closable]="true"
+      [dismissableMask]="true"
+      [style]="{ width: '50vw' }"
+      [resizable]="false"
+    >
+      <form [formGroup]="editForm" (ngSubmit)="submitTechnicalSkill()">
+        <div class="p-fluid">
+          <div *ngIf="mode === 'create'" class="p-field"></div>
+          <div class="p-field">
+            <label for="suggestion">Technical Skill</label>
+            <div style="padding: 0.5rem 0">
+              <textarea
+                id="suggestion"
+                pInputText
+                formControlName="suggestion"
+                [disabled]="isProcessing"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="p-field" *ngIf="mode === 'edit'">
+            <label for="enabled">Enabled Status</label>
+            <div style="padding: 0, 5 rem 0">
+              <p-inputSwitch
+                id="enabled"
+                formControlName="enabled"
+                [disabled]="isProcessing"
+              ></p-inputSwitch>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            class="p-button-text"
+            label="Cancel"
+            [disabled]="isProcessing"
+            (click)="displayEditDialog = false"
+          ></button>
+          <button
+            pButton
+            type="submit"
+            [label]="
+              isProcessing
+                ? mode === 'create'
+                  ? 'Creating...'
+                  : 'Saving...'
+                : mode === 'create'
+                ? 'Create'
+                : 'Save'
+            "
+            [disabled]="isProcessing"
+            class="p-button-primary"
+          >
+            <ng-container *ngIf="isProcessing">
+              <i class="pi pi-spin pi-spinner"></i>
+            </ng-container>
+          </button>
+        </div>
+      </form>
+    </p-dialog>
+  </div>
+</div>
