@@ -174,7 +174,7 @@ export class EmployeeSuggestionComponent implements OnInit {
           'https://lokakarya-be.up.railway.app/empsuggestion/get/all';
       } else {
         suggestionUrl =
-          'https://lokakarya-be.up.railway.app/empsuggestion/get/by/' +
+          'https://lokakarya-be.up.railway.app/empsuggestion/by/' +
           this.currentUserId;
       }
       console.log('Suggestion URL:', suggestionUrl);
@@ -314,10 +314,9 @@ export class EmployeeSuggestionComponent implements OnInit {
       `https://lokakarya-be.up.railway.app/empsuggestion/${suggestionId}`
     );
     const employeesRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/appuser/all`
+      `https://lokakarya-be.up.railway.app/appuser/get/common/all`
     );
 
-    // Reset the edit form dialog visibility
     this.displayEditDialog = false;
 
     forkJoin([empSuggestionRequest, employeesRequest])
@@ -383,7 +382,9 @@ export class EmployeeSuggestionComponent implements OnInit {
         console.log('Filtered User IDs:', filteredUserIds);
 
         this.http
-          .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
+          .get<any>(
+            'https://lokakarya-be.up.railway.app/appuser/get/common/all'
+          )
           .subscribe({
             next: (response) => {
               this.employees = response.content.filter(
@@ -461,10 +462,8 @@ export class EmployeeSuggestionComponent implements OnInit {
           detail: 'Employee suggestion saved successfully.',
         });
 
-        // Reset sort and filter
         this.resetSortAndFilter();
 
-        // Close dialog and fetch employees
         this.displayEditDialog = false;
         this.fetchEmpSuggestions();
       },
