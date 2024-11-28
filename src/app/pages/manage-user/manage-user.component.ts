@@ -375,6 +375,28 @@ export class ManageUserComponent implements OnInit {
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
+
+        const userId =
+          this.mode === 'create'
+            ? response?.content?.id
+            : this.editForm.get('id')?.value;
+        if (!userId) {
+          console.error('User ID could not be determined.');
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to retrieve user ID after saving.',
+          });
+          return;
+        }
+        console.log('User ID:', userId);
+        const rolesToAssign = this.rolesFormArray.value
+          .map((checked: boolean, index: number) =>
+            checked ? this.roles[index].id : null
+          )
+          .filter((id: string | null) => id !== null);
+        this.updateUserRoles(userId, rolesToAssign, []);
+
         console.log('Employee Saved Successfully:', response);
 
         this.messageService.add({
