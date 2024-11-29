@@ -1,1 +1,154 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 <app-navbar></app-navbar>
+<div class="manage-user-container">
+  <div class="manage-user-container">
+    <h1 class="page-title">Manage Development Plan</h1>
+    <div class="header-actions">
+      <div class="top-row">
+        <div class="search-container">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="globalFilterValue"
+              (input)="onSearch()"
+            />
+          </span>
+        </div>
+        <button
+          pButton
+          label="Create"
+          icon="pi pi-plus"
+          class="create-button"
+          (click)="openCreateDialog()"
+          [disabled]="isProcessing || isEditFormLoading"
+        ></button>
+      </div>
+    </div>
+
+    <p-card>
+      <p-table
+        #dt
+        [value]="plans"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="rowsPerPage"
+        [totalRecords]="totalRecords"
+        [loading]="loading"
+        (onLazyLoad)="fetchPlans($event)"
+        [resizableColumns]="true"
+        responsiveLayout="scroll"
+        [sortMode]="'single'"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="plan">
+              Plan <p-sortIcon field="plan"></p-sortIcon>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-plan>
+          <tr [ngClass]="{ 'disabled-row': plan.enabled === false }">
+            <td>{{ plan.plan }}</td>
+            <td>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-pencil'
+                "
+                class="p-button-rounded p-button-primary"
+                (click)="editPlan(plan.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-trash'
+                "
+                class="p-button-rounded p-button-danger"
+                (click)="deletePlan(plan.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+
+    <p-dialog
+      header="{{ mode === 'create' ? 'Create Plan' : 'Edit Plan' }}"
+      [(visible)]="displayEditDialog"
+      [modal]="true"
+      [closable]="true"
+      [dismissableMask]="true"
+      [style]="{ width: '50vw' }"
+      [resizable]="false"
+    >
+      <form [formGroup]="editForm" (ngSubmit)="submitPlan()">
+        <div class="p-fluid">
+          <div *ngIf="mode === 'create'" class="p-field"></div>
+          <div class="p-field">
+            <label for="plan">Plan</label>
+            <div style="padding: 0.5rem 0">
+              <input
+                id="plan"
+                pInputText
+                formControlName="plan"
+                [disabled]="isProcessing"
+              />
+            </div>
+          </div>
+
+          <div class="p-field" *ngIf="mode === 'edit'">
+            <label for="enabled">Enabled Status</label>
+            <div style="padding: 0, 5rem 0">
+              <p-inputSwitch
+                id="enabled"
+                formControlName="enabled"
+                [disabled]="isProcessing"
+              ></p-inputSwitch>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            class="p-button-text"
+            label="Cancel"
+            [disabled]="isProcessing"
+            (click)="displayEditDialog = false"
+          ></button>
+          <button
+            pButton
+            type="submit"
+            [label]="
+              isProcessing
+                ? mode === 'create'
+                  ? 'Creating...'
+                  : 'Saving...'
+                : mode === 'create'
+                ? 'Create'
+                : 'Save'
+            "
+            [disabled]="isProcessing"
+            class="p-button-primary"
+          >
+            <ng-container *ngIf="isProcessing">
+              <i class="pi pi-spin pi-spinner"></i>
+            </ng-container>
+          </button>
+        </div>
+      </form>
+    </p-dialog>
+  </div>
+</div>
