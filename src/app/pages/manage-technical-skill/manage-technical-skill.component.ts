@@ -16,6 +16,7 @@ import {
 } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 @Component({
   selector: 'app-manage-technical-skill',
@@ -26,6 +27,7 @@ import { forkJoin } from 'rxjs';
     PrimeNgModule,
     FormsModule,
     ReactiveFormsModule,
+    InputSwitchModule,
   ],
   templateUrl: './manage-technical-skill.component.html',
   styleUrl: './manage-technical-skill.component.scss',
@@ -93,6 +95,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
     this.editForm = this.fb.group({
       id: [''],
       technical_skill: ['', Validators.required],
+      enabled: [true],
     });
     this.currentUserId = this.extractCurrentUserId() || '';
 
@@ -109,10 +112,10 @@ export class ManageTechnicalSkillComponent implements OnInit {
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
-            this.techSkills = response.content || [];
+            console.log('Technical Skills Fetched:', response);
+            this.allTechSkills = response.content || [];
             this.totalRecords = this.allTechSkills.length;
 
-            // Apply filtering, sorting, and pagination
             this.applyFiltersAndPagination(event);
           },
           error: (error) => {
@@ -133,7 +136,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
     const startIndex = event?.first || 0;
     const endIndex = startIndex + this.rowsPerPage;
 
-    let filteredSuggestions = this.globalFilterValue
+    let filteredSkills = this.globalFilterValue
       ? this.allTechSkills.filter((techSkill) =>
           Object.values(techSkill).some((value) =>
             String(value)
@@ -143,9 +146,11 @@ export class ManageTechnicalSkillComponent implements OnInit {
         )
       : [...this.allTechSkills];
 
+    console.log(this.allTechSkills);
+
     if (event?.sortField) {
       const sortOrder = event.sortOrder || 1;
-      filteredSuggestions.sort((a, b) => {
+      filteredSkills.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
@@ -157,9 +162,9 @@ export class ManageTechnicalSkillComponent implements OnInit {
       });
     }
 
-    this.techSkills = filteredSuggestions.slice(startIndex, endIndex);
+    this.techSkills = filteredSkills.slice(startIndex, endIndex);
 
-    this.totalRecords = filteredSuggestions.length;
+    this.totalRecords = filteredSkills.length;
   }
 
   openCreateDialog(): void {
@@ -168,6 +173,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
     this.editForm.reset({
       id: '',
       technical_skill: '',
+      enabled: true,
     });
 
     this.displayEditDialog = true;
@@ -243,6 +249,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
 
           this.editForm.patchValue({
             ...techSkill,
+            enabled: techSkill.enabled,
             updated_by: this.currentUserId,
           });
 

@@ -45,11 +45,8 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="full_name">
-              Technical Skill <p-sortIcon field="full_name"></p-sortIcon>
-            </th>
-            <th pSortableColumn="suggestion">
-              Status <p-sortIcon field="suggestion"></p-sortIcon>
+            <th pSortableColumn="technical_skill">
+              Technical Skill <p-sortIcon field="technical_skill"></p-sortIcon>
             </th>
             <th>Actions</th>
           </tr>
@@ -101,20 +98,20 @@
         <div class="p-fluid">
           <div *ngIf="mode === 'create'" class="p-field"></div>
           <div class="p-field">
-            <label for="suggestion">Technical Skill</label>
+            <label for="technical_skill">Technical Skill</label>
             <div style="padding: 0.5rem 0">
-              <textarea
-                id="suggestion"
+              <input
+                id="technical_skill"
                 pInputText
-                formControlName="suggestion"
+                formControlName="technical_skill"
                 [disabled]="isProcessing"
-              ></textarea>
+              />
             </div>
           </div>
 
           <div class="p-field" *ngIf="mode === 'edit'">
             <label for="enabled">Enabled Status</label>
-            <div style="padding: 0, 5 rem 0">
+            <div style="padding: 0, 5rem 0">
               <p-inputSwitch
                 id="enabled"
                 formControlName="enabled"

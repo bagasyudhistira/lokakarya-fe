@@ -5,13 +5,16 @@ import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { PrimeNgModule } from '../primeng/primeng.module';
+import { ConfirmDialog, ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   templateUrl: './navbar.component.html',
-  imports: [TitleCasePipe, CommonModule, PrimeNgModule],
+  imports: [TitleCasePipe, CommonModule, PrimeNgModule, ConfirmDialogModule],
   styleUrls: ['./navbar.component.scss'],
+  providers: [ConfirmationService],
 })
 export class NavbarComponent implements OnInit {
   @Output() onLogout = new EventEmitter<void>();
@@ -26,7 +29,8 @@ export class NavbarComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private menuManagerService: MenuManagerService
+    private menuManagerService: MenuManagerService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -81,10 +85,22 @@ export class NavbarComponent implements OnInit {
   }
 
   logout(): void {
-    this.onLogout.emit();
-    localStorage.clear();
-    this.router.navigate(['/login'], {
-      queryParams: { warning: 'You have been successfully logged out.' },
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to log out?',
+      header: 'Confirm Logout',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        // User confirmed logout
+        this.onLogout.emit();
+        localStorage.clear();
+        this.router.navigate(['/login'], {
+          queryParams: { warning: 'You have been successfully logged out.' },
+        });
+      },
+      reject: () => {
+        // User canceled logout
+        console.log('Logout canceled.');
+      },
     });
   }
 
