@@ -6,6 +6,7 @@ import { ManageUserComponent } from './pages/manage-user/manage-user.component';
 import { EmployeeSuggestionComponent } from './pages/employee-suggestion/employee-suggestion.component';
 import { ManageDevPlanComponent } from './pages/manage-dev-plan/manage-dev-plan.component';
 import { ManageTechnicalSkillComponent } from './pages/manage-technical-skill/manage-technical-skill.component';
+import { ManageAttitudeSkillComponent } from './pages/manage-attitude-skill/manage-attitude-skill.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -34,5 +35,10 @@ export const routes: Routes = [
     component: ManageTechnicalSkillComponent,
     canActivate: [authGuard],
   },
-  { path: '**', redirectTo: '/login' },
+  {
+    path: 'manage-attitude-skill',
+    component: ManageAttitudeSkillComponent,
+    canActivate: [authGuard],
+  },
+  { path: '**', redirectTo: '/home' },
 ];
