@@ -47,9 +47,13 @@ export class LoginComponent {
     const loginPayload = { username: this.username, password: this.password };
 
     this.http
-      .post('https://lokakarya-be.up.railway.app/auth/sign-in', loginPayload, {
-        responseType: 'text',
-      })
+      .post(
+        'https://lokakarya-be-x.up.railway.app/auth/sign-in',
+        loginPayload,
+        {
+          responseType: 'text',
+        }
+      )
       .subscribe({
         next: (token: string) => {
           console.log('JWT token received:', token);

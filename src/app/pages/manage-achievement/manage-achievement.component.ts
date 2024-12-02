@@ -125,10 +125,10 @@ export class ManageAchievementComponent implements OnInit {
     this.loading = true;
 
     const groupsRequest = this.http.get<any>(
-      'https://lokakarya-be.up.railway.app/groupachievement/all'
+      'https://lokakarya-be-x.up.railway.app/groupachievement/all'
     );
     const attAchievementsRequest = this.http.get<any>(
-      'https://lokakarya-be.up.railway.app/achievement/all'
+      'https://lokakarya-be-x.up.railway.app/achievement/all'
     );
 
     forkJoin([groupsRequest, attAchievementsRequest])
@@ -215,13 +215,13 @@ export class ManageAchievementComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-          'https://lokakarya-be.up.railway.app/groupachievement/create',
-          payload
-        )
+            'https://lokakarya-be-x.up.railway.app/groupachievement/create',
+            payload
+          )
         : this.http.put(
-          'https://lokakarya-be.up.railway.app/groupachievement/update',
-          payload
-        );
+            'https://lokakarya-be-x.up.railway.app/groupachievement/update',
+            payload
+          );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: () => {
@@ -251,7 +251,7 @@ export class ManageAchievementComponent implements OnInit {
     this.mode = 'edit'; // Set mode to edit for group
 
     const groupRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/groupachievement/${groupId}`
+      `https://lokakarya-be-x.up.railway.app/groupachievement/${groupId}`
     );
 
     this.displayGroupEditDialog = false;
@@ -291,7 +291,7 @@ export class ManageAchievementComponent implements OnInit {
       accept: () => {
         this.http
           .delete(
-            `https://lokakarya-be.up.railway.app/groupachievement/${groupId}`
+            `https://lokakarya-be-x.up.railway.app/groupachievement/${groupId}`
           )
           .subscribe({
             next: () => {
@@ -350,13 +350,13 @@ export class ManageAchievementComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-          'https://lokakarya-be.up.railway.app/achievement/create',
-          payload
-        )
+            'https://lokakarya-be-x.up.railway.app/achievement/create',
+            payload
+          )
         : this.http.put(
-          'https://lokakarya-be.up.railway.app/achievement/update',
-          payload
-        );
+            'https://lokakarya-be-x.up.railway.app/achievement/update',
+            payload
+          );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: () => {
@@ -385,7 +385,7 @@ export class ManageAchievementComponent implements OnInit {
     this.mode = 'edit'; // Set mode to edit for achievement
 
     const skillRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/achievement/${skillId}`
+      `https://lokakarya-be-x.up.railway.app/achievement/${skillId}`
     );
 
     this.displayEditDialog = false;
@@ -425,7 +425,7 @@ export class ManageAchievementComponent implements OnInit {
       accept: () => {
         this.http
           .delete(
-            `https://lokakarya-be.up.railway.app/achievement/${skillId}`
+            `https://lokakarya-be-x.up.railway.app/achievement/${skillId}`
           )
           .subscribe({
             next: () => {
@@ -469,7 +469,10 @@ export class ManageAchievementComponent implements OnInit {
         if (matchesGroupName || filteredAchievements.length > 0) {
           return {
             ...group,
-            skills: filteredAchievements.length > 0 ? filteredAchievements : group.skills,
+            skills:
+              filteredAchievements.length > 0
+                ? filteredAchievements
+                : group.skills,
           };
         }
         return null;
@@ -510,7 +513,10 @@ export class ManageAchievementComponent implements OnInit {
     this.filteredAchievements = paginatedAchievements;
     this.totalRecords = flatAchievements.length;
 
-    console.log('Filtered Grouped Achievements:', this.filteredGroupedAchievements);
+    console.log(
+      'Filtered Grouped Achievements:',
+      this.filteredGroupedAchievements
+    );
     console.log('Paginated Achievements:', this.filteredAchievements);
   }
 
@@ -545,4 +551,3 @@ export class ManageAchievementComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 }
-

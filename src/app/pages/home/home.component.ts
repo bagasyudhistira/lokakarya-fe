@@ -34,7 +34,7 @@ export class HomeComponent {
     const userId = payload.userId;
 
     this.http
-      .get(`https://lokakarya-be.up.railway.app/appuser/get/${userId}`)
+      .get(`https://lokakarya-be-x.up.railway.app/appuser/get/${userId}`)
       .subscribe({
         next: (response: any) => {
           this.userDetails = response.content;

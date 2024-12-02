@@ -108,7 +108,7 @@ export class ManageDevPlanComponent implements OnInit {
     if (!this.allPlans.length || this.allPlans.length > 0) {
       this.loading = true;
       this.http
-        .get<any>('https://lokakarya-be.up.railway.app/devplan/all')
+        .get<any>('https://lokakarya-be-x.up.railway.app/devplan/all')
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
@@ -193,7 +193,7 @@ export class ManageDevPlanComponent implements OnInit {
       accept: () => {
         this.isProcessing = true;
         this.http
-          .delete(`https://lokakarya-be.up.railway.app/devplan/${planId}`)
+          .delete(`https://lokakarya-be-x.up.railway.app/devplan/${planId}`)
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
@@ -230,7 +230,7 @@ export class ManageDevPlanComponent implements OnInit {
     this.mode = 'edit';
 
     const planRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/devplan/${planId}`
+      `https://lokakarya-be-x.up.railway.app/devplan/${planId}`
     );
 
     this.displayEditDialog = false;
@@ -290,11 +290,11 @@ export class ManageDevPlanComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be.up.railway.app/devplan/create',
+            'https://lokakarya-be-x.up.railway.app/devplan/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be.up.railway.app/devplan/update',
+            'https://lokakarya-be-x.up.railway.app/devplan/update',
             payload
           );
 

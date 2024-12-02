@@ -106,13 +106,22 @@ export class NavbarComponent implements OnInit {
 
   navigateTo(menu: string): void {
     const route = `/${menu}`;
-    this.router.navigate([route]);
+    if (!this.isActiveRoute(menu)) {
+      this.router.navigate([route]);
+    }
   }
 
   formatMenuName(menu: string): string {
-    return menu
+    const formattedMenu = menu.replace(/^(manage-|employee-)/i, '');
+
+    return formattedMenu
       .split('-')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
+  }
+
+  isActiveRoute(menu: string): boolean {
+    const currentRoute = this.router.url;
+    return currentRoute.includes(`/${menu}`);
   }
 }

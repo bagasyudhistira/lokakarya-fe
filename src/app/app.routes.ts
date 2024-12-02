@@ -7,7 +7,8 @@ import { EmployeeSuggestionComponent } from './pages/employee-suggestion/employe
 import { ManageDevPlanComponent } from './pages/manage-dev-plan/manage-dev-plan.component';
 import { ManageTechnicalSkillComponent } from './pages/manage-technical-skill/manage-technical-skill.component';
 import { ManageAttitudeSkillComponent } from './pages/manage-attitude-skill/manage-attitude-skill.component';
-import {ManageAchievementComponent} from './pages/manage-achievement/manage-achievement.component';
+import { ManageAchievementComponent } from './pages/manage-achievement/manage-achievement.component';
+import { EmployeeDevPlanComponent } from './pages/employee-dev-plan/employee-dev-plan.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,11 +20,6 @@ export const routes: Routes = [
   {
     path: 'manage-user',
     component: ManageUserComponent,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'employee-suggestion',
-    component: EmployeeSuggestionComponent,
     canActivate: [authGuard],
   },
   {
@@ -44,6 +40,16 @@ export const routes: Routes = [
   {
     path: 'manage-achievement',
     component: ManageAchievementComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-suggestion',
+    component: EmployeeSuggestionComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-dev-plan',
+    component: EmployeeDevPlanComponent,
     canActivate: [authGuard],
   },
   { path: '**', redirectTo: '/home' },

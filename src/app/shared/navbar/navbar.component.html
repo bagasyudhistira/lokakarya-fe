@@ -2,36 +2,49 @@
 <nav class="navbar">
   <ul class="navbar-menu">
     <!-- Home Button -->
-    <li class="home-item" *ngIf="!isHomePage">
-      <button class="home-button" (click)="navigateTo('home')">Home</button>
+    <li
+      class="home-item"
+      *ngIf="!isHomePage"
+      [ngClass]="{ active: isActiveRoute('home') }"
+      (click)="navigateTo('home')"
+    >
+      Home
     </li>
 
     <li class="dropdown" *ngIf="manageMenus.length > 0">
-      <button class="dropdown-button">
+      <span class="dropdown-button">
         Manage
         <span class="dropdown-icon">▼</span>
-      </button>
+      </span>
       <ul class="dropdown-content">
-        <li *ngFor="let menu of manageMenus" (click)="navigateTo(menu)">
+        <li
+          *ngFor="let menu of manageMenus"
+          [ngClass]="{ active: isActiveRoute(menu) }"
+          (click)="navigateTo(menu)"
+        >
           {{ formatMenuName(menu) }}
         </li>
       </ul>
     </li>
 
     <li class="dropdown" *ngIf="submitMenus.length > 0">
-      <button class="dropdown-button">
+      <span class="dropdown-button">
         Submit
         <span class="dropdown-icon">▼</span>
-      </button>
+      </span>
       <ul class="dropdown-content">
-        <li *ngFor="let menu of submitMenus" (click)="navigateTo(menu)">
+        <li
+          *ngFor="let menu of submitMenus"
+          [ngClass]="{ active: isActiveRoute(menu) }"
+          (click)="navigateTo(menu)"
+        >
           {{ formatMenuName(menu) }}
         </li>
       </ul>
     </li>
 
     <li class="logout-item">
-      <button class="logout-button" (click)="logout()">Logout</button>
+      <span class="logout-button" (click)="logout()">Logout</span>
     </li>
   </ul>
 </nav>

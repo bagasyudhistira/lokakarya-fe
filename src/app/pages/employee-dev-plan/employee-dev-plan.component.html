@@ -1,0 +1,185 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+<app-navbar></app-navbar>
+<div class="manage-user-container">
+  <div class="manage-user-container">
+    <h1 class="page-title">Employee DevPlan</h1>
+    <div class="header-actions">
+      <div class="top-row">
+        <div class="search-container">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="globalFilterValue"
+              (input)="onSearch()"
+            />
+          </span>
+        </div>
+        <button
+          pButton
+          label="Create"
+          icon="pi pi-plus"
+          class="create-button"
+          (click)="openCreateDialog()"
+          [disabled]="isProcessing || isEditFormLoading"
+        ></button>
+      </div>
+      <div class="checkbox-container" *ngIf="currentRoles.includes('HR')">
+        <p-checkbox
+          binary="true"
+          [(ngModel)]="showOnlyMine"
+          (onChange)="applyFiltersAndPagination()"
+          label="Show Only Mine"
+        ></p-checkbox>
+      </div>
+    </div>
+
+    <p-card>
+      <p-table
+        #dt
+        [value]="empDevPlans"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="rowsPerPage"
+        [totalRecords]="totalRecords"
+        [loading]="loading"
+        (onLazyLoad)="fetchEmpDevPlans($event)"
+        [resizableColumns]="true"
+        responsiveLayout="scroll"
+        [sortMode]="'single'"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th *ngIf="currentRoles.includes('HR')" pSortableColumn="full_name">
+              Full Name <p-sortIcon field="full_name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="plan">
+              DevPlan <p-sortIcon field="plan"></p-sortIcon>
+            </th>
+            <th pSortableColumn="assessment_year">
+              Assessment Year <p-sortIcon field="assessment_year"></p-sortIcon>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-empDevPlan>
+          <tr>
+            <td *ngIf="currentRoles.includes('HR')">
+              {{ empDevPlan.full_name }}
+            </td>
+            <td>{{ empDevPlan.plan }}</td>
+            <td>{{ empDevPlan.assessment_year }}</td>
+            <td>
+              <button
+                *ngIf="
+                  !currentRoles.includes('HR') ||
+                  (currentRoles.includes('HR') &&
+                    empDevPlan.user_id === currentUserId)
+                "
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-pencil'
+                "
+                class="p-button-rounded p-button-primary"
+                (click)="editEmpDevPlan(empDevPlan.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-trash'
+                "
+                class="p-button-rounded p-button-danger"
+                (click)="deleteEmpDevPlan(empDevPlan.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+
+    <p-dialog
+      header="{{
+        mode === 'create' ? 'Create Employee DevPlan' : 'Edit Employee DevPlan'
+      }}"
+      [(visible)]="displayEditDialog"
+      [modal]="true"
+      [closable]="true"
+      [dismissableMask]="true"
+      [style]="{ width: '50vw' }"
+      [resizable]="false"
+    >
+      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeDevPlan()">
+        <div class="p-fluid">
+          <div *ngIf="mode === 'create'" class="p-field"></div>
+          <div class="p-field">
+            <label for="plan">DevPlan</label>
+            <div style="padding: 0.5rem 0">
+              <textarea
+                id="plan"
+                pInputTextarea
+                formControlName="plan"
+                [disabled]="isProcessing"
+                rows="5"
+                cols="30"
+                style="width: 100%; resize: none"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="p-field">
+            <label for="assessment_year">Assessment Year</label>
+            <div style="padding: 0.5rem 0">
+              <p-calendar
+                id="assessment_year"
+                view="year"
+                formControlName="assessment_year"
+                dateFormat="yy"
+                [disabled]="mode === 'update'"
+                [maxDate]="maxDate"
+              ></p-calendar>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            class="p-button-text"
+            label="Cancel"
+            [disabled]="isProcessing"
+            (click)="displayEditDialog = false"
+          ></button>
+          <button
+            pButton
+            type="submit"
+            [label]="
+              isProcessing
+                ? mode === 'create'
+                  ? 'Creating...'
+                  : 'Saving...'
+                : mode === 'create'
+                ? 'Create'
+                : 'Save'
+            "
+            [disabled]="isProcessing"
+            class="p-button-primary"
+          >
+            <ng-container *ngIf="isProcessing">
+              <i class="pi pi-spin pi-spinner"></i>
+            </ng-container>
+          </button>
+        </div>
+      </form>
+    </p-dialog>
+  </div>
+</div>

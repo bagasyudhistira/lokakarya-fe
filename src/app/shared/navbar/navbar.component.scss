@@ -17,28 +17,24 @@
     padding: 0 1rem;
     gap: 1rem;
 
-    .home-item {
-      .home-button {
-        background-color: #0056b3;
-        color: #ffffff;
-        font-size: 1rem;
+    .home-item,
+    .dropdown-content li,
+    .logout-item {
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #003d80;
+      }
+
+      &.active {
+        background-color: #003d80;
         font-weight: bold;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-
-        &:hover {
-          background-color: #003d80;
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
-
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
       }
     }
 
@@ -51,21 +47,14 @@
         font-size: 1rem;
         font-weight: bold;
         padding: 0.75rem 1.5rem;
-        border: none;
         border-radius: 8px;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
         display: flex;
         align-items: center;
         justify-content: space-between;
 
         &:hover {
           background-color: #003d80;
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.95);
         }
 
         .dropdown-icon {
@@ -91,7 +80,6 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 5px;
         display: none;
-        z-index: 1000;
 
         li {
           font-size: 0.9rem;
@@ -103,6 +91,12 @@
           &:hover {
             background-color: #f0f0f0;
           }
+
+          &.active {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+          }
         }
       }
 
@@ -111,29 +105,32 @@
       }
     }
 
-    /* Logout Button */
     .logout-item {
       margin-left: auto;
 
       .logout-button {
-        background-color: #d32f2f;
-        color: #ffffff;
-        font-size: 0.9rem;
+        position: relative;
+        background-color: #b71c1c;
+        color: white;
+        font-size: 1rem;
         font-weight: bold;
         padding: 0.5rem 1rem;
         border: none;
         border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
+        transition: background-color 0.3s ease;
 
         &:hover {
-          background-color: #b71c1c;
-          transform: scale(1.05);
+          background-color: #9f1b1b;
         }
 
         &:active {
-          transform: scale(0.95);
+          background-color: #7f1515;
         }
+
+        /* Ensure button's size doesn't overflow */
+        overflow: hidden;
       }
     }
   }

@@ -34,7 +34,7 @@ import { forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
-  selector: 'app-employee-suggestion',
+  selector: 'app-employee-dev-plan',
   standalone: true,
   imports: [
     ButtonDirective,
@@ -57,12 +57,12 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
     PrimeNgModule,
     NavbarComponent,
   ],
-  templateUrl: './employee-suggestion.component.html',
-  styleUrl: './employee-suggestion.component.scss',
+  templateUrl: './employee-dev-plan.component.html',
+  styleUrl: './employee-dev-plan.component.scss',
   providers: [ConfirmationService, MessageService],
 })
-export class EmployeeSuggestionComponent implements OnInit {
-  empSuggestions: any[] = [];
+export class EmployeeDevPlanComponent implements OnInit {
+  empDevPlans: any[] = [];
   totalRecords: number = 0;
   loading: boolean = false;
   isProcessing: boolean = false;
@@ -76,7 +76,7 @@ export class EmployeeSuggestionComponent implements OnInit {
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
-  allEmpSuggestions: any[] = [];
+  allEmpDevPlans: any[] = [];
   globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
@@ -91,11 +91,11 @@ export class EmployeeSuggestionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('Initializing EmployeeSuggestionComponent');
+    console.log('Initializing EmployeeDevPlanComponent');
     this.primengConfig.ripple = true;
 
     this.initializeForm();
-    this.fetchEmpSuggestions();
+    this.fetchEmpDevPlans();
     console.log('Component Initialized');
   }
 
@@ -152,7 +152,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.editForm = this.fb.group({
       id: [''],
       user_id: [''],
-      suggestion: ['', Validators.required],
+      plan: ['', Validators.required],
       assessment_year: ['', Validators.required],
     });
     this.currentUserId = this.extractCurrentUserId() || '';
@@ -160,40 +160,39 @@ export class EmployeeSuggestionComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
-  fetchEmpSuggestions(event?: any): void {
-    console.log('Fetching Employee Suggestions...');
+  fetchEmpDevPlans(event?: any): void {
+    console.log('Fetching Employee DevPlans...');
 
-    if (!this.allEmpSuggestions.length || this.allEmpSuggestions.length > 0) {
+    if (!this.allEmpDevPlans.length || this.allEmpDevPlans.length > 0) {
       this.loading = true;
 
-      let suggestionUrl = '';
+      let planUrl = '';
       if (this.currentRoles.includes('HR')) {
-        suggestionUrl =
-          'https://lokakarya-be-x.up.railway.app/empsuggestion/get/all';
+        planUrl = 'https://lokakarya-be-x.up.railway.app/empdevplan/get/all';
       } else {
-        suggestionUrl =
-          'https://lokakarya-be-x.up.railway.app/empsuggestion/by/' +
+        planUrl =
+          'https://lokakarya-be-x.up.railway.app/empdevplan/by/' +
           this.currentUserId;
       }
-      console.log('Suggestion URL:', suggestionUrl);
+      console.log('DevPlan URL:', planUrl);
 
       this.http
-        .get<any>(suggestionUrl)
+        .get<any>(planUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
-            this.allEmpSuggestions = response.content || [];
-            this.totalRecords = this.allEmpSuggestions.length;
+            this.allEmpDevPlans = response.content || [];
+            this.totalRecords = this.allEmpDevPlans.length;
 
             // Apply filtering, sorting, and pagination
             this.applyFiltersAndPagination(event);
           },
           error: (error) => {
-            console.error('Error Fetching Employee Suggestions:', error);
+            console.error('Error Fetching Employee DevPlans:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to fetch employee suggestions.',
+              detail: 'Failed to fetch employee plans.',
             });
           },
         });
@@ -207,25 +206,25 @@ export class EmployeeSuggestionComponent implements OnInit {
     const endIndex = startIndex + this.rowsPerPage;
 
     // Apply global filtering (search)
-    let filteredSuggestions = this.globalFilterValue
-      ? this.allEmpSuggestions.filter((empSuggestion) =>
-          Object.values(empSuggestion).some((value) =>
+    let filteredDevPlans = this.globalFilterValue
+      ? this.allEmpDevPlans.filter((empDevPlan) =>
+          Object.values(empDevPlan).some((value) =>
             String(value)
               .toLowerCase()
               .includes(this.globalFilterValue.toLowerCase())
           )
         )
-      : [...this.allEmpSuggestions];
+      : [...this.allEmpDevPlans];
 
     if (this.showOnlyMine) {
-      filteredSuggestions = filteredSuggestions.filter(
-        (suggestion) => suggestion.user_id === this.currentUserId
+      filteredDevPlans = filteredDevPlans.filter(
+        (plan) => plan.user_id === this.currentUserId
       );
     }
 
     if (event?.sortField) {
       const sortOrder = event.sortOrder || 1;
-      filteredSuggestions.sort((a, b) => {
+      filteredDevPlans.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
@@ -238,10 +237,10 @@ export class EmployeeSuggestionComponent implements OnInit {
     }
 
     // Apply pagination
-    this.empSuggestions = filteredSuggestions.slice(startIndex, endIndex);
+    this.empDevPlans = filteredDevPlans.slice(startIndex, endIndex);
 
     // Update totalRecords for pagination
-    this.totalRecords = filteredSuggestions.length;
+    this.totalRecords = filteredDevPlans.length;
   }
 
   openCreateDialog(): void {
@@ -250,7 +249,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.editForm.reset({
       id: '',
       user_id: '',
-      suggestion: '',
+      plan: '',
       assessment_year: '',
     });
 
@@ -258,8 +257,8 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.isProcessing = false;
   }
 
-  deleteEmpSuggestion(suggestionId: string): void {
-    console.log('Deleting Employee Suggestion with ID:', suggestionId);
+  deleteEmpDevPlan(planId: string): void {
+    console.log('Deleting Employee DevPlan with ID:', planId);
 
     if (this.isProcessing) {
       console.warn('Delete action skipped - already processing');
@@ -267,31 +266,29 @@ export class EmployeeSuggestionComponent implements OnInit {
     }
 
     this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this employee suggestion?',
+      message: 'Are you sure you want to delete this employee plan?',
       accept: () => {
         // User confirmed deletion
         this.isProcessing = true;
         this.http
-          .delete(
-            `https://lokakarya-be-x.up.railway.app/empsuggestion/${suggestionId}`
-          )
+          .delete(`https://lokakarya-be-x.up.railway.app/empdevplan/${planId}`)
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
-              console.log('Employee Suggestion Deleted Successfully');
+              console.log('Employee DevPlan Deleted Successfully');
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Employee Suggestion Deleted Successfully!',
+                detail: 'Employee DevPlan Deleted Successfully!',
               });
-              this.fetchEmpSuggestions();
+              this.fetchEmpDevPlans();
             },
             error: (error) => {
               console.error('Error Deleting Employee:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Failed to delete employee suggestion.',
+                detail: 'Failed to delete employee plan.',
               });
             },
           });
@@ -304,36 +301,33 @@ export class EmployeeSuggestionComponent implements OnInit {
     });
   }
 
-  editEmpSuggestion(suggestionId: string): void {
-    console.log('Editing Employee Suggestion with ID:', suggestionId);
+  editEmpDevPlan(planId: string): void {
+    console.log('Editing Employee DevPlan with ID:', planId);
     this.isEditFormLoading = true;
     this.isProcessing = true;
     this.mode = 'update';
 
-    // Fetch the employee suggestion details
-    const empSuggestionRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/empsuggestion/${suggestionId}`
+    // Fetch the employee plan details
+    const empDevPlanRequest = this.http.get<any>(
+      `https://lokakarya-be-x.up.railway.app/empdevplan/${planId}`
     );
 
     this.displayEditDialog = false; // Ensure the dialog is closed before loading data
 
-    empSuggestionRequest
+    empDevPlanRequest
       .pipe(finalize(() => (this.isProcessing = false))) // Reset processing state
       .subscribe({
-        next: (employeeSuggestionResponse) => {
-          console.log(
-            'Employee Suggestion Fetched:',
-            employeeSuggestionResponse
-          );
-          const empSuggestion = employeeSuggestionResponse.content;
+        next: (employeeDevPlanResponse) => {
+          console.log('Employee DevPlan Fetched:', employeeDevPlanResponse);
+          const empDevPlan = employeeDevPlanResponse.content;
 
           this.currentUserId = this.extractCurrentUserId() || '';
           console.log('Current User ID:', this.currentUserId);
 
-          // Patch the form with fetched suggestion data
+          // Patch the form with fetched plan data
           this.editForm.patchValue({
-            ...empSuggestion,
-            assessment_year: new Date(empSuggestion.assessment_year, 0, 1), // Set to Jan 1 of the year
+            ...empDevPlan,
+            assessment_year: new Date(empDevPlan.assessment_year, 0, 1), // Set to Jan 1 of the year
             updated_by: this.currentUserId,
           });
 
@@ -341,19 +335,19 @@ export class EmployeeSuggestionComponent implements OnInit {
           this.isEditFormLoading = false; // Stop the loading indicator
         },
         error: (error) => {
-          console.error('Error Fetching Employee Suggestion:', error);
+          console.error('Error Fetching Employee DevPlan:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch employee suggestion details.',
+            detail: 'Failed to fetch employee plan details.',
           });
           this.isEditFormLoading = false; // Stop the loading indicator
         },
       });
   }
 
-  async saveEmployeeSuggestion(): Promise<void> {
-    console.log('Saving Employee Suggestion. Mode:', this.mode);
+  async saveEmployeeDevPlan(): Promise<void> {
+    console.log('Saving Employee DevPlan. Mode:', this.mode);
 
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
@@ -381,8 +375,7 @@ export class EmployeeSuggestionComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail:
-            'You have already submitted an employee suggestion for this year.',
+          detail: 'You have already submitted an employee plan for this year.',
         });
         return;
       }
@@ -406,35 +399,35 @@ export class EmployeeSuggestionComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/empsuggestion/create',
+            'https://lokakarya-be-x.up.railway.app/empdevplan/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/empsuggestion/update',
+            'https://lokakarya-be-x.up.railway.app/empdevplan/update',
             payload
           );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
-        console.log('Employee Suggestion Saved Successfully:', response);
+        console.log('Employee DevPlan Saved Successfully:', response);
 
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Employee suggestion saved successfully.',
+          detail: 'Employee plan saved successfully.',
         });
 
         this.resetSortAndFilter();
 
         this.displayEditDialog = false;
-        this.fetchEmpSuggestions();
+        this.fetchEmpDevPlans();
       },
       error: (error) => {
-        console.error('Error Saving Employee Suggestion:', error);
+        console.error('Error Saving Employee DevPlan:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to save employee suggestion.',
+          detail: 'Failed to save employee plan.',
         });
       },
     });
@@ -447,7 +440,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be-x.up.railway.app/empsuggestion/${userId}/${assessmentYear}`
+          `https://lokakarya-be-x.up.railway.app/empdevplan/${userId}/${assessmentYear}`
         )
         .toPromise();
 
@@ -488,10 +481,10 @@ export class EmployeeSuggestionComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  submitEmployeeSuggestion(): void {
-    console.log('Submitting Employee Suggestion. Mode:', this.mode);
+  submitEmployeeDevPlan(): void {
+    console.log('Submitting Employee DevPlan. Mode:', this.mode);
     this.isProcessing = true;
-    this.saveEmployeeSuggestion();
+    this.saveEmployeeDevPlan();
   }
 
   onSearch(): void {

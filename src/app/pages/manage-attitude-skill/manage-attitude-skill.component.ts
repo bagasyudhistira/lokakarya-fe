@@ -125,10 +125,10 @@ export class ManageAttitudeSkillComponent implements OnInit {
     this.loading = true;
 
     const groupsRequest = this.http.get<any>(
-      'https://lokakarya-be.up.railway.app/groupattitudeskill/all'
+      'https://lokakarya-be-x.up.railway.app/groupattitudeskill/all'
     );
     const attSkillsRequest = this.http.get<any>(
-      'https://lokakarya-be.up.railway.app/attitudeskill/all'
+      'https://lokakarya-be-x.up.railway.app/attitudeskill/all'
     );
 
     forkJoin([groupsRequest, attSkillsRequest])
@@ -215,11 +215,11 @@ export class ManageAttitudeSkillComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be.up.railway.app/groupattitudeskill/create',
+            'https://lokakarya-be-x.up.railway.app/groupattitudeskill/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be.up.railway.app/groupattitudeskill/update',
+            'https://lokakarya-be-x.up.railway.app/groupattitudeskill/update',
             payload
           );
 
@@ -251,7 +251,7 @@ export class ManageAttitudeSkillComponent implements OnInit {
     this.mode = 'edit'; // Set mode to edit for group
 
     const groupRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/groupattitudeskill/${groupId}`
+      `https://lokakarya-be-x.up.railway.app/groupattitudeskill/${groupId}`
     );
 
     this.displayGroupEditDialog = false;
@@ -291,7 +291,7 @@ export class ManageAttitudeSkillComponent implements OnInit {
       accept: () => {
         this.http
           .delete(
-            `https://lokakarya-be.up.railway.app/groupattitudeskill/${groupId}`
+            `https://lokakarya-be-x.up.railway.app/groupattitudeskill/${groupId}`
           )
           .subscribe({
             next: () => {
@@ -350,11 +350,11 @@ export class ManageAttitudeSkillComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be.up.railway.app/attitudeskill/create',
+            'https://lokakarya-be-x.up.railway.app/attitudeskill/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be.up.railway.app/attitudeskill/update',
+            'https://lokakarya-be-x.up.railway.app/attitudeskill/update',
             payload
           );
 
@@ -385,7 +385,7 @@ export class ManageAttitudeSkillComponent implements OnInit {
     this.mode = 'edit'; // Set mode to edit for attitude skill
 
     const skillRequest = this.http.get<any>(
-      `https://lokakarya-be.up.railway.app/attitudeskill/${skillId}`
+      `https://lokakarya-be-x.up.railway.app/attitudeskill/${skillId}`
     );
 
     this.displayEditDialog = false;
@@ -425,7 +425,7 @@ export class ManageAttitudeSkillComponent implements OnInit {
       accept: () => {
         this.http
           .delete(
-            `https://lokakarya-be.up.railway.app/attitudeskill/${skillId}`
+            `https://lokakarya-be-x.up.railway.app/attitudeskill/${skillId}`
           )
           .subscribe({
             next: () => {
