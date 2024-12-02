@@ -9,6 +9,8 @@ import { ManageTechnicalSkillComponent } from './pages/manage-technical-skill/ma
 import { ManageAttitudeSkillComponent } from './pages/manage-attitude-skill/manage-attitude-skill.component';
 import { ManageAchievementComponent } from './pages/manage-achievement/manage-achievement.component';
 import { EmployeeDevPlanComponent } from './pages/employee-dev-plan/employee-dev-plan.component';
+import { ManageRoleAccessComponent } from './pages/manage-role-access/manage-role-access.component';
+import { EmployeeTechnicalSkillComponent } from './pages/employee-technical-skill/employee-technical-skill.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -38,13 +40,24 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'manage-role-access',
+    component: ManageRoleAccessComponent,
+    canActivate: [authGuard],
+  },
+  {
     path: 'manage-achievement',
     component: ManageAchievementComponent,
     canActivate: [authGuard],
   },
+
   {
     path: 'employee-suggestion',
     component: EmployeeSuggestionComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-technical-skill',
+    component: EmployeeTechnicalSkillComponent,
     canActivate: [authGuard],
   },
   {

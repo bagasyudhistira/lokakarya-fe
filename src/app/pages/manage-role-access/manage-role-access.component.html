@@ -1,0 +1,84 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+<app-navbar></app-navbar>
+
+<div class="manage-role-access">
+  <h1>Manage Role Access</h1>
+
+  <!-- Manage Menus -->
+  <div *ngIf="categorizedMenus.Manage.length > 0">
+    <h2>Manage</h2>
+    <p-table
+      [value]="categorizedMenus.Manage"
+      responsiveLayout="scroll"
+      [loading]="isLoading"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Menu</th>
+          <th *ngFor="let role of roles">{{ role.rolename }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-menu>
+        <tr>
+          <td>{{ menu.displayName }}</td>
+          <td *ngFor="let role of roles">
+            <p-checkbox
+              binary="true"
+              [(ngModel)]="checkboxStates[role.id + '~' + menu.id]"
+              (onChange)="toggleAssociation(role.id, menu.id)"
+            ></p-checkbox>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Submit Menus -->
+  <div *ngIf="categorizedMenus.Submit.length > 0">
+    <h2>Submit</h2>
+    <p-table
+      [value]="categorizedMenus.Submit"
+      responsiveLayout="scroll"
+      [loading]="isLoading"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Menu</th>
+          <th *ngFor="let role of roles">{{ role.rolename }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-menu>
+        <tr>
+          <td>{{ menu.displayName }}</td>
+          <td *ngFor="let role of roles">
+            <p-checkbox
+              binary="true"
+              [(ngModel)]="checkboxStates[role.id + '~' + menu.id]"
+              (onChange)="toggleAssociation(role.id, menu.id)"
+            ></p-checkbox>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <div class="actions">
+    <button
+      pButton
+      label="Save"
+      icon="pi pi-save"
+      class="p-button-primary"
+      (click)="saveAssociations()"
+      [disabled]="isLoading"
+    ></button>
+    <button
+      pButton
+      label="Reset"
+      icon="pi pi-replay"
+      class="p-button-secondary"
+      (click)="resetAssociations()"
+      [disabled]="isLoading"
+    ></button>
+  </div>
+</div>

@@ -34,7 +34,7 @@ import { forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
-  selector: 'app-employee-dev-plan',
+  selector: 'app-employee-technical-skill',
   standalone: true,
   imports: [
     ButtonDirective,
@@ -57,12 +57,12 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
     PrimeNgModule,
     NavbarComponent,
   ],
-  templateUrl: './employee-dev-plan.component.html',
-  styleUrl: './employee-dev-plan.component.scss',
+  templateUrl: './employee-technical-skill.component.html',
+  styleUrl: './employee-technical-skill.component.scss',
   providers: [ConfirmationService, MessageService],
 })
-export class EmployeeDevPlanComponent implements OnInit {
-  empDevPlans: any[] = [];
+export class EmployeeTechnicalSkillComponent implements OnInit {
+  empTechnicalSkills: any[] = [];
   totalRecords: number = 0;
   loading: boolean = false;
   isProcessing: boolean = false;
@@ -76,11 +76,11 @@ export class EmployeeDevPlanComponent implements OnInit {
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
-  allEmpDevPlans: any[] = [];
+  allEmpTechnicalSkills: any[] = [];
   globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
-  devPlans: any[] = [];
+  technicalSkills: any[] = [];
 
   constructor(
     private http: HttpClient,
@@ -92,12 +92,12 @@ export class EmployeeDevPlanComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('Initializing EmployeeDevPlanComponent');
+    console.log('Initializing EmployeeTechnicalSkillComponent');
     this.primengConfig.ripple = true;
 
     this.initializeForm();
-    this.fetchDevPlans();
-    this.fetchEmpDevPlans();
+    this.fetchTechnicalSkills();
+    this.fetchEmpTechnicalSkills();
     console.log('Component Initialized');
   }
 
@@ -154,8 +154,8 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.editForm = this.fb.group({
       id: [''],
       user_id: [''],
-      dev_plan_id: ['', Validators.required],
-      description: ['', Validators.required],
+      technical_skill_id: ['', Validators.required],
+      score: ['', Validators.required],
       assessment_year: ['', Validators.required],
     });
     this.currentUserId = this.extractCurrentUserId() || '';
@@ -163,39 +163,43 @@ export class EmployeeDevPlanComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
-  fetchEmpDevPlans(event?: any): void {
-    console.log('Fetching Employee DevPlans...');
+  fetchEmpTechnicalSkills(event?: any): void {
+    console.log('Fetching Employee TechnicalSkills...');
 
-    if (!this.allEmpDevPlans.length || this.allEmpDevPlans.length > 0) {
+    if (
+      !this.allEmpTechnicalSkills.length ||
+      this.allEmpTechnicalSkills.length > 0
+    ) {
       this.loading = true;
 
-      let planUrl = '';
+      let technicalSkillUrl = '';
       if (this.currentRoles.includes('HR')) {
-        planUrl = 'https://lokakarya-be.up.railway.app/empdevplan/get/all';
+        technicalSkillUrl =
+          'https://lokakarya-be.up.railway.app/emptechnicalskill/get/all';
       } else {
-        planUrl =
-          'https://lokakarya-be.up.railway.app/empdevplan/get/' +
+        technicalSkillUrl =
+          'https://lokakarya-be.up.railway.app/emptechnicalskill/get/' +
           this.currentUserId;
       }
-      console.log('DevPlan URL:', planUrl);
+      console.log('TechnicalSkill URL:', technicalSkillUrl);
 
       this.http
-        .get<any>(planUrl)
+        .get<any>(technicalSkillUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
-            this.allEmpDevPlans = response.content || [];
-            this.totalRecords = this.allEmpDevPlans.length;
+            this.allEmpTechnicalSkills = response.content || [];
+            this.totalRecords = this.allEmpTechnicalSkills.length;
 
             // Apply filtering, sorting, and pagination
             this.applyFiltersAndPagination(event);
           },
           error: (error) => {
-            console.error('Error Fetching Employee DevPlans:', error);
+            console.error('Error Fetching Employee TechnicalSkills:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to fetch employee plans.',
+              detail: 'Failed to fetch employee technicalSkills.',
             });
           },
         });
@@ -209,25 +213,25 @@ export class EmployeeDevPlanComponent implements OnInit {
     const endIndex = startIndex + this.rowsPerPage;
 
     // Apply global filtering (search)
-    let filteredDevPlans = this.globalFilterValue
-      ? this.allEmpDevPlans.filter((empDevPlan) =>
-          Object.values(empDevPlan).some((value) =>
+    let filteredTechnicalSkills = this.globalFilterValue
+      ? this.allEmpTechnicalSkills.filter((empTechnicalSkill) =>
+          Object.values(empTechnicalSkill).some((value) =>
             String(value)
               .toLowerCase()
               .includes(this.globalFilterValue.toLowerCase())
           )
         )
-      : [...this.allEmpDevPlans];
+      : [...this.allEmpTechnicalSkills];
 
     if (this.showOnlyMine) {
-      filteredDevPlans = filteredDevPlans.filter(
-        (plan) => plan.user_id === this.currentUserId
+      filteredTechnicalSkills = filteredTechnicalSkills.filter(
+        (technicalSkill) => technicalSkill.user_id === this.currentUserId
       );
     }
 
     if (event?.sortField) {
       const sortOrder = event.sortOrder || 1;
-      filteredDevPlans.sort((a, b) => {
+      filteredTechnicalSkills.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
@@ -240,10 +244,13 @@ export class EmployeeDevPlanComponent implements OnInit {
     }
 
     // Apply pagination
-    this.empDevPlans = filteredDevPlans.slice(startIndex, endIndex);
+    this.empTechnicalSkills = filteredTechnicalSkills.slice(
+      startIndex,
+      endIndex
+    );
 
     // Update totalRecords for pagination
-    this.totalRecords = filteredDevPlans.length;
+    this.totalRecords = filteredTechnicalSkills.length;
   }
 
   openCreateDialog(): void {
@@ -252,8 +259,8 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.editForm.reset({
       id: '',
       user_id: '',
-      dev_plan_id: '',
-      description: '',
+      technical_skill_id: '',
+      score: '',
       assessment_year: '',
     });
 
@@ -261,8 +268,8 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.isProcessing = false;
   }
 
-  deleteEmpDevPlan(planId: string): void {
-    console.log('Deleting Employee DevPlan with ID:', planId);
+  deleteEmpTechnicalSkill(technicalSkillId: string): void {
+    console.log('Deleting Employee TechnicalSkill with ID:', technicalSkillId);
 
     if (this.isProcessing) {
       console.warn('Delete action skipped - already processing');
@@ -270,29 +277,31 @@ export class EmployeeDevPlanComponent implements OnInit {
     }
 
     this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this employee plan?',
+      message: 'Are you sure you want to delete this employee technicalSkill?',
       accept: () => {
         // User confirmed deletion
         this.isProcessing = true;
         this.http
-          .delete(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
+          .delete(
+            `https://lokakarya-be.up.railway.app/emptechnicalskill/${technicalSkillId}`
+          )
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
-              console.log('Employee DevPlan Deleted Successfully');
+              console.log('Employee TechnicalSkill Deleted Successfully');
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Employee DevPlan Deleted Successfully!',
+                detail: 'Employee TechnicalSkill Deleted Successfully!',
               });
-              this.fetchEmpDevPlans();
+              this.fetchEmpTechnicalSkills();
             },
             error: (error) => {
               console.error('Error Deleting Employee:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Failed to delete employee plan.',
+                detail: 'Failed to delete employee technicalSkill.',
               });
             },
           });
@@ -305,44 +314,46 @@ export class EmployeeDevPlanComponent implements OnInit {
     });
   }
 
-  editEmpDevPlan(planId: string): void {
-    console.log('Editing Employee DevPlan with ID:', planId);
+  editEmpTechnicalSkill(technicalSkillId: string): void {
+    console.log('Editing Employee TechnicalSkill with ID:', technicalSkillId);
     this.isEditFormLoading = true;
     this.isProcessing = true;
     this.mode = 'update';
 
     this.http
-      .get<any>(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
+      .get<any>(
+        `https://lokakarya-be.up.railway.app/emptechnicalskill/${technicalSkillId}`
+      )
       .pipe(finalize(() => (this.isProcessing = false)))
       .subscribe({
         next: (response) => {
-          const empDevPlan = response.content;
+          const empTechnicalSkill = response.content;
 
           this.editForm.patchValue({
-            id: empDevPlan.id,
+            id: empTechnicalSkill.id,
             user_id: this.currentUserId,
-            dev_plan_id: empDevPlan.dev_plan_id,
-            description: empDevPlan.too_bright,
-            assessment_year: new Date(empDevPlan.assessment_year, 0, 1),
+            technical_skill_id: empTechnicalSkill.technical_skill_id,
+            score: empTechnicalSkill.score,
+            assessment_year: new Date(empTechnicalSkill.assessment_year, 0, 1),
           });
 
           this.displayEditDialog = true;
           this.isEditFormLoading = false;
         },
         error: (error) => {
-          console.error('Error Fetching Employee DevPlan:', error);
+          console.error('Error Fetching Employee TechnicalSkill:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch employee plan details.',
+            detail: 'Failed to fetch employee technicalSkill details.',
           });
           this.isEditFormLoading = false;
         },
       });
   }
 
-  async saveEmployeeDevPlan(): Promise<void> {
-    console.log('Saving Employee DevPlan. Mode:', this.mode);
+  async saveEmployeeTechnicalSkill(): Promise<void> {
+    console.log('Saving Employee TechnicalSkill. Mode:', this.mode);
 
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
@@ -370,7 +381,8 @@ export class EmployeeDevPlanComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'You have already submitted an employee plan for this year.',
+          detail:
+            'You have already submitted an employee technicalSkill for this year.',
         });
         return;
       }
@@ -394,35 +406,35 @@ export class EmployeeDevPlanComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be.up.railway.app/empdevplan/create',
+            'https://lokakarya-be.up.railway.app/emptechnicalskill/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be.up.railway.app/empdevplan/update',
+            'https://lokakarya-be.up.railway.app/emptechnicalskill/update',
             payload
           );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
-        console.log('Employee DevPlan Saved Successfully:', response);
+        console.log('Employee TechnicalSkill Saved Successfully:', response);
 
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Employee plan saved successfully.',
+          detail: 'Employee technicalSkill saved successfully.',
         });
 
         this.resetSortAndFilter();
 
         this.displayEditDialog = false;
-        this.fetchEmpDevPlans();
+        this.fetchEmpTechnicalSkills();
       },
       error: (error) => {
-        console.error('Error Saving Employee DevPlan:', error);
+        console.error('Error Saving Employee TechnicalSkill:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to save employee plan.',
+          detail: 'Failed to save employee technicalSkill.',
         });
       },
     });
@@ -435,7 +447,7 @@ export class EmployeeDevPlanComponent implements OnInit {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/empdevplan/${userId}/${assessmentYear}`
+          `https://lokakarya-be.up.railway.app/emptechnicalskill/${userId}/${assessmentYear}`
         )
         .toPromise();
 
@@ -476,10 +488,10 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  submitEmployeeDevPlan(): void {
-    console.log('Submitting Employee DevPlan. Mode:', this.mode);
+  submitEmployeeTechnicalSkill(): void {
+    console.log('Submitting Employee TechnicalSkill. Mode:', this.mode);
     this.isProcessing = true;
-    this.saveEmployeeDevPlan();
+    this.saveEmployeeTechnicalSkill();
   }
 
   onSearch(): void {
@@ -487,24 +499,23 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  fetchDevPlans(): void {
-    console.log('Fetching DevPlans...');
+  fetchTechnicalSkills(): void {
+    console.log('Fetching TechnicalSkills...');
     this.http
-      .get<any>('https://lokakarya-be.up.railway.app/devplan/all')
+      .get<any>('https://lokakarya-be.up.railway.app/technicalskill/all')
       .subscribe({
-        next: (response) => {
-          this.devPlans = (response.content || []).filter(
-            (plan: any) => plan.enabled === true
+        next: (response: any) => {
+          this.technicalSkills = (response.content || []).filter(
+            (skill: any) => skill.enabled === true
           );
-          console.log('Fetched DevPlans:', this.devPlans);
+          console.log('Fetched TechnicalSkills:', this.technicalSkills);
         },
-
         error: (error) => {
-          console.error('Error fetching dev plans:', error);
+          console.error('Error fetching dev technicalSkills:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch dev plans.',
+            detail: 'Failed to fetch dev technicalSkills.',
           });
         },
       });

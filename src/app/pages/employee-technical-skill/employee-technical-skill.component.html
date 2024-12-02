@@ -3,7 +3,7 @@
 <app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
-    <h1 class="page-title">Employee DevPlan</h1>
+    <h1 class="page-title">Employee Technical Skill</h1>
     <div class="header-actions">
       <div class="top-row">
         <div class="search-container">
@@ -40,13 +40,13 @@
     <p-card>
       <p-table
         #dt
-        [value]="empDevPlans"
+        [value]="empTechnicalSkills"
         [lazy]="true"
         [paginator]="true"
         [rows]="rowsPerPage"
         [totalRecords]="totalRecords"
         [loading]="loading"
-        (onLazyLoad)="fetchEmpDevPlans($event)"
+        (onLazyLoad)="fetchEmpTechnicalSkills($event)"
         [resizableColumns]="true"
         responsiveLayout="scroll"
         [sortMode]="'single'"
@@ -56,11 +56,11 @@
             <th *ngIf="currentRoles.includes('HR')" pSortableColumn="full_name">
               Full Name <p-sortIcon field="full_name"></p-sortIcon>
             </th>
-            <th pSortableColumn="plan">
-              DevPlan <p-sortIcon field="plan"></p-sortIcon>
+            <th pSortableColumn="technical_skill">
+              Technical Skill <p-sortIcon field="technical_skill"></p-sortIcon>
             </th>
-            <th pSortableColumn="description">
-              Description <p-sortIcon field="description"></p-sortIcon>
+            <th pSortableColumn="score">
+              Score <p-sortIcon field="score"></p-sortIcon>
             </th>
             <th pSortableColumn="assessment_year">
               Assessment Year <p-sortIcon field="assessment_year"></p-sortIcon>
@@ -68,19 +68,19 @@
             <th>Actions</th>
           </tr>
         </ng-template>
-        <ng-template pTemplate="body" let-empDevPlan>
+        <ng-template pTemplate="body" let-empTechnicalSkill>
           <tr>
             <td *ngIf="currentRoles.includes('HR')">
-              {{ empDevPlan.full_name }}
+              {{ empTechnicalSkill.full_name }}
             </td>
-            <td>{{ empDevPlan.plan }}</td>
-            <td>{{ empDevPlan.assessment_year }}</td>
+            <td>{{ empTechnicalSkill.technical_skill }}</td>
+            <td>{{ empTechnicalSkill.assessment_year }}</td>
             <td>
               <button
                 *ngIf="
                   !currentRoles.includes('HR') ||
                   (currentRoles.includes('HR') &&
-                    empDevPlan.user_id === currentUserId)
+                    empTechnicalSkill.user_id === currentUserId)
                 "
                 pButton
                 [icon]="
@@ -89,7 +89,7 @@
                     : 'pi pi-pencil'
                 "
                 class="p-button-rounded p-button-primary"
-                (click)="editEmpDevPlan(empDevPlan.id)"
+                (click)="editEmpTechnicalSkill(empTechnicalSkill.id)"
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
               <button
@@ -100,7 +100,7 @@
                     : 'pi pi-trash'
                 "
                 class="p-button-rounded p-button-danger"
-                (click)="deleteEmpDevPlan(empDevPlan.id)"
+                (click)="deleteEmpTechnicalSkill(empTechnicalSkill.id)"
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
             </td>
@@ -111,7 +111,9 @@
 
     <p-dialog
       header="{{
-        mode === 'create' ? 'Create Employee DevPlan' : 'Edit Employee DevPlan'
+        mode === 'create'
+          ? 'Create Employee TechnicalSkill'
+          : 'Edit Employee TechnicalSkill'
       }}"
       [(visible)]="displayEditDialog"
       [modal]="true"
@@ -120,33 +122,34 @@
       [style]="{ width: '50vw' }"
       [resizable]="false"
     >
-      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeDevPlan()">
+      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeTechnicalSkill()">
         <div class="p-fluid">
           <div class="p-field">
-            <label for="dev_plan_id">DevPlan</label>
+            <label for="technical_skill_id">Technical Skill</label>
             <p-dropdown
-              id="dev_plan_id"
-              formControlName="dev_plan_id"
-              [options]="devPlans"
-              optionLabel="plan"
+              id="technical_skill_id"
+              formControlName="technical_skill_id"
+              [options]="technicalSkills"
+              optionLabel="technical_skill"
               optionValue="id"
-              placeholder="Select a DevPlan"
+              placeholder="Select a TechnicalSkill"
               [disabled]="isProcessing"
             ></p-dropdown>
           </div>
 
           <div class="p-field">
-            <label for="description">Description</label>
+            <label for="score">Score</label>
             <div style="padding: 0.5rem 0">
-              <textarea
-                id="description"
-                pInputTextarea
-                formControlName="description"
+              <input
+                id="score"
+                type="number"
+                pInputText
+                formControlName="score"
                 [disabled]="isProcessing"
                 rows="5"
                 cols="30"
                 style="width: 100%; resize: none"
-              ></textarea>
+              />
             </div>
           </div>
 

@@ -51,6 +51,9 @@
             <th pSortableColumn="position">
               Position <p-sortIcon field="position"></p-sortIcon>
             </th>
+            <th pSortableColumn="position">
+              Status <p-sortIcon field="status"></p-sortIcon>
+            </th>
             <th pSortableColumn="email_address">
               Email Address <p-sortIcon field="email_address"></p-sortIcon>
             </th>
@@ -65,6 +68,8 @@
             <td>{{ employee.username }}</td>
             <td>{{ employee.full_name }}</td>
             <td>{{ employee.position }}</td>
+            <td *ngIf="employee.employee_status == 1">Permanent</td>
+            <td *ngIf="employee.employee_status == 2">Contract</td>
             <td>{{ employee.email_address }}</td>
             <td>{{ employee.division_name }}</td>
             <td>
