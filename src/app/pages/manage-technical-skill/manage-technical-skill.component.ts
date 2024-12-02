@@ -108,7 +108,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
     if (!this.allTechSkills.length || this.allTechSkills.length > 0) {
       this.loading = true;
       this.http
-        .get<any>('https://lokakarya-be-x.up.railway.app/technicalskill/all')
+        .get<any>('https://lokakarya-be.up.railway.app/technicalskill/all')
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
@@ -194,7 +194,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
         this.isProcessing = true;
         this.http
           .delete(
-            `https://lokakarya-be-x.up.railway.app/technicalskill/${techSkillId}`
+            `https://lokakarya-be.up.railway.app/technicalskill/${techSkillId}`
           )
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
@@ -232,7 +232,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
     this.mode = 'edit';
 
     const techSkillRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/technicalskill/${techSkillId}`
+      `https://lokakarya-be.up.railway.app/technicalskill/${techSkillId}`
     );
 
     this.displayEditDialog = false;
@@ -294,11 +294,11 @@ export class ManageTechnicalSkillComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/technicalskill/create',
+            'https://lokakarya-be.up.railway.app/technicalskill/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/technicalskill/update',
+            'https://lokakarya-be.up.railway.app/technicalskill/update',
             payload
           );
 

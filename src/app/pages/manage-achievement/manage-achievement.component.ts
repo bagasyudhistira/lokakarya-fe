@@ -125,10 +125,10 @@ export class ManageAchievementComponent implements OnInit {
     this.loading = true;
 
     const groupsRequest = this.http.get<any>(
-      'https://lokakarya-be-x.up.railway.app/groupachievement/all'
+      'https://lokakarya-be.up.railway.app/groupachievement/all'
     );
     const attAchievementsRequest = this.http.get<any>(
-      'https://lokakarya-be-x.up.railway.app/achievement/all'
+      'https://lokakarya-be.up.railway.app/achievement/all'
     );
 
     forkJoin([groupsRequest, attAchievementsRequest])
@@ -215,11 +215,11 @@ export class ManageAchievementComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/groupachievement/create',
+            'https://lokakarya-be.up.railway.app/groupachievement/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/groupachievement/update',
+            'https://lokakarya-be.up.railway.app/groupachievement/update',
             payload
           );
 
@@ -251,7 +251,7 @@ export class ManageAchievementComponent implements OnInit {
     this.mode = 'edit'; // Set mode to edit for group
 
     const groupRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/groupachievement/${groupId}`
+      `https://lokakarya-be.up.railway.app/groupachievement/${groupId}`
     );
 
     this.displayGroupEditDialog = false;
@@ -291,7 +291,7 @@ export class ManageAchievementComponent implements OnInit {
       accept: () => {
         this.http
           .delete(
-            `https://lokakarya-be-x.up.railway.app/groupachievement/${groupId}`
+            `https://lokakarya-be.up.railway.app/groupachievement/${groupId}`
           )
           .subscribe({
             next: () => {
@@ -350,11 +350,11 @@ export class ManageAchievementComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/achievement/create',
+            'https://lokakarya-be.up.railway.app/achievement/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/achievement/update',
+            'https://lokakarya-be.up.railway.app/achievement/update',
             payload
           );
 
@@ -385,7 +385,7 @@ export class ManageAchievementComponent implements OnInit {
     this.mode = 'edit'; // Set mode to edit for achievement
 
     const skillRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/achievement/${skillId}`
+      `https://lokakarya-be.up.railway.app/achievement/${skillId}`
     );
 
     this.displayEditDialog = false;
@@ -424,9 +424,7 @@ export class ManageAchievementComponent implements OnInit {
       message: 'Are you sure you want to delete this achievement?',
       accept: () => {
         this.http
-          .delete(
-            `https://lokakarya-be-x.up.railway.app/achievement/${skillId}`
-          )
+          .delete(`https://lokakarya-be.up.railway.app/achievement/${skillId}`)
           .subscribe({
             next: () => {
               this.messageService.add({

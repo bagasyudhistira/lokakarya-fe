@@ -169,10 +169,10 @@ export class EmployeeSuggestionComponent implements OnInit {
       let suggestionUrl = '';
       if (this.currentRoles.includes('HR')) {
         suggestionUrl =
-          'https://lokakarya-be-x.up.railway.app/empsuggestion/get/all';
+          'https://lokakarya-be.up.railway.app/empsuggestion/get/all';
       } else {
         suggestionUrl =
-          'https://lokakarya-be-x.up.railway.app/empsuggestion/by/' +
+          'https://lokakarya-be.up.railway.app/empsuggestion/by/' +
           this.currentUserId;
       }
       console.log('Suggestion URL:', suggestionUrl);
@@ -273,7 +273,7 @@ export class EmployeeSuggestionComponent implements OnInit {
         this.isProcessing = true;
         this.http
           .delete(
-            `https://lokakarya-be-x.up.railway.app/empsuggestion/${suggestionId}`
+            `https://lokakarya-be.up.railway.app/empsuggestion/${suggestionId}`
           )
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
@@ -312,7 +312,7 @@ export class EmployeeSuggestionComponent implements OnInit {
 
     // Fetch the employee suggestion details
     const empSuggestionRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/empsuggestion/${suggestionId}`
+      `https://lokakarya-be.up.railway.app/empsuggestion/${suggestionId}`
     );
 
     this.displayEditDialog = false; // Ensure the dialog is closed before loading data
@@ -406,11 +406,11 @@ export class EmployeeSuggestionComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/empsuggestion/create',
+            'https://lokakarya-be.up.railway.app/empsuggestion/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/empsuggestion/update',
+            'https://lokakarya-be.up.railway.app/empsuggestion/update',
             payload
           );
 
@@ -447,7 +447,7 @@ export class EmployeeSuggestionComponent implements OnInit {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be-x.up.railway.app/empsuggestion/${userId}/${assessmentYear}`
+          `https://lokakarya-be.up.railway.app/empsuggestion/${userId}/${assessmentYear}`
         )
         .toPromise();
 

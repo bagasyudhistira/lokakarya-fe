@@ -127,7 +127,7 @@ export class ManageUserComponent implements OnInit {
       this.loading = true;
 
       this.http
-        .get<any>('https://lokakarya-be-x.up.railway.app/appuser/get/all')
+        .get<any>('https://lokakarya-be.up.railway.app/appuser/get/all')
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
@@ -232,7 +232,7 @@ export class ManageUserComponent implements OnInit {
         // User confirmed deletion
         this.isProcessing = true; // Start processing
         this.http
-          .delete(`https://lokakarya-be-x.up.railway.app/appuser/${employeeId}`)
+          .delete(`https://lokakarya-be.up.railway.app/appuser/${employeeId}`)
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
@@ -269,10 +269,10 @@ export class ManageUserComponent implements OnInit {
     this.mode = 'edit';
 
     const employeeRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/appuser/${employeeId}`
+      `https://lokakarya-be.up.railway.app/appuser/${employeeId}`
     );
     const divisionsRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/division/all`
+      `https://lokakarya-be.up.railway.app/division/all`
     );
 
     // Reset the edit form dialog visibility
@@ -321,7 +321,7 @@ export class ManageUserComponent implements OnInit {
   fetchDivisions(callback: () => void): void {
     console.log('Fetching Divisions...');
     this.http
-      .get<any>('https://lokakarya-be-x.up.railway.app/division/all')
+      .get<any>('https://lokakarya-be.up.railway.app/division/all')
       .subscribe({
         next: (response) => {
           this.divisions = response.content;
@@ -367,11 +367,11 @@ export class ManageUserComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/appuser/create',
+            'https://lokakarya-be.up.railway.app/appuser/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/appuser/update',
+            'https://lokakarya-be.up.railway.app/appuser/update',
             payload
           );
 
@@ -441,7 +441,7 @@ export class ManageUserComponent implements OnInit {
   fetchRoles(): void {
     this.isProcessing = true;
     this.http
-      .get<any>('https://lokakarya-be-x.up.railway.app/approle/all')
+      .get<any>('https://lokakarya-be.up.railway.app/approle/all')
       .pipe(finalize(() => (this.isProcessing = false)))
       .subscribe({
         next: (response) => {
@@ -475,7 +475,7 @@ export class ManageUserComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.http
         .get<any>(
-          `https://lokakarya-be-x.up.railway.app/appuserrole/get2/${userId}`
+          `https://lokakarya-be.up.railway.app/appuserrole/get2/${userId}`
         )
         .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
         .subscribe({
@@ -523,7 +523,7 @@ export class ManageUserComponent implements OnInit {
     const roleRequests = rolesToAssign.map((roleId) =>
       this.http
         .get<any>(
-          `https://lokakarya-be-x.up.railway.app/appuserrole/${userId}/${roleId}`
+          `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
         )
         .pipe(
           finalize(() => (this.isProcessing = false)),
@@ -536,13 +536,10 @@ export class ManageUserComponent implements OnInit {
             return null;
           } else {
             return this.http
-              .post(
-                'https://lokakarya-be-x.up.railway.app/appuserrole/create',
-                {
-                  role_id: roleId,
-                  user_id: userId,
-                }
-              )
+              .post('https://lokakarya-be.up.railway.app/appuserrole/create', {
+                role_id: roleId,
+                user_id: userId,
+              })
               .toPromise()
               .then(() => {
                 console.log(`Role assigned successfully: ${roleId}`);
@@ -583,7 +580,7 @@ export class ManageUserComponent implements OnInit {
     const addRoleRequests = rolesToAssign.map((roleId) =>
       this.http
         .get<any>(
-          `https://lokakarya-be-x.up.railway.app/appuserrole/${userId}/${roleId}`
+          `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
         )
         .toPromise()
         .then((response) => {
@@ -593,13 +590,10 @@ export class ManageUserComponent implements OnInit {
           } else {
             console.log(`Assigning role ${roleId} to user ${userId}.`);
             return this.http
-              .post(
-                'https://lokakarya-be-x.up.railway.app/appuserrole/create',
-                {
-                  role_id: roleId,
-                  user_id: userId,
-                }
-              )
+              .post('https://lokakarya-be.up.railway.app/appuserrole/create', {
+                role_id: roleId,
+                user_id: userId,
+              })
               .toPromise();
           }
         })
@@ -608,7 +602,7 @@ export class ManageUserComponent implements OnInit {
     const deleteRoleRequests = uncheckedRoles.map((roleId) =>
       this.http
         .get<any>(
-          `https://lokakarya-be-x.up.railway.app/appuserrole/${userId}/${roleId}`
+          `https://lokakarya-be.up.railway.app/appuserrole/${userId}/${roleId}`
         )
         .toPromise()
         .then((response) => {
@@ -617,7 +611,7 @@ export class ManageUserComponent implements OnInit {
             console.log(`Deleting role ${roleId} for user ${userId}.`);
             return this.http
               .delete(
-                `https://lokakarya-be-x.up.railway.app/appuserrole/${appUserRoleId}`
+                `https://lokakarya-be.up.railway.app/appuserrole/${appUserRoleId}`
               )
               .toPromise();
           } else {
@@ -654,7 +648,7 @@ export class ManageUserComponent implements OnInit {
     return new Promise((resolve) => {
       this.http
         .post(
-          'https://lokakarya-be-x.up.railway.app/auth/sign-in',
+          'https://lokakarya-be.up.railway.app/auth/sign-in',
           {
             username,
             password,
@@ -726,7 +720,7 @@ export class ManageUserComponent implements OnInit {
     return new Promise((resolve) => {
       this.http
         .get<any>(
-          `https://lokakarya-be-x.up.railway.app/appuser/user/${username}`
+          `https://lokakarya-be.up.railway.app/appuser/user/${username}`
         )
         .subscribe({
           next: (response: any) => {

@@ -168,10 +168,10 @@ export class EmployeeDevPlanComponent implements OnInit {
 
       let planUrl = '';
       if (this.currentRoles.includes('HR')) {
-        planUrl = 'https://lokakarya-be-x.up.railway.app/empdevplan/get/all';
+        planUrl = 'https://lokakarya-be.up.railway.app/empdevplan/get/all';
       } else {
         planUrl =
-          'https://lokakarya-be-x.up.railway.app/empdevplan/by/' +
+          'https://lokakarya-be.up.railway.app/empdevplan/by/' +
           this.currentUserId;
       }
       console.log('DevPlan URL:', planUrl);
@@ -271,7 +271,7 @@ export class EmployeeDevPlanComponent implements OnInit {
         // User confirmed deletion
         this.isProcessing = true;
         this.http
-          .delete(`https://lokakarya-be-x.up.railway.app/empdevplan/${planId}`)
+          .delete(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
           .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
@@ -309,7 +309,7 @@ export class EmployeeDevPlanComponent implements OnInit {
 
     // Fetch the employee plan details
     const empDevPlanRequest = this.http.get<any>(
-      `https://lokakarya-be-x.up.railway.app/empdevplan/${planId}`
+      `https://lokakarya-be.up.railway.app/empdevplan/${planId}`
     );
 
     this.displayEditDialog = false; // Ensure the dialog is closed before loading data
@@ -399,11 +399,11 @@ export class EmployeeDevPlanComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be-x.up.railway.app/empdevplan/create',
+            'https://lokakarya-be.up.railway.app/empdevplan/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be-x.up.railway.app/empdevplan/update',
+            'https://lokakarya-be.up.railway.app/empdevplan/update',
             payload
           );
 
@@ -440,7 +440,7 @@ export class EmployeeDevPlanComponent implements OnInit {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be-x.up.railway.app/empdevplan/${userId}/${assessmentYear}`
+          `https://lokakarya-be.up.railway.app/empdevplan/${userId}/${assessmentYear}`
         )
         .toPromise();
 
