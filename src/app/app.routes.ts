@@ -11,6 +11,8 @@ import { ManageAchievementComponent } from './pages/manage-achievement/manage-ac
 import { EmployeeDevPlanComponent } from './pages/employee-dev-plan/employee-dev-plan.component';
 import { ManageRoleAccessComponent } from './pages/manage-role-access/manage-role-access.component';
 import { EmployeeTechnicalSkillComponent } from './pages/employee-technical-skill/employee-technical-skill.component';
+import { EmployeeAttitudeSkillComponent } from './pages/employee-attitude-skill/employee-attitude-skill.component';
+import { EmployeeAchievementSkillComponent } from './pages/employee-achievement-skill/employee-achievement-skill.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -63,6 +65,16 @@ export const routes: Routes = [
   {
     path: 'employee-dev-plan',
     component: EmployeeDevPlanComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-attitude-skill',
+    component: EmployeeAttitudeSkillComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-achievement-skill',
+    component: EmployeeAchievementSkillComponent,
     canActivate: [authGuard],
   },
   { path: '**', redirectTo: '/home' },

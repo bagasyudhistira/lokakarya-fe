@@ -34,7 +34,7 @@ import { forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
-  selector: 'app-employee-dev-plan',
+  selector: 'app-employee-achievement-skill',
   standalone: true,
   imports: [
     ButtonDirective,
@@ -57,12 +57,12 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
     PrimeNgModule,
     NavbarComponent,
   ],
-  templateUrl: './employee-dev-plan.component.html',
-  styleUrl: './employee-dev-plan.component.scss',
+  templateUrl: './employee-achievement-skill.component.html',
+  styleUrl: './employee-achievement-skill.component.scss',
   providers: [ConfirmationService, MessageService],
 })
-export class EmployeeDevPlanComponent implements OnInit {
-  empDevPlans: any[] = [];
+export class EmployeeAchievementSkillComponent implements OnInit {
+  empAchievementSkills: any[] = [];
   totalRecords: number = 0;
   loading: boolean = false;
   isProcessing: boolean = false;
@@ -76,11 +76,11 @@ export class EmployeeDevPlanComponent implements OnInit {
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
-  allEmpDevPlans: any[] = [];
+  allEmpAchievementSkills: any[] = [];
   globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
-  devPlans: any[] = [];
+  achievementSkills: any[] = [];
 
   constructor(
     private http: HttpClient,
@@ -92,12 +92,13 @@ export class EmployeeDevPlanComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('Initializing EmployeeDevPlanComponent');
+    console.log('Initializing EmployeeAchievementSkillComponent');
     this.primengConfig.ripple = true;
 
     this.initializeForm();
-    this.fetchDevPlans();
-    this.fetchEmpDevPlans();
+    this.fetchAchievementSkills();
+    this.fetchEmpAchievementSkills();
+    this.fetchEmployees();
     console.log('Component Initialized');
   }
 
@@ -153,9 +154,10 @@ export class EmployeeDevPlanComponent implements OnInit {
     console.log('Initializing Edit Form...');
     this.editForm = this.fb.group({
       id: [''],
-      user_id: [''],
-      dev_plan_id: ['', Validators.required],
-      description: ['', Validators.required],
+      user_id: ['', Validators.required],
+      achievement_id: ['', Validators.required],
+      notes: ['', Validators.required],
+      score: ['', Validators.required],
       assessment_year: ['', Validators.required],
     });
     this.currentUserId = this.extractCurrentUserId() || '';
@@ -163,39 +165,43 @@ export class EmployeeDevPlanComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
-  fetchEmpDevPlans(event?: any): void {
-    console.log('Fetching Employee DevPlans...');
+  fetchEmpAchievementSkills(event?: any): void {
+    console.log('Fetching Employee AchievementSkills...');
 
-    if (!this.allEmpDevPlans.length || this.allEmpDevPlans.length > 0) {
+    if (
+      !this.allEmpAchievementSkills.length ||
+      this.allEmpAchievementSkills.length > 0
+    ) {
       this.loading = true;
 
-      let planUrl = '';
+      let achievementSkillUrl = '';
       if (this.currentRoles.includes('HR')) {
-        planUrl = 'https://lokakarya-be.up.railway.app/empdevplan/get/all';
+        achievementSkillUrl =
+          'https://lokakarya-be.up.railway.app/empachievementskill/get/all';
       } else {
-        planUrl =
-          'https://lokakarya-be.up.railway.app/empdevplan/get/' +
+        achievementSkillUrl =
+          'https://lokakarya-be.up.railway.app/empachievementskill/get/' +
           this.currentUserId;
       }
-      console.log('DevPlan URL:', planUrl);
+      console.log('AchievementSkill URL:', achievementSkillUrl);
 
       this.http
-        .get<any>(planUrl)
+        .get<any>(achievementSkillUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
-            this.allEmpDevPlans = response.content || [];
-            this.totalRecords = this.allEmpDevPlans.length;
+            this.allEmpAchievementSkills = response.content || [];
+            this.totalRecords = this.allEmpAchievementSkills.length;
 
             // Apply filtering, sorting, and pagination
             this.applyFiltersAndPagination(event);
           },
           error: (error) => {
-            console.error('Error Fetching Employee DevPlans:', error);
+            console.error('Error Fetching Employee AchievementSkills:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to fetch employee plans.',
+              detail: 'Failed to fetch employee achievementSkills.',
             });
           },
         });
@@ -209,25 +215,25 @@ export class EmployeeDevPlanComponent implements OnInit {
     const endIndex = startIndex + this.rowsPerPage;
 
     // Apply global filtering (search)
-    let filteredDevPlans = this.globalFilterValue
-      ? this.allEmpDevPlans.filter((empDevPlan) =>
-          Object.values(empDevPlan).some((value) =>
+    let filteredAchievementSkills = this.globalFilterValue
+      ? this.allEmpAchievementSkills.filter((empAchievementSkill) =>
+          Object.values(empAchievementSkill).some((value) =>
             String(value)
               .toLowerCase()
               .includes(this.globalFilterValue.toLowerCase())
           )
         )
-      : [...this.allEmpDevPlans];
+      : [...this.allEmpAchievementSkills];
 
     if (this.showOnlyMine) {
-      filteredDevPlans = filteredDevPlans.filter(
-        (plan) => plan.user_id === this.currentUserId
+      filteredAchievementSkills = filteredAchievementSkills.filter(
+        (achievementSkill) => achievementSkill.user_id === this.currentUserId
       );
     }
 
     if (event?.sortField) {
       const sortOrder = event.sortOrder || 1;
-      filteredDevPlans.sort((a, b) => {
+      filteredAchievementSkills.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
@@ -240,10 +246,13 @@ export class EmployeeDevPlanComponent implements OnInit {
     }
 
     // Apply pagination
-    this.empDevPlans = filteredDevPlans.slice(startIndex, endIndex);
+    this.empAchievementSkills = filteredAchievementSkills.slice(
+      startIndex,
+      endIndex
+    );
 
     // Update totalRecords for pagination
-    this.totalRecords = filteredDevPlans.length;
+    this.totalRecords = filteredAchievementSkills.length;
   }
 
   openCreateDialog(): void {
@@ -252,8 +261,9 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.editForm.reset({
       id: '',
       user_id: '',
-      dev_plan_id: '',
-      description: '',
+      achievement_id: '',
+      notes: '',
+      score: '',
       assessment_year: '',
     });
 
@@ -261,8 +271,11 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.isProcessing = false;
   }
 
-  deleteEmpDevPlan(planId: string): void {
-    console.log('Deleting Employee DevPlan with ID:', planId);
+  deleteEmpAchievementSkill(achievementSkillId: string): void {
+    console.log(
+      'Deleting Employee AchievementSkill with ID:',
+      achievementSkillId
+    );
 
     if (this.isProcessing) {
       console.warn('Delete action skipped - already processing');
@@ -270,29 +283,32 @@ export class EmployeeDevPlanComponent implements OnInit {
     }
 
     this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this employee plan?',
+      message:
+        'Are you sure you want to delete this employee achievementSkill?',
       accept: () => {
         // User confirmed deletion
         this.isProcessing = true;
         this.http
-          .delete(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
-          .pipe(finalize(() => (this.isProcessing = false)))
+          .delete(
+            `https://lokakarya-be.up.railway.app/empachievementskill/${achievementSkillId}`
+          )
+          .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
-              console.log('Employee DevPlan Deleted Successfully');
+              console.log('Employee AchievementSkill Deleted Successfully');
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Employee DevPlan Deleted Successfully!',
+                detail: 'Employee AchievementSkill Deleted Successfully!',
               });
-              this.fetchEmpDevPlans();
+              this.fetchEmpAchievementSkills();
             },
             error: (error) => {
               console.error('Error Deleting Employee:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Failed to delete employee plan.',
+                detail: 'Failed to delete employee achievementSkill.',
               });
             },
           });
@@ -305,45 +321,54 @@ export class EmployeeDevPlanComponent implements OnInit {
     });
   }
 
-  editEmpDevPlan(planId: string): void {
-    console.log('Editing Employee DevPlan with ID:', planId);
+  editEmpAchievementSkill(achievementSkillId: string): void {
+    console.log(
+      'Editing Employee AchievementSkill with ID:',
+      achievementSkillId
+    );
     this.isEditFormLoading = true;
     this.isProcessing = true;
     this.mode = 'update';
 
     this.http
-      .get<any>(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
+      .get<any>(
+        `https://lokakarya-be.up.railway.app/empachievementskill/${achievementSkillId}`
+      )
       .pipe(finalize(() => (this.isProcessing = false)))
       .subscribe({
         next: (response) => {
-          const empDevPlan = response.content;
-          console.log('Fetched Employee DevPlan:', empDevPlan);
+          const empAchievementSkill = response.content;
 
           this.editForm.patchValue({
-            id: empDevPlan.id,
-            user_id: this.currentUserId,
-            dev_plan_id: empDevPlan.dev_plan_id,
-            description: empDevPlan.too_bright,
-            assessment_year: new Date(empDevPlan.assessment_year, 0, 1),
+            id: empAchievementSkill.id,
+            user_id: empAchievementSkill.user_id,
+            achievement_id: empAchievementSkill.achievement_id,
+            notes: empAchievementSkill.notes,
+            score: empAchievementSkill.score,
+            assessment_year: new Date(
+              empAchievementSkill.assessment_year,
+              0,
+              1
+            ),
           });
 
           this.displayEditDialog = true;
           this.isEditFormLoading = false;
         },
         error: (error) => {
-          console.error('Error Fetching Employee DevPlan:', error);
+          console.error('Error Fetching Employee AchievementSkill:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch employee plan details.',
+            detail: 'Failed to fetch employee achievementSkill details.',
           });
           this.isEditFormLoading = false;
         },
       });
   }
 
-  async saveEmployeeDevPlan(): Promise<void> {
-    console.log('Saving Employee DevPlan. Mode:', this.mode);
+  async saveEmployeeAchievementSkill(): Promise<void> {
+    console.log('Saving Employee AchievementSkill. Mode:', this.mode);
 
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
@@ -362,7 +387,7 @@ export class EmployeeDevPlanComponent implements OnInit {
     try {
       const isDuplicate = await this.confirmDuplicate(
         this.currentUserId,
-        this.editForm.value.dev_plan_id,
+        this.editForm.value.achievement_id,
         assessmentYear
       );
       console.log('Duplicate Check Result:', isDuplicate);
@@ -372,7 +397,8 @@ export class EmployeeDevPlanComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'You have already submitted an employee plan for this year.',
+          detail:
+            'You have already submitted an employee achievementSkill for this year.',
         });
         return;
       }
@@ -384,8 +410,7 @@ export class EmployeeDevPlanComponent implements OnInit {
 
     const payload = {
       ...this.editForm.value,
-      user_id: this.currentUserId,
-      too_bright: this.editForm.value.description,
+      user_id: this.editForm.value.user_id,
       assessment_year: assessmentYear,
       ...(this.mode === 'create'
         ? { created_by: this.currentUserId }
@@ -397,35 +422,35 @@ export class EmployeeDevPlanComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be.up.railway.app/empdevplan/create',
+            'https://lokakarya-be.up.railway.app/empachievementskill/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be.up.railway.app/empdevplan/update',
+            'https://lokakarya-be.up.railway.app/empachievementskill/update',
             payload
           );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
-        console.log('Employee DevPlan Saved Successfully:', response);
+        console.log('Employee AchievementSkill Saved Successfully:', response);
 
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Employee plan saved successfully.',
+          detail: 'Employee achievementSkill saved successfully.',
         });
 
         this.resetSortAndFilter();
 
         this.displayEditDialog = false;
-        this.fetchEmpDevPlans();
+        this.fetchEmpAchievementSkills();
       },
       error: (error) => {
-        console.error('Error Saving Employee DevPlan:', error);
+        console.error('Error Saving Employee AchievementSkill:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to save employee plan.',
+          detail: 'Failed to save employee achievementSkill.',
         });
       },
     });
@@ -433,13 +458,13 @@ export class EmployeeDevPlanComponent implements OnInit {
 
   async confirmDuplicate(
     userId: string,
-    devPlanId: string,
+    achievementSkillId: string,
     assessmentYear: number
   ): Promise<boolean> {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/empdevplan/${userId}/${devPlanId}/${assessmentYear}`
+          `https://lokakarya-be.up.railway.app/empachievementskill/${userId}/${achievementSkillId}/${assessmentYear}`
         )
         .toPromise();
 
@@ -480,10 +505,10 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  submitEmployeeDevPlan(): void {
-    console.log('Submitting Employee DevPlan. Mode:', this.mode);
+  submitEmployeeAchievementSkill(): void {
+    console.log('Submitting Employee AchievementSkill. Mode:', this.mode);
     this.isProcessing = true;
-    this.saveEmployeeDevPlan();
+    this.saveEmployeeAchievementSkill();
   }
 
   onSearch(): void {
@@ -491,24 +516,45 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  fetchDevPlans(): void {
-    console.log('Fetching DevPlans...');
+  fetchAchievementSkills(): void {
+    console.log('Fetching AchievementSkills...');
     this.http
-      .get<any>('https://lokakarya-be.up.railway.app/devplan/all')
+      .get<any>('https://lokakarya-be.up.railway.app/achievement/all')
       .subscribe({
-        next: (response) => {
-          this.devPlans = (response.content || []).filter(
-            (plan: any) => plan.enabled === true
+        next: (response: any) => {
+          this.achievementSkills = (response.content || []).filter(
+            (skill: any) => skill.enabled === true
           );
-          console.log('Fetched DevPlans:', this.devPlans);
+          console.log('Fetched AchievementSkills:', this.achievementSkills);
         },
-
         error: (error) => {
-          console.error('Error fetching dev plans:', error);
+          console.error('Error fetching dev achievementSkills:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch dev plans.',
+            detail: 'Failed to fetch dev achievementSkills.',
+          });
+        },
+      });
+  }
+
+  fetchEmployees(): void {
+    console.log('Fetching Employees...');
+    this.http
+      .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
+      .subscribe({
+        next: (response: any) => {
+          this.employees = (response.content || []).filter(
+            (employee: any) => employee.enabled === true
+          );
+          console.log('Fetched Employees:', this.employees);
+        },
+        error: (error) => {
+          console.error('Error fetching employees:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch employees.',
           });
         },
       });

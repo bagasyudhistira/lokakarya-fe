@@ -74,6 +74,7 @@
               {{ empTechnicalSkill.full_name }}
             </td>
             <td>{{ empTechnicalSkill.technical_skill }}</td>
+            <td>{{ empTechnicalSkill.score }}</td>
             <td>{{ empTechnicalSkill.assessment_year }}</td>
             <td>
               <button
@@ -132,7 +133,7 @@
               [options]="technicalSkills"
               optionLabel="technical_skill"
               optionValue="id"
-              placeholder="Select a TechnicalSkill"
+              placeholder="Select a Technical Skill"
               [disabled]="isProcessing"
             ></p-dropdown>
           </div>
@@ -149,6 +150,9 @@
                 rows="5"
                 cols="30"
                 style="width: 100%; resize: none"
+                max="100"
+                min="0"
+                placeholder="0-100"
               />
             </div>
           </div>

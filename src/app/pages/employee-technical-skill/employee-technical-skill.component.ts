@@ -372,6 +372,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     try {
       const isDuplicate = await this.confirmDuplicate(
         this.currentUserId,
+        this.editForm.value.technical_skill_id,
         assessmentYear
       );
       console.log('Duplicate Check Result:', isDuplicate);
@@ -442,12 +443,13 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
 
   async confirmDuplicate(
     userId: string,
+    technicalSkillId: string,
     assessmentYear: number
   ): Promise<boolean> {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/emptechnicalskill/${userId}/${assessmentYear}`
+          `https://lokakarya-be.up.railway.app/emptechnicalskill/${userId}/${technicalSkillId}/${assessmentYear}`
         )
         .toPromise();
 

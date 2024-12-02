@@ -34,7 +34,7 @@ import { forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
-  selector: 'app-employee-dev-plan',
+  selector: 'app-employee-attitude-skill',
   standalone: true,
   imports: [
     ButtonDirective,
@@ -57,12 +57,12 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
     PrimeNgModule,
     NavbarComponent,
   ],
-  templateUrl: './employee-dev-plan.component.html',
-  styleUrl: './employee-dev-plan.component.scss',
+  templateUrl: './employee-attitude-skill.component.html',
+  styleUrl: './employee-attitude-skill.component.scss',
   providers: [ConfirmationService, MessageService],
 })
-export class EmployeeDevPlanComponent implements OnInit {
-  empDevPlans: any[] = [];
+export class EmployeeAttitudeSkillComponent implements OnInit {
+  empAttitudeSkills: any[] = [];
   totalRecords: number = 0;
   loading: boolean = false;
   isProcessing: boolean = false;
@@ -76,11 +76,11 @@ export class EmployeeDevPlanComponent implements OnInit {
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
-  allEmpDevPlans: any[] = [];
+  allEmpAttitudeSkills: any[] = [];
   globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
-  devPlans: any[] = [];
+  attitudeSkills: any[] = [];
 
   constructor(
     private http: HttpClient,
@@ -92,12 +92,12 @@ export class EmployeeDevPlanComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('Initializing EmployeeDevPlanComponent');
+    console.log('Initializing EmployeeAttitudeSkillComponent');
     this.primengConfig.ripple = true;
 
     this.initializeForm();
-    this.fetchDevPlans();
-    this.fetchEmpDevPlans();
+    this.fetchAttitudeSkills();
+    this.fetchEmpAttitudeSkills();
     console.log('Component Initialized');
   }
 
@@ -154,8 +154,8 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.editForm = this.fb.group({
       id: [''],
       user_id: [''],
-      dev_plan_id: ['', Validators.required],
-      description: ['', Validators.required],
+      attitude_skill_id: ['', Validators.required],
+      score: ['', Validators.required],
       assessment_year: ['', Validators.required],
     });
     this.currentUserId = this.extractCurrentUserId() || '';
@@ -163,39 +163,43 @@ export class EmployeeDevPlanComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
-  fetchEmpDevPlans(event?: any): void {
-    console.log('Fetching Employee DevPlans...');
+  fetchEmpAttitudeSkills(event?: any): void {
+    console.log('Fetching Employee AttitudeSkills...');
 
-    if (!this.allEmpDevPlans.length || this.allEmpDevPlans.length > 0) {
+    if (
+      !this.allEmpAttitudeSkills.length ||
+      this.allEmpAttitudeSkills.length > 0
+    ) {
       this.loading = true;
 
-      let planUrl = '';
+      let attitudeSkillUrl = '';
       if (this.currentRoles.includes('HR')) {
-        planUrl = 'https://lokakarya-be.up.railway.app/empdevplan/get/all';
+        attitudeSkillUrl =
+          'https://lokakarya-be.up.railway.app/empattitudeskill/get/all';
       } else {
-        planUrl =
-          'https://lokakarya-be.up.railway.app/empdevplan/get/' +
+        attitudeSkillUrl =
+          'https://lokakarya-be.up.railway.app/empattitudeskill/get/' +
           this.currentUserId;
       }
-      console.log('DevPlan URL:', planUrl);
+      console.log('AttitudeSkill URL:', attitudeSkillUrl);
 
       this.http
-        .get<any>(planUrl)
+        .get<any>(attitudeSkillUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
-            this.allEmpDevPlans = response.content || [];
-            this.totalRecords = this.allEmpDevPlans.length;
+            this.allEmpAttitudeSkills = response.content || [];
+            this.totalRecords = this.allEmpAttitudeSkills.length;
 
             // Apply filtering, sorting, and pagination
             this.applyFiltersAndPagination(event);
           },
           error: (error) => {
-            console.error('Error Fetching Employee DevPlans:', error);
+            console.error('Error Fetching Employee AttitudeSkills:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to fetch employee plans.',
+              detail: 'Failed to fetch employee attitudeSkills.',
             });
           },
         });
@@ -209,25 +213,25 @@ export class EmployeeDevPlanComponent implements OnInit {
     const endIndex = startIndex + this.rowsPerPage;
 
     // Apply global filtering (search)
-    let filteredDevPlans = this.globalFilterValue
-      ? this.allEmpDevPlans.filter((empDevPlan) =>
-          Object.values(empDevPlan).some((value) =>
+    let filteredAttitudeSkills = this.globalFilterValue
+      ? this.allEmpAttitudeSkills.filter((empAttitudeSkill) =>
+          Object.values(empAttitudeSkill).some((value) =>
             String(value)
               .toLowerCase()
               .includes(this.globalFilterValue.toLowerCase())
           )
         )
-      : [...this.allEmpDevPlans];
+      : [...this.allEmpAttitudeSkills];
 
     if (this.showOnlyMine) {
-      filteredDevPlans = filteredDevPlans.filter(
-        (plan) => plan.user_id === this.currentUserId
+      filteredAttitudeSkills = filteredAttitudeSkills.filter(
+        (attitudeSkill) => attitudeSkill.user_id === this.currentUserId
       );
     }
 
     if (event?.sortField) {
       const sortOrder = event.sortOrder || 1;
-      filteredDevPlans.sort((a, b) => {
+      filteredAttitudeSkills.sort((a, b) => {
         const valueA = a[event.sortField];
         const valueB = b[event.sortField];
 
@@ -240,10 +244,10 @@ export class EmployeeDevPlanComponent implements OnInit {
     }
 
     // Apply pagination
-    this.empDevPlans = filteredDevPlans.slice(startIndex, endIndex);
+    this.empAttitudeSkills = filteredAttitudeSkills.slice(startIndex, endIndex);
 
     // Update totalRecords for pagination
-    this.totalRecords = filteredDevPlans.length;
+    this.totalRecords = filteredAttitudeSkills.length;
   }
 
   openCreateDialog(): void {
@@ -252,8 +256,8 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.editForm.reset({
       id: '',
       user_id: '',
-      dev_plan_id: '',
-      description: '',
+      attitude_skill_id: '',
+      score: '',
       assessment_year: '',
     });
 
@@ -261,8 +265,8 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.isProcessing = false;
   }
 
-  deleteEmpDevPlan(planId: string): void {
-    console.log('Deleting Employee DevPlan with ID:', planId);
+  deleteEmpAttitudeSkill(attitudeSkillId: string): void {
+    console.log('Deleting Employee AttitudeSkill with ID:', attitudeSkillId);
 
     if (this.isProcessing) {
       console.warn('Delete action skipped - already processing');
@@ -270,29 +274,31 @@ export class EmployeeDevPlanComponent implements OnInit {
     }
 
     this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this employee plan?',
+      message: 'Are you sure you want to delete this employee attitudeSkill?',
       accept: () => {
         // User confirmed deletion
         this.isProcessing = true;
         this.http
-          .delete(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
-          .pipe(finalize(() => (this.isProcessing = false)))
+          .delete(
+            `https://lokakarya-be.up.railway.app/empattitudeskill/${attitudeSkillId}`
+          )
+          .pipe(finalize(() => (this.isProcessing = false))) // Stop processing
           .subscribe({
             next: () => {
-              console.log('Employee DevPlan Deleted Successfully');
+              console.log('Employee AttitudeSkill Deleted Successfully');
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Employee DevPlan Deleted Successfully!',
+                detail: 'Employee AttitudeSkill Deleted Successfully!',
               });
-              this.fetchEmpDevPlans();
+              this.fetchEmpAttitudeSkills();
             },
             error: (error) => {
               console.error('Error Deleting Employee:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Failed to delete employee plan.',
+                detail: 'Failed to delete employee attitudeSkill.',
               });
             },
           });
@@ -305,45 +311,46 @@ export class EmployeeDevPlanComponent implements OnInit {
     });
   }
 
-  editEmpDevPlan(planId: string): void {
-    console.log('Editing Employee DevPlan with ID:', planId);
+  editEmpAttitudeSkill(attitudeSkillId: string): void {
+    console.log('Editing Employee AttitudeSkill with ID:', attitudeSkillId);
     this.isEditFormLoading = true;
     this.isProcessing = true;
     this.mode = 'update';
 
     this.http
-      .get<any>(`https://lokakarya-be.up.railway.app/empdevplan/${planId}`)
+      .get<any>(
+        `https://lokakarya-be.up.railway.app/empattitudeskill/${attitudeSkillId}`
+      )
       .pipe(finalize(() => (this.isProcessing = false)))
       .subscribe({
         next: (response) => {
-          const empDevPlan = response.content;
-          console.log('Fetched Employee DevPlan:', empDevPlan);
+          const empAttitudeSkill = response.content;
 
           this.editForm.patchValue({
-            id: empDevPlan.id,
+            id: empAttitudeSkill.id,
             user_id: this.currentUserId,
-            dev_plan_id: empDevPlan.dev_plan_id,
-            description: empDevPlan.too_bright,
-            assessment_year: new Date(empDevPlan.assessment_year, 0, 1),
+            attitude_skill_id: empAttitudeSkill.attitude_skill_id,
+            score: empAttitudeSkill.score,
+            assessment_year: new Date(empAttitudeSkill.assessment_year, 0, 1),
           });
 
           this.displayEditDialog = true;
           this.isEditFormLoading = false;
         },
         error: (error) => {
-          console.error('Error Fetching Employee DevPlan:', error);
+          console.error('Error Fetching Employee AttitudeSkill:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch employee plan details.',
+            detail: 'Failed to fetch employee attitudeSkill details.',
           });
           this.isEditFormLoading = false;
         },
       });
   }
 
-  async saveEmployeeDevPlan(): Promise<void> {
-    console.log('Saving Employee DevPlan. Mode:', this.mode);
+  async saveEmployeeAttitudeSkill(): Promise<void> {
+    console.log('Saving Employee AttitudeSkill. Mode:', this.mode);
 
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
@@ -362,7 +369,7 @@ export class EmployeeDevPlanComponent implements OnInit {
     try {
       const isDuplicate = await this.confirmDuplicate(
         this.currentUserId,
-        this.editForm.value.dev_plan_id,
+        this.editForm.value.attitude_skill_id,
         assessmentYear
       );
       console.log('Duplicate Check Result:', isDuplicate);
@@ -372,7 +379,8 @@ export class EmployeeDevPlanComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'You have already submitted an employee plan for this year.',
+          detail:
+            'You have already submitted an employee attitudeSkill for this year.',
         });
         return;
       }
@@ -385,7 +393,6 @@ export class EmployeeDevPlanComponent implements OnInit {
     const payload = {
       ...this.editForm.value,
       user_id: this.currentUserId,
-      too_bright: this.editForm.value.description,
       assessment_year: assessmentYear,
       ...(this.mode === 'create'
         ? { created_by: this.currentUserId }
@@ -397,35 +404,35 @@ export class EmployeeDevPlanComponent implements OnInit {
     const request$ =
       this.mode === 'create'
         ? this.http.post(
-            'https://lokakarya-be.up.railway.app/empdevplan/create',
+            'https://lokakarya-be.up.railway.app/empattitudeskill/create',
             payload
           )
         : this.http.put(
-            'https://lokakarya-be.up.railway.app/empdevplan/update',
+            'https://lokakarya-be.up.railway.app/empattitudeskill/update',
             payload
           );
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
-        console.log('Employee DevPlan Saved Successfully:', response);
+        console.log('Employee AttitudeSkill Saved Successfully:', response);
 
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Employee plan saved successfully.',
+          detail: 'Employee attitudeSkill saved successfully.',
         });
 
         this.resetSortAndFilter();
 
         this.displayEditDialog = false;
-        this.fetchEmpDevPlans();
+        this.fetchEmpAttitudeSkills();
       },
       error: (error) => {
-        console.error('Error Saving Employee DevPlan:', error);
+        console.error('Error Saving Employee AttitudeSkill:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to save employee plan.',
+          detail: 'Failed to save employee attitudeSkill.',
         });
       },
     });
@@ -433,13 +440,13 @@ export class EmployeeDevPlanComponent implements OnInit {
 
   async confirmDuplicate(
     userId: string,
-    devPlanId: string,
+    attitudeSkillId: string,
     assessmentYear: number
   ): Promise<boolean> {
     try {
       const response = await this.http
         .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/empdevplan/${userId}/${devPlanId}/${assessmentYear}`
+          `https://lokakarya-be.up.railway.app/empattitudeskill/${userId}/${attitudeSkillId}/${assessmentYear}`
         )
         .toPromise();
 
@@ -480,10 +487,10 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  submitEmployeeDevPlan(): void {
-    console.log('Submitting Employee DevPlan. Mode:', this.mode);
+  submitEmployeeAttitudeSkill(): void {
+    console.log('Submitting Employee AttitudeSkill. Mode:', this.mode);
     this.isProcessing = true;
-    this.saveEmployeeDevPlan();
+    this.saveEmployeeAttitudeSkill();
   }
 
   onSearch(): void {
@@ -491,24 +498,23 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.applyFiltersAndPagination({ first: 0 });
   }
 
-  fetchDevPlans(): void {
-    console.log('Fetching DevPlans...');
+  fetchAttitudeSkills(): void {
+    console.log('Fetching AttitudeSkills...');
     this.http
-      .get<any>('https://lokakarya-be.up.railway.app/devplan/all')
+      .get<any>('https://lokakarya-be.up.railway.app/attitudeskill/all')
       .subscribe({
-        next: (response) => {
-          this.devPlans = (response.content || []).filter(
-            (plan: any) => plan.enabled === true
+        next: (response: any) => {
+          this.attitudeSkills = (response.content || []).filter(
+            (skill: any) => skill.enabled === true
           );
-          console.log('Fetched DevPlans:', this.devPlans);
+          console.log('Fetched AttitudeSkills:', this.attitudeSkills);
         },
-
         error: (error) => {
-          console.error('Error fetching dev plans:', error);
+          console.error('Error fetching dev attitudeSkills:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch dev plans.',
+            detail: 'Failed to fetch dev attitudeSkills.',
           });
         },
       });

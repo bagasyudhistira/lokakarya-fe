@@ -3,7 +3,7 @@
 <app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
-    <h1 class="page-title">Employee DevPlan</h1>
+    <h1 class="page-title">Employee Attitude Skill</h1>
     <div class="header-actions">
       <div class="top-row">
         <div class="search-container">
@@ -40,13 +40,13 @@
     <p-card>
       <p-table
         #dt
-        [value]="empDevPlans"
+        [value]="empAttitudeSkills"
         [lazy]="true"
         [paginator]="true"
         [rows]="rowsPerPage"
         [totalRecords]="totalRecords"
         [loading]="loading"
-        (onLazyLoad)="fetchEmpDevPlans($event)"
+        (onLazyLoad)="fetchEmpAttitudeSkills($event)"
         [resizableColumns]="true"
         responsiveLayout="scroll"
         [sortMode]="'single'"
@@ -56,11 +56,11 @@
             <th *ngIf="currentRoles.includes('HR')" pSortableColumn="full_name">
               Full Name <p-sortIcon field="full_name"></p-sortIcon>
             </th>
-            <th pSortableColumn="plan">
-              DevPlan <p-sortIcon field="plan"></p-sortIcon>
+            <th pSortableColumn="attitude_skill">
+              Attitude Skill <p-sortIcon field="attitude_skill"></p-sortIcon>
             </th>
-            <th pSortableColumn="description">
-              Description <p-sortIcon field="description"></p-sortIcon>
+            <th pSortableColumn="score">
+              Score <p-sortIcon field="score"></p-sortIcon>
             </th>
             <th pSortableColumn="assessment_year">
               Assessment Year <p-sortIcon field="assessment_year"></p-sortIcon>
@@ -68,20 +68,20 @@
             <th>Actions</th>
           </tr>
         </ng-template>
-        <ng-template pTemplate="body" let-empDevPlan>
+        <ng-template pTemplate="body" let-empAttitudeSkill>
           <tr>
             <td *ngIf="currentRoles.includes('HR')">
-              {{ empDevPlan.full_name || "N/A" }}
+              {{ empAttitudeSkill.full_name }}
             </td>
-            <td>{{ empDevPlan.plan || "N/A" }}</td>
-            <td>{{ empDevPlan.too_bright || "N/A" }}</td>
-            <td>{{ empDevPlan.assessment_year || "N/A" }}</td>
+            <td>{{ empAttitudeSkill.attitude_skill }}</td>
+            <td>{{ empAttitudeSkill.score }}</td>
+            <td>{{ empAttitudeSkill.assessment_year }}</td>
             <td>
               <button
                 *ngIf="
                   !currentRoles.includes('HR') ||
                   (currentRoles.includes('HR') &&
-                    empDevPlan.user_id === currentUserId)
+                    empAttitudeSkill.user_id === currentUserId)
                 "
                 pButton
                 [icon]="
@@ -90,7 +90,7 @@
                     : 'pi pi-pencil'
                 "
                 class="p-button-rounded p-button-primary"
-                (click)="editEmpDevPlan(empDevPlan.id)"
+                (click)="editEmpAttitudeSkill(empAttitudeSkill.id)"
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
               <button
@@ -101,7 +101,7 @@
                     : 'pi pi-trash'
                 "
                 class="p-button-rounded p-button-danger"
-                (click)="deleteEmpDevPlan(empDevPlan.id)"
+                (click)="deleteEmpAttitudeSkill(empAttitudeSkill.id)"
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
             </td>
@@ -112,7 +112,9 @@
 
     <p-dialog
       header="{{
-        mode === 'create' ? 'Create Employee DevPlan' : 'Edit Employee DevPlan'
+        mode === 'create'
+          ? 'Create Employee AttitudeSkill'
+          : 'Edit Employee AttitudeSkill'
       }}"
       [(visible)]="displayEditDialog"
       [modal]="true"
@@ -121,33 +123,38 @@
       [style]="{ width: '50vw' }"
       [resizable]="false"
     >
-      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeDevPlan()">
+      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeAttitudeSkill()">
         <div class="p-fluid">
           <div class="p-field">
-            <label for="dev_plan_id">DevPlan</label>
+            <label for="attitude_skill_id">Attitude Skill</label>
             <p-dropdown
-              id="dev_plan_id"
-              formControlName="dev_plan_id"
-              [options]="devPlans"
-              optionLabel="plan"
+              id="attitude_skill_id"
+              formControlName="attitude_skill_id"
+              [options]="attitudeSkills"
+              optionLabel="attitude_skill"
               optionValue="id"
-              placeholder="Select a DevPlan"
+              placeholder="Select an Attitude Skill"
               [disabled]="isProcessing"
+              appendTo="body"
             ></p-dropdown>
           </div>
 
           <div class="p-field">
-            <label for="description">Description</label>
+            <label for="score">Score</label>
             <div style="padding: 0.5rem 0">
-              <textarea
-                id="description"
-                pInputTextarea
-                formControlName="description"
+              <input
+                id="score"
+                type="number"
+                pInputText
+                formControlName="score"
                 [disabled]="isProcessing"
                 rows="5"
                 cols="30"
                 style="width: 100%; resize: none"
-              ></textarea>
+                max="100"
+                min="0"
+                placeholder="0-100"
+              />
             </div>
           </div>
 

@@ -3,7 +3,7 @@
 <app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
-    <h1 class="page-title">Employee DevPlan</h1>
+    <h1 class="page-title">Employee Achievement Skill</h1>
     <div class="header-actions">
       <div class="top-row">
         <div class="search-container">
@@ -40,27 +40,32 @@
     <p-card>
       <p-table
         #dt
-        [value]="empDevPlans"
+        [value]="empAchievementSkills"
         [lazy]="true"
         [paginator]="true"
         [rows]="rowsPerPage"
         [totalRecords]="totalRecords"
         [loading]="loading"
-        (onLazyLoad)="fetchEmpDevPlans($event)"
+        (onLazyLoad)="fetchEmpAchievementSkills($event)"
         [resizableColumns]="true"
         responsiveLayout="scroll"
         [sortMode]="'single'"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th *ngIf="currentRoles.includes('HR')" pSortableColumn="full_name">
+            <th pSortableColumn="full_name">
               Full Name <p-sortIcon field="full_name"></p-sortIcon>
             </th>
-            <th pSortableColumn="plan">
-              DevPlan <p-sortIcon field="plan"></p-sortIcon>
+            <th pSortableColumn="achievement_skill">
+              Achievement Skill
+              <p-sortIcon field="achievement_skill"></p-sortIcon>
             </th>
-            <th pSortableColumn="description">
-              Description <p-sortIcon field="description"></p-sortIcon>
+            <th pSortableColumn="notes">
+              Notes
+              <p-sortIcon field="notes"></p-sortIcon>
+            </th>
+            <th pSortableColumn="score">
+              Score <p-sortIcon field="score"></p-sortIcon>
             </th>
             <th pSortableColumn="assessment_year">
               Assessment Year <p-sortIcon field="assessment_year"></p-sortIcon>
@@ -68,21 +73,17 @@
             <th>Actions</th>
           </tr>
         </ng-template>
-        <ng-template pTemplate="body" let-empDevPlan>
+        <ng-template pTemplate="body" let-empAchievementSkill>
           <tr>
             <td *ngIf="currentRoles.includes('HR')">
-              {{ empDevPlan.full_name || "N/A" }}
+              {{ empAchievementSkill.full_name }}
             </td>
-            <td>{{ empDevPlan.plan || "N/A" }}</td>
-            <td>{{ empDevPlan.too_bright || "N/A" }}</td>
-            <td>{{ empDevPlan.assessment_year || "N/A" }}</td>
+            <td>{{ empAchievementSkill.achievement }}</td>
+            <td>{{ empAchievementSkill.notes }}</td>
+            <td>{{ empAchievementSkill.score }}</td>
+            <td>{{ empAchievementSkill.assessment_year }}</td>
             <td>
               <button
-                *ngIf="
-                  !currentRoles.includes('HR') ||
-                  (currentRoles.includes('HR') &&
-                    empDevPlan.user_id === currentUserId)
-                "
                 pButton
                 [icon]="
                   isEditFormLoading || isProcessing
@@ -90,7 +91,7 @@
                     : 'pi pi-pencil'
                 "
                 class="p-button-rounded p-button-primary"
-                (click)="editEmpDevPlan(empDevPlan.id)"
+                (click)="editEmpAchievementSkill(empAchievementSkill.id)"
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
               <button
@@ -101,7 +102,7 @@
                     : 'pi pi-trash'
                 "
                 class="p-button-rounded p-button-danger"
-                (click)="deleteEmpDevPlan(empDevPlan.id)"
+                (click)="deleteEmpAchievementSkill(empAchievementSkill.id)"
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
             </td>
@@ -112,7 +113,9 @@
 
     <p-dialog
       header="{{
-        mode === 'create' ? 'Create Employee DevPlan' : 'Edit Employee DevPlan'
+        mode === 'create'
+          ? 'Create Employee AchievementSkill'
+          : 'Edit Employee AchievementSkill'
       }}"
       [(visible)]="displayEditDialog"
       [modal]="true"
@@ -121,33 +124,67 @@
       [style]="{ width: '50vw' }"
       [resizable]="false"
     >
-      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeDevPlan()">
+      <form
+        [formGroup]="editForm"
+        (ngSubmit)="submitEmployeeAchievementSkill()"
+      >
         <div class="p-fluid">
           <div class="p-field">
-            <label for="dev_plan_id">DevPlan</label>
+            <label *ngIf="mode === 'create'" for="id">Employee</label>
             <p-dropdown
-              id="dev_plan_id"
-              formControlName="dev_plan_id"
-              [options]="devPlans"
-              optionLabel="plan"
+              id="user_id"
+              formControlName="user_id"
+              [options]="employees"
+              optionLabel="full_name"
               optionValue="id"
-              placeholder="Select a DevPlan"
+              placeholder="Select an Employee"
+              [disabled]="isProcessing"
+            ></p-dropdown>
+          </div>
+          <div class="p-field">
+            <label for="achievement_id">Achievement Skill</label>
+            <p-dropdown
+              id="achievement_id"
+              formControlName="achievement_id"
+              [options]="achievementSkills"
+              optionLabel="achievement"
+              optionValue="id"
+              placeholder="Select an Achievement"
               [disabled]="isProcessing"
             ></p-dropdown>
           </div>
 
           <div class="p-field">
-            <label for="description">Description</label>
+            <label for="notes">Notes</label>
             <div style="padding: 0.5rem 0">
               <textarea
-                id="description"
+                id="notes"
                 pInputTextarea
-                formControlName="description"
+                formControlName="notes"
                 [disabled]="isProcessing"
                 rows="5"
                 cols="30"
                 style="width: 100%; resize: none"
               ></textarea>
+            </div>
+          </div>
+
+          <div class="p-field">
+            <label for="score">Score</label>
+            <div style="padding: 0.5rem 0">
+              <input
+                id="score"
+                type="number"
+                pInputText
+                formControlName="score"
+                [disabled]="isProcessing"
+                rows="5"
+                cols="30"
+                style="width: 100%; resize: none"
+                max="100"
+                min="0"
+                placeholder="0-100"
+              />
             </div>
           </div>
 
