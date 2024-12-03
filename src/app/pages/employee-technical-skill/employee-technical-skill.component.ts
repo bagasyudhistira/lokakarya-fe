@@ -30,7 +30,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { finalize } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
@@ -81,6 +80,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
   technicalSkills: any[] = [];
+  assessmentYear: number | null = null;
+  currentTechnicalSkill: any = null; // For the skill being edited
 
   constructor(
     private http: HttpClient,
@@ -161,6 +162,12 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     this.currentUserId = this.extractCurrentUserId() || '';
 
     console.log('Form Initialized:', this.editForm.value);
+  }
+
+  isScoresValid(): boolean {
+    return this.technicalSkills.every(
+      (skill) => skill.score !== null && skill.score >= 0 && skill.score <= 100
+    );
   }
 
   fetchEmpTechnicalSkills(event?: any): void {
@@ -264,6 +271,9 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       assessment_year: '',
     });
 
+    this.currentTechnicalSkill = null; // Reset current skill
+    this.assessmentYear = null;
+    this.fetchTechnicalSkills(); // Fetch full list of skills
     this.displayEditDialog = true;
     this.isProcessing = false;
   }
@@ -329,6 +339,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
         next: (response) => {
           const empTechnicalSkill = response.content;
 
+          console.log('Fetched Employee TechnicalSkill:', empTechnicalSkill);
+
           this.editForm.patchValue({
             id: empTechnicalSkill.id,
             user_id: this.currentUserId,
@@ -336,6 +348,21 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
             score: empTechnicalSkill.score,
             assessment_year: new Date(empTechnicalSkill.assessment_year, 0, 1),
           });
+
+          console.log('Patched Form Values:', this.editForm.value);
+
+          this.currentTechnicalSkill = {
+            id: empTechnicalSkill.id,
+            technical_skill: empTechnicalSkill.technical_skill,
+            score: empTechnicalSkill.score || null,
+            assessment_year: empTechnicalSkill.assessment_year,
+          };
+
+          this.assessmentYear = new Date(
+            empTechnicalSkill.assessment_year,
+            0,
+            1
+          ).getFullYear();
 
           this.displayEditDialog = true;
           this.isEditFormLoading = false;
@@ -355,90 +382,94 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   async saveEmployeeTechnicalSkill(): Promise<void> {
     console.log('Saving Employee TechnicalSkill. Mode:', this.mode);
 
-    if (!this.editForm.valid) {
-      console.error('Form Validation Failed:', this.editForm.errors);
-      this.isProcessing = false;
+    if (!this.assessmentYear) {
+      console.error('Assessment year is missing or invalid.');
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Please fill in all required fields.',
+        detail: 'Assessment year is required.',
       });
-      return;
-    }
-
-    const date = new Date(this.editForm.value.assessment_year);
-    const assessmentYear = date.getFullYear();
-
-    try {
-      const isDuplicate = await this.confirmDuplicate(
-        this.currentUserId,
-        this.editForm.value.technical_skill_id,
-        assessmentYear
-      );
-      console.log('Duplicate Check Result:', isDuplicate);
-      if (isDuplicate) {
-        console.log(this.currentUserId, assessmentYear);
-        this.isProcessing = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail:
-            'You have already submitted an employee technicalSkill for this year.',
-        });
-        return;
-      }
-    } catch (error) {
-      console.error('Error during duplicate check:', error);
       this.isProcessing = false;
       return;
     }
 
-    const payload = {
-      ...this.editForm.value,
-      user_id: this.currentUserId,
-      assessment_year: assessmentYear,
-      ...(this.mode === 'create'
-        ? { created_by: this.currentUserId }
-        : { updated_by: this.currentUserId }),
-    };
+    const year = new Date(this.assessmentYear).getFullYear();
 
-    console.log(payload);
+    if (isNaN(year)) {
+      console.error('Invalid assessment year:', this.assessmentYear);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Invalid assessment year. Please select a valid year.',
+      });
+      this.isProcessing = false;
+      return;
+    }
 
-    const request$ =
-      this.mode === 'create'
-        ? this.http.post(
-            'https://lokakarya-be.up.railway.app/emptechnicalskill/create',
-            payload
-          )
-        : this.http.put(
-            'https://lokakarya-be.up.railway.app/emptechnicalskill/update',
-            payload
-          );
+    this.isProcessing = true;
 
-    request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
-      next: (response: any) => {
-        console.log('Employee TechnicalSkill Saved Successfully:', response);
+    for (const skill of this.technicalSkills) {
+      const isDuplicate = await this.confirmDuplicate(
+        this.currentUserId,
+        skill.id,
+        year
+      );
 
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Employee technicalSkill saved successfully.',
-        });
-
-        this.resetSortAndFilter();
-
-        this.displayEditDialog = false;
-        this.fetchEmpTechnicalSkills();
-      },
-      error: (error) => {
-        console.error('Error Saving Employee TechnicalSkill:', error);
+      if (
+        !skill.score ||
+        skill.score < 0 ||
+        skill.score > 100 ||
+        (isDuplicate && this.mode === 'create')
+      ) {
+        console.log(
+          `Skipping invalid score or duplicate for skill: ${skill.technical_skill}, year: ${year}`
+        );
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to save employee technicalSkill.',
+          detail: `Invalid score or duplicate for skill: ${skill.technical_skill}, year: ${year}`,
         });
-      },
-    });
+        continue;
+      }
+
+      const payload = {
+        assessment_year: year,
+        user_id: this.currentUserId,
+        technical_skill_id: skill.id,
+        score: skill.score,
+        ...(this.mode === 'create'
+          ? { created_by: this.currentUserId }
+          : { updated_by: this.currentUserId }),
+      };
+
+      console.log('Submitting Payload:', payload);
+
+      try {
+        await this.http
+          .post(
+            'https://lokakarya-be.up.railway.app/emptechnicalskill/create',
+            payload
+          )
+          .toPromise();
+        console.log(`Skill "${skill.technical_skill}" saved successfully.`);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `Skill "${skill.technical_skill}" saved successfully.`,
+        });
+      } catch (error) {
+        console.error(`Error saving skill "${skill.technical_skill}":`, error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `Failed to save skill "${skill.technical_skill}".`,
+        });
+      }
+    }
+
+    this.isProcessing = false;
+    this.displayEditDialog = false;
+    this.fetchEmpTechnicalSkills();
   }
 
   async confirmDuplicate(
@@ -463,7 +494,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
           detail:
             'Unexpected response from the server while checking duplicates.',
         });
-        return false; // Default to no duplicates if response is invalid
+        return false;
       }
     } catch (error) {
       console.error('Error Checking Duplicate:', error);
@@ -472,7 +503,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
         summary: 'Error',
         detail: 'Failed to check for duplicates.',
       });
-      throw error; // Propagate the error to handle it in the calling function
+      throw error;
     }
   }
 
@@ -493,6 +524,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   submitEmployeeTechnicalSkill(): void {
     console.log('Submitting Employee TechnicalSkill. Mode:', this.mode);
     this.isProcessing = true;
+
     this.saveEmployeeTechnicalSkill();
   }
 
@@ -502,22 +534,21 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   }
 
   fetchTechnicalSkills(): void {
-    console.log('Fetching TechnicalSkills...');
     this.http
       .get<any>('https://lokakarya-be.up.railway.app/technicalskill/all')
       .subscribe({
         next: (response: any) => {
-          this.technicalSkills = (response.content || []).filter(
-            (skill: any) => skill.enabled === true
-          );
-          console.log('Fetched TechnicalSkills:', this.technicalSkills);
+          this.technicalSkills = (response.content || [])
+            .filter((skill: any) => skill.enabled === true)
+            .map((skill: any) => ({ ...skill, score: null })); // Add score field
+          console.log('Fetched Technical Skills:', this.technicalSkills);
         },
         error: (error) => {
-          console.error('Error fetching dev technicalSkills:', error);
+          console.error('Error fetching technicalSkills:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch dev technicalSkills.',
+            detail: 'Failed to fetch technical skills.',
           });
         },
       });

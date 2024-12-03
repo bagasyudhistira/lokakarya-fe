@@ -123,54 +123,73 @@
       [style]="{ width: '50vw' }"
       [resizable]="false"
     >
-      <form [formGroup]="editForm" (ngSubmit)="submitEmployeeTechnicalSkill()">
+      <form (ngSubmit)="submitEmployeeTechnicalSkill()" #form="ngForm">
         <div class="p-fluid">
-          <div class="p-field">
-            <label for="technical_skill_id">Technical Skill</label>
-            <p-dropdown
-              id="technical_skill_id"
-              formControlName="technical_skill_id"
-              [options]="technicalSkills"
-              optionLabel="technical_skill"
-              optionValue="id"
-              placeholder="Select a Technical Skill"
-              [disabled]="isProcessing"
-            ></p-dropdown>
-          </div>
-
-          <div class="p-field">
-            <label for="score">Score</label>
-            <div style="padding: 0.5rem 0">
-              <input
-                id="score"
-                type="number"
-                pInputText
-                formControlName="score"
-                [disabled]="isProcessing"
-                rows="5"
-                cols="30"
-                style="width: 100%; resize: none"
-                max="100"
-                min="0"
-                placeholder="0-100"
-              />
-            </div>
-          </div>
-
+          <!-- Assessment Year -->
           <div class="p-field">
             <label for="assessment_year">Assessment Year</label>
-            <div style="padding: 0.5rem 0">
-              <p-calendar
-                id="assessment_year"
-                view="year"
-                formControlName="assessment_year"
-                dateFormat="yy"
-                [disabled]="mode === 'update'"
-                [maxDate]="maxDate"
-              ></p-calendar>
-            </div>
+            <p-calendar
+              id="assessment_year"
+              [(ngModel)]="assessmentYear"
+              name="assessment_year"
+              view="year"
+              dateFormat="yy"
+              [disabled]="isProcessing || mode === 'update'"
+              [maxDate]="maxDate"
+              required
+            ></p-calendar>
           </div>
         </div>
+
+        <p-card>
+          <!-- Skill Score Table -->
+          <p-table
+            [value]="
+              mode === 'update' ? [currentTechnicalSkill] : technicalSkills
+            "
+            [responsiveLayout]="'scroll'"
+            [resizableColumns]="true"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Technical Skill</th>
+                <th>Score</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-skill>
+              <tr>
+                <td>
+                  <input
+                    *ngIf="mode === 'update'"
+                    id="technical_skill"
+                    type="text"
+                    pInputText
+                    [value]="technicalSkills[0]?.technical_skill"
+                    [disabled]="true"
+                  />
+                  <ng-container *ngIf="mode === 'create'">
+                    {{ skill.technical_skill }}
+                  </ng-container>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="skill.score"
+                    name="score_{{ skill.id }}"
+                    min="0"
+                    max="100"
+                    pattern="[0-9]{1,3}"
+                    placeholder="0-100"
+                    pInputText
+                    [disabled]="isProcessing"
+                    required
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-card>
+
         <div class="dialog-footer">
           <button
             pButton
@@ -193,7 +212,7 @@
                 ? 'Create'
                 : 'Save'
             "
-            [disabled]="isProcessing"
+            [disabled]="isProcessing || !isScoresValid()"
             class="p-button-primary"
           >
             <ng-container *ngIf="isProcessing">
