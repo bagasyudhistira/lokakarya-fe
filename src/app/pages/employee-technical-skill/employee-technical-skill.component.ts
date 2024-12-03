@@ -80,7 +80,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
   technicalSkills: any[] = [];
-  assessmentYear: number | null = null;
+  assessmentYear: Date | null = null;
   currentTechnicalSkill: any = null; // For the skill being edited
 
   constructor(
@@ -157,7 +157,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       user_id: [''],
       technical_skill_id: ['', Validators.required],
       score: ['', Validators.required],
-      assessment_year: ['', Validators.required],
+      assessment_year: [null, Validators.required],
     });
     this.currentUserId = this.extractCurrentUserId() || '';
 
@@ -268,7 +268,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       user_id: '',
       technical_skill_id: '',
       score: '',
-      assessment_year: '',
+      assessment_year: null,
     });
 
     this.currentTechnicalSkill = null; // Reset current skill
@@ -339,30 +339,40 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
         next: (response) => {
           const empTechnicalSkill = response.content;
 
+          // Find the technical skill name from technicalSkills array
+          const technicalSkill = this.technicalSkills.find(
+            (skill) => skill.id === empTechnicalSkill.technical_skill_id
+          );
+          const technicalSkillName = technicalSkill
+            ? technicalSkill.technical_skill
+            : 'Unknown Skill';
+
+          // Assign to currentTechnicalSkill
+          this.currentTechnicalSkill = {
+            id: empTechnicalSkill.id,
+            technical_skill_id: empTechnicalSkill.technical_skill_id,
+            technical_skill: technicalSkillName, // Correct name assigned
+            score: empTechnicalSkill.score || null,
+            assessment_year: empTechnicalSkill.assessment_year,
+          };
+
           console.log('Fetched Employee TechnicalSkill:', empTechnicalSkill);
 
+          // Patch form values
           this.editForm.patchValue({
             id: empTechnicalSkill.id,
             user_id: this.currentUserId,
             technical_skill_id: empTechnicalSkill.technical_skill_id,
             score: empTechnicalSkill.score,
-            assessment_year: new Date(empTechnicalSkill.assessment_year, 0, 1),
+            assessment_year: empTechnicalSkill.assessment_year,
           });
 
           console.log('Patched Form Values:', this.editForm.value);
 
-          this.currentTechnicalSkill = {
-            id: empTechnicalSkill.id,
-            technical_skill: empTechnicalSkill.technical_skill,
-            score: empTechnicalSkill.score || null,
-            assessment_year: empTechnicalSkill.assessment_year,
-          };
-
-          this.assessmentYear = new Date(
-            empTechnicalSkill.assessment_year,
-            0,
-            1
-          ).getFullYear();
+          // Set assessmentYear
+          this.assessmentYear = empTechnicalSkill.assessment_year
+            ? new Date(empTechnicalSkill.assessment_year, 0, 1)
+            : null;
 
           this.displayEditDialog = true;
           this.isEditFormLoading = false;
@@ -393,77 +403,106 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       return;
     }
 
-    const year = new Date(this.assessmentYear).getFullYear();
-
-    if (isNaN(year)) {
-      console.error('Invalid assessment year:', this.assessmentYear);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Invalid assessment year. Please select a valid year.',
-      });
-      this.isProcessing = false;
-      return;
-    }
+    const year = this.assessmentYear.getFullYear();
 
     this.isProcessing = true;
 
-    for (const skill of this.technicalSkills) {
-      const isDuplicate = await this.confirmDuplicate(
-        this.currentUserId,
-        skill.id,
-        year
-      );
-
-      if (
-        !skill.score ||
-        skill.score < 0 ||
-        skill.score > 100 ||
-        (isDuplicate && this.mode === 'create')
-      ) {
-        console.log(
-          `Skipping invalid score or duplicate for skill: ${skill.technical_skill}, year: ${year}`
-        );
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: `Invalid score or duplicate for skill: ${skill.technical_skill}, year: ${year}`,
-        });
-        continue;
-      }
+    if (this.mode === 'update') {
+      const skill = this.currentTechnicalSkill;
 
       const payload = {
+        id: skill.id,
         assessment_year: year,
         user_id: this.currentUserId,
-        technical_skill_id: skill.id,
+        technical_skill_id: skill.technical_skill_id,
         score: skill.score,
-        ...(this.mode === 'create'
-          ? { created_by: this.currentUserId }
-          : { updated_by: this.currentUserId }),
+        updated_by: this.currentUserId,
       };
 
       console.log('Submitting Payload:', payload);
 
       try {
         await this.http
-          .post(
-            'https://lokakarya-be.up.railway.app/emptechnicalskill/create',
+          .put(
+            `https://lokakarya-be.up.railway.app/emptechnicalskill/update`,
             payload
           )
           .toPromise();
-        console.log(`Skill "${skill.technical_skill}" saved successfully.`);
+
+        console.log(`Skill "${skill.technical_skill}" updated successfully.`);
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: `Skill "${skill.technical_skill}" saved successfully.`,
+          detail: `Skill "${skill.technical_skill}" updated successfully.`,
         });
       } catch (error) {
-        console.error(`Error saving skill "${skill.technical_skill}":`, error);
+        console.error(
+          `Error updating skill "${skill.technical_skill}":`,
+          error
+        );
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `Failed to save skill "${skill.technical_skill}".`,
+          detail: `Failed to update skill "${skill.technical_skill}".`,
         });
+      }
+    } else {
+      for (const skill of this.technicalSkills) {
+        console.log(
+          `Processing skill: ${skill.technical_skill_id}, ${skill.score}`
+        );
+
+        const isDuplicate = await this.confirmDuplicate(
+          this.currentUserId,
+          skill.id,
+          year
+        );
+        if (isDuplicate) {
+          console.log(
+            `Skipping duplicate for skill: ${skill.technical_skill}, year: ${year}`
+          );
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `Duplicate for skill: ${skill.technical_skill}, year: ${year}`,
+          });
+          continue;
+        }
+
+        const payload = {
+          assessment_year: year,
+          user_id: this.currentUserId,
+          technical_skill_id: skill.id,
+          score: skill.score,
+          created_by: this.currentUserId,
+        };
+
+        console.log('Submitting Payload:', payload);
+
+        try {
+          await this.http
+            .post(
+              'https://lokakarya-be.up.railway.app/emptechnicalskill/create',
+              payload
+            )
+            .toPromise();
+          console.log(`Skill "${skill.technical_skill}" saved successfully.`);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Skill "${skill.technical_skill}" saved successfully.`,
+          });
+        } catch (error) {
+          console.error(
+            `Error saving skill "${skill.technical_skill}":`,
+            error
+          );
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `Failed to save skill "${skill.technical_skill}".`,
+          });
+        }
       }
     }
 

@@ -212,7 +212,7 @@
                 ? 'Create'
                 : 'Save'
             "
-            [disabled]="isProcessing || !isScoresValid()"
+            [disabled]="isProcessing"
             class="p-button-primary"
           >
             <ng-container *ngIf="isProcessing">
