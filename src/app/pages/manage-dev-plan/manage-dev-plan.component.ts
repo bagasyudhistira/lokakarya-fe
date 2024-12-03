@@ -305,7 +305,7 @@ export class ManageDevPlanComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Technical skill saved successfully.',
+          detail: 'Dev plan saved successfully.',
         });
 
         this.resetSortAndFilter();
