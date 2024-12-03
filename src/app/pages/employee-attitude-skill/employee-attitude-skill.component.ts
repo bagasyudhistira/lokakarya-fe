@@ -178,7 +178,7 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
           'https://lokakarya-be.up.railway.app/empattitudeskill/get/all';
       } else {
         attitudeSkillUrl =
-          'https://lokakarya-be.up.railway.app/empattitudeskill/get/' +
+          'https://lokakarya-be.up.railway.app/empattitudeskill/get/by/' +
           this.currentUserId;
       }
       console.log('AttitudeSkill URL:', attitudeSkillUrl);
