@@ -43,7 +43,7 @@ export class ManageTechnicalSkillComponent implements OnInit {
   employees: any[] = [];
   mode: 'create' | 'edit' = 'create';
   roles: any[] = [];
-  currentUserId: string = '';
+  currentUserId: string = this.extractCurrentUserId() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;

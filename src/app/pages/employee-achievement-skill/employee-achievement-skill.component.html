@@ -130,7 +130,7 @@
       >
         <div class="p-fluid">
           <div class="p-field">
-            <label *ngIf="mode === 'create'" for="id">Employee</label>
+            <label for="id">Employee</label>
             <p-dropdown
               id="user_id"
               formControlName="user_id"
@@ -138,11 +138,12 @@
               optionLabel="full_name"
               optionValue="id"
               placeholder="Select an Employee"
-              [disabled]="isProcessing"
+              [disabled]="isProcessing || mode === 'update'"
             ></p-dropdown>
           </div>
+
           <div class="p-field">
-            <label for="achievement_id">Achievement Skill</label>
+            <label for="achievement_id">Achievement</label>
             <p-dropdown
               id="achievement_id"
               formControlName="achievement_id"
@@ -152,40 +153,6 @@
               placeholder="Select an Achievement"
               [disabled]="isProcessing"
             ></p-dropdown>
-          </div>
-
-          <div class="p-field">
-            <label for="notes">Notes</label>
-            <div style="padding: 0.5rem 0">
-              <textarea
-                id="notes"
-                pInputTextarea
-                formControlName="notes"
-                [disabled]="isProcessing"
-                rows="5"
-                cols="30"
-                style="width: 100%; resize: none"
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="p-field">
-            <label for="score">Score</label>
-            <div style="padding: 0.5rem 0">
-              <input
-                id="score"
-                type="number"
-                pInputText
-                formControlName="score"
-                [disabled]="isProcessing"
-                rows="5"
-                cols="30"
-                style="width: 100%; resize: none"
-                max="100"
-                min="0"
-                placeholder="0-100"
-              />
-            </div>
           </div>
 
           <div class="p-field">
@@ -199,6 +166,41 @@
                 [disabled]="mode === 'update'"
                 [maxDate]="maxDate"
               ></p-calendar>
+            </div>
+
+            <div class="p-field">
+              <label for="notes">Notes</label>
+              <div style="padding: 0.5rem 0">
+                <textarea
+                  id="notes"
+                  pInputTextarea
+                  formControlName="notes"
+                  [disabled]="isProcessing"
+                  rows="5"
+                  cols="30"
+                  style="width: 100%; resize: none"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="p-field">
+              <label for="score">Score</label>
+              <div style="padding: 0.5rem 0">
+                <input
+                  id="score"
+                  type="number"
+                  pInputText
+                  formControlName="score"
+                  [disabled]="isProcessing"
+                  rows="5"
+                  cols="30"
+                  style="width: 100%; resize: none"
+                  max="100"
+                  min="0"
+                  placeholder="0-100"
+                  pattern="[0-9]{1,3}"
+                />
+              </div>
             </div>
           </div>
         </div>

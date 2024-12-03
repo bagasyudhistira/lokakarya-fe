@@ -72,7 +72,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   mode: 'create' | 'update' = 'create';
   roles: any[] = [];
   selectedRoles: { [roleId: string]: boolean } = {};
-  currentUserId: string = '';
+  currentUserId: string = this.extractCurrentUserId() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;

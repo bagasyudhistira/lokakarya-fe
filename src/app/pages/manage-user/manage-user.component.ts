@@ -47,7 +47,7 @@ export class ManageUserComponent implements OnInit {
   mode: 'create' | 'edit' = 'create';
   roles: any[] = []; // Stores the available roles
   selectedRoles: { [roleId: string]: boolean } = {};
-  currentUserId: string = '';
+  currentUserId: string = this.decodeJWT() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;

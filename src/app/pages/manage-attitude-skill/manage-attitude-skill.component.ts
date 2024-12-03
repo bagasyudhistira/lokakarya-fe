@@ -41,7 +41,7 @@ export class ManageAttitudeSkillComponent implements OnInit {
   rowsPerPage: number = 5;
   mode: 'create' | 'edit' = 'create';
   roles: any[] = [];
-  currentUserId: string = '';
+  currentUserId: string = this.extractCurrentUserId() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   displayGroupEditDialog: boolean = false;
