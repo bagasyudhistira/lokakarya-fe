@@ -3,21 +3,8 @@
 <app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
-    <h1 class="page-title">Employee Technical Skill</h1>
     <div class="header-actions">
       <div class="top-row">
-        <div class="search-container">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input
-              pInputText
-              type="text"
-              placeholder="Search..."
-              [(ngModel)]="globalFilterValue"
-              (input)="onSearch()"
-            />
-          </span>
-        </div>
         <button
           pButton
           label="Create"
@@ -27,88 +14,102 @@
           [disabled]="isProcessing || isEditFormLoading"
         ></button>
       </div>
-      <div class="checkbox-container" *ngIf="currentRoles.includes('HR')">
-        <p-checkbox
-          binary="true"
-          [(ngModel)]="showOnlyMine"
-          (onChange)="applyFiltersAndPagination()"
-          label="Show Only Mine"
-        ></p-checkbox>
+    </div>
+
+    <div class="page-title">
+      <h1>{{ selectedName }}'s {{ selectedYear }} Technical Skill</h1>
+    </div>
+
+    <div class="header-actions">
+      <div class="top-row">
+        <!-- For HR users, show the user dropdown -->
+        <div *ngIf="currentRoles.includes('HR')" class="user-selection">
+          <label for="userSelect">Select User:</label>
+          <p-dropdown
+            id="userSelect"
+            [options]="employees"
+            [(ngModel)]="selectedUserId"
+            optionLabel="full_name"
+            optionValue="id"
+            placeholder="Select a user"
+            (onChange)="fetchEmpTechnicalSkills()"
+          ></p-dropdown>
+        </div>
+        <!-- Assessment Year -->
+        <div class="assessment-year-selection">
+          <label for="assessmentYear">Assessment Year:</label>
+          <p-calendar
+            id="assessmentYear"
+            [(ngModel)]="selectedAssessmentYear"
+            view="year"
+            dateFormat="yy"
+            (onSelect)="fetchEmpTechnicalSkills()"
+            [maxDate]="maxDate"
+          ></p-calendar>
+        </div>
       </div>
     </div>
 
-    <p-card>
-      <p-table
-        #dt
-        [value]="empTechnicalSkills"
-        [lazy]="true"
-        [paginator]="true"
-        [rows]="rowsPerPage"
-        [totalRecords]="totalRecords"
-        [loading]="loading"
-        (onLazyLoad)="fetchEmpTechnicalSkills($event)"
-        [resizableColumns]="true"
-        responsiveLayout="scroll"
-        [sortMode]="'single'"
-      >
-        <ng-template pTemplate="header">
+    <table class="technical-skill-table">
+      <thead>
+        <tr>
+          <th>Technical Skill</th>
+          <th>SkillEntry</th>
+          <th>Score</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let empTS of groupedEmpTechnicalSkills">
           <tr>
-            <th *ngIf="currentRoles.includes('HR')" pSortableColumn="full_name">
-              Full Name <p-sortIcon field="full_name"></p-sortIcon>
-            </th>
-            <th pSortableColumn="technical_skill">
-              Technical Skill <p-sortIcon field="technical_skill"></p-sortIcon>
-            </th>
-            <th pSortableColumn="score">
-              Score <p-sortIcon field="score"></p-sortIcon>
-            </th>
-            <th pSortableColumn="assessment_year">
-              Assessment Year <p-sortIcon field="assessment_year"></p-sortIcon>
-            </th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-empTechnicalSkill>
-          <tr>
-            <td *ngIf="currentRoles.includes('HR')">
-              {{ empTechnicalSkill.full_name }}
+            <td [attr.rowspan]="empTS.skillEntry.length">
+              {{ empTS.technical_skill_name }}
             </td>
-            <td>{{ empTechnicalSkill.technical_skill }}</td>
-            <td>{{ empTechnicalSkill.score }}</td>
-            <td>{{ empTechnicalSkill.assessment_year }}</td>
+            <td>{{ empTS.skillEntry[0].SkillEntry }}</td>
+            <td>{{ getScoreLabel(empTS.skillEntrys[0].entryScore) }}</td>
             <td>
               <button
-                *ngIf="
-                  !currentRoles.includes('HR') ||
-                  (currentRoles.includes('HR') &&
-                    empTechnicalSkill.user_id === currentUserId)
-                "
                 pButton
-                [icon]="
-                  isEditFormLoading || isProcessing
-                    ? 'pi pi-spin pi-spinner'
-                    : 'pi pi-pencil'
-                "
+                icon="pi pi-pencil"
                 class="p-button-rounded p-button-primary"
-                (click)="editEmpTechnicalSkill(empTechnicalSkill.id)"
-                [disabled]="isEditFormLoading || isProcessing"
+                (click)="editEmpTechnicalSkill(empTS.skillEntry[0].id)"
+                [disabled]="isProcessing"
               ></button>
               <button
                 pButton
-                [icon]="
-                  isEditFormLoading || isProcessing
-                    ? 'pi pi-spin pi-spinner'
-                    : 'pi pi-trash'
-                "
+                icon="pi pi-trash"
                 class="p-button-rounded p-button-danger"
-                (click)="deleteEmpTechnicalSkill(empTechnicalSkill.id)"
-                [disabled]="isEditFormLoading || isProcessing"
+                (click)="deleteEmpTechnicalSkill(empTS.skillEntry[0].id)"
+                [disabled]="isProcessing"
               ></button>
             </td>
           </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
+          <tr
+            *ngFor="let skill of empTS.skillEntry; let i = index"
+            [hidden]="i === 0"
+          >
+            <td>{{ skill.skillEntry }}</td>
+            <td>{{ getScoreLabel(skill.entryScore) }}</td>
+            <td>
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-primary"
+                (click)="editEmpTechnicalSkill(skill.id)"
+                [disabled]="isProcessing"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger"
+                (click)="deleteEmpTechnicalSkill(skill.id)"
+                [disabled]="isProcessing"
+              ></button>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
 
     <p-dialog
       header="{{
@@ -120,76 +121,109 @@
       [modal]="true"
       [closable]="true"
       [dismissableMask]="true"
-      [style]="{ width: '50vw' }"
+      [style]="{ width: '70vw' }"
       [resizable]="false"
     >
-      <form (ngSubmit)="submitEmployeeTechnicalSkill()" #form="ngForm">
+      <form (ngSubmit)="submitEmployeeTechnicalSkill()">
         <div class="p-fluid">
-          <!-- Assessment Year -->
           <div class="p-field">
             <label for="assessment_year">Assessment Year</label>
-            <p-calendar
-              id="assessment_year"
-              [(ngModel)]="assessmentYear"
-              name="assessment_year"
-              view="year"
-              dateFormat="yy"
-              [disabled]="isProcessing || mode === 'update'"
-              [maxDate]="maxDate"
-              required
-            ></p-calendar>
+            <div style="padding: 0.5rem 0">
+              <p-calendar
+                id="assessment_year"
+                [(ngModel)]="assessmentYear"
+                name="assessment_year"
+                view="year"
+                dateFormat="yy"
+                [disabled]="mode === 'update'"
+                [maxDate]="maxDate"
+                required
+              ></p-calendar>
+            </div>
+          </div>
+
+          <div class="p-field">
+            <table class="p-datatable edit-form-table">
+              <thead>
+                <tr>
+                  <th>Technical Skill</th>
+                  <th>Skill Entry(s)</th>
+                  <th>Score(s)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container
+                  *ngFor="
+                    let entry of technicalSkillEntries;
+                    trackBy: trackByTechnicalSkillId
+                  "
+                >
+                  <tr
+                    *ngFor="
+                      let skillEntry of entry.skillEntrys;
+                      let i = index;
+                      trackBy: trackById
+                    "
+                  >
+                    <td
+                      *ngIf="i === 0"
+                      [attr.rowspan]="entry.skillEntrys.length"
+                    >
+                      {{ entry.technical_skill_name }}
+                    </td>
+                    <td>
+                      <input
+                        [(ngModel)]="skillEntry.value"
+                        name="SkillEntry_{{ entry.technical_skill_id }}_{{
+                          skillEntry.id
+                        }}"
+                        pInputText
+                        [disabled]="isProcessing"
+                        required
+                      />
+                    </td>
+                    <td>
+                      <p-dropdown
+                        [(ngModel)]="entry.entryScores[i].value"
+                        name="score_{{ entry.technical_skill_id }}_{{
+                          entry.entryScores[i].id
+                        }}"
+                        [options]="scoreOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Select Score"
+                        [disabled]="isProcessing"
+                        required
+                        styleClass="score-dropdown"
+                      ></p-dropdown>
+                    </td>
+                    <td>
+                      <button
+                        pButton
+                        type="button"
+                        icon="pi pi-times"
+                        class="p-button-danger p-button-text"
+                        (click)="removeSkillEntry(entry, i)"
+                        [disabled]="
+                          isProcessing || entry.skillEntrys.length === 1
+                        "
+                      ></button>
+                      <button
+                        pButton
+                        type="button"
+                        icon="pi pi-plus"
+                        class="p-button-text add-SkillEntry-button"
+                        (click)="addSkillEntry(entry)"
+                        [disabled]="isProcessing"
+                      ></button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
           </div>
         </div>
-
-        <p-card>
-          <!-- Skill Score Table -->
-          <p-table
-            [value]="
-              mode === 'update' ? [currentTechnicalSkill] : technicalSkills
-            "
-            [responsiveLayout]="'scroll'"
-            [resizableColumns]="true"
-          >
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Technical Skill</th>
-                <th>Score</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-skill>
-              <tr>
-                <td>
-                  <input
-                    *ngIf="mode === 'update'"
-                    id="technical_skill"
-                    type="text"
-                    pInputText
-                    [value]="technicalSkills[0]?.technical_skill"
-                    [disabled]="true"
-                  />
-                  <ng-container *ngIf="mode === 'create'">
-                    {{ skill.technical_skill }}
-                  </ng-container>
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    [(ngModel)]="skill.score"
-                    name="score_{{ skill.id }}"
-                    min="0"
-                    max="100"
-                    pattern="[0-9]{1,3}"
-                    placeholder="0-100"
-                    pInputText
-                    [disabled]="isProcessing"
-                    required
-                  />
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </p-card>
-
         <div class="dialog-footer">
           <button
             pButton

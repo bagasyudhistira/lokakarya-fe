@@ -81,6 +81,20 @@ export class EmployeeDevPlanComponent implements OnInit {
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
   devPlans: any[] = [];
+  selectedUserId: string = '';
+  selectedName: string = '';
+  selectedAssessmentYear: Date = new Date();
+  selectedYear: number = this.selectedAssessmentYear.getFullYear();
+
+  groupedEmpDevPlans: any[] = []; // For grouped data
+
+  devPlanEntries: {
+    dev_plan_id: string;
+    dev_plan_name: string;
+    descriptions: string[];
+  }[] = [];
+
+  assessmentYear: Date | null = null;
 
   constructor(
     private http: HttpClient,
@@ -98,6 +112,13 @@ export class EmployeeDevPlanComponent implements OnInit {
     this.initializeForm();
     this.fetchDevPlans();
     this.fetchEmpDevPlans();
+    if (this.currentRoles.includes('HR')) {
+      this.fetchEmployees();
+      this.selectedUserId = ''; // HR needs to select a user
+    } else {
+      this.selectedUserId = this.currentUserId;
+      this.fetchEmpDevPlans();
+    }
     console.log('Component Initialized');
   }
 
@@ -163,45 +184,113 @@ export class EmployeeDevPlanComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
-  fetchEmpDevPlans(event?: any): void {
-    console.log('Fetching Employee DevPlans...');
+  fetchSelectedUserName(): void {
+    console.log('Selected User ID: ', this.selectedUserId);
 
-    if (!this.allEmpDevPlans.length || this.allEmpDevPlans.length > 0) {
-      this.loading = true;
-
-      let planUrl = '';
-      if (this.currentRoles.includes('HR')) {
-        planUrl = 'https://lokakarya-be.up.railway.app/empdevplan/get/all';
-      } else {
-        planUrl =
-          'https://lokakarya-be.up.railway.app/empdevplan/get/' +
-          this.currentUserId;
-      }
-      console.log('DevPlan URL:', planUrl);
-
-      this.http
-        .get<any>(planUrl)
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe({
-          next: (response) => {
-            this.allEmpDevPlans = response.content || [];
-            this.totalRecords = this.allEmpDevPlans.length;
-
-            // Apply filtering, sorting, and pagination
-            this.applyFiltersAndPagination(event);
-          },
-          error: (error) => {
-            console.error('Error Fetching Employee DevPlans:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to fetch employee plans.',
-            });
-          },
-        });
-    } else {
-      this.applyFiltersAndPagination(event);
+    if (!this.selectedUserId || this.selectedUserId === '') {
+      console.warn('No user selected.');
+      this.selectedUserId = this.currentUserId;
     }
+
+    const userUrl = `https://lokakarya-be.up.railway.app/appuser/get/${this.selectedUserId}`;
+
+    this.http.get<any>(userUrl).subscribe({
+      next: (response) => {
+        const user = response.content;
+        if (user && user.full_name) {
+          this.selectedName = user.full_name;
+          console.log('Fetched User Full Name:', this.selectedName);
+        } else {
+          console.warn('User full name not found in response.');
+          this.selectedName = '';
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching user full name:', error);
+        this.selectedName = '';
+      },
+    });
+  }
+
+  fetchEmployees(): void {
+    this.http
+      .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
+      .subscribe({
+        next: (response) => {
+          this.employees = response.content || [];
+          console.log('Fetched Employees:', this.employees);
+        },
+        error: (error) => {
+          console.error('Error fetching employees:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch employees.',
+          });
+        },
+      });
+  }
+
+  fetchEmpDevPlans(): void {
+    if (!this.selectedUserId) {
+      console.warn('No user selected.');
+      this.selectedUserId = this.currentUserId;
+    }
+
+    this.fetchSelectedUserName();
+    this.selectedYear = this.selectedAssessmentYear.getFullYear();
+
+    console.log(
+      `Fetching ${this.selectedYear} EmpDevPlans for User ID: ${this.selectedUserId}`
+    );
+
+    this.loading = true;
+
+    const planUrl = `https://lokakarya-be.up.railway.app/empdevplan/get/${this.selectedUserId}/${this.selectedYear}`;
+
+    console.log('Fetching EmpDevPlans from URL:', planUrl);
+
+    this.http
+      .get<any>(planUrl)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (response) => {
+          this.empDevPlans = response.content || [];
+          console.log('Fetched EmpDevPlans:', this.empDevPlans);
+
+          // Group the development plans
+          this.groupEmpDevPlans();
+        },
+        error: (error) => {
+          console.error('Error Fetching Employee DevPlans:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch employee plans.',
+          });
+        },
+      });
+  }
+
+  private groupEmpDevPlans(): void {
+    const grouped = new Map<string, any>();
+
+    for (const plan of this.empDevPlans) {
+      const key = plan.plan; // 'plan' is the development plan name
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          plan: key,
+          descriptions: [],
+          dev_plan_id: plan.dev_plan_id,
+        });
+      }
+      grouped.get(key).descriptions.push({
+        id: plan.id,
+        description: plan.too_bright,
+      });
+    }
+
+    this.groupedEmpDevPlans = Array.from(grouped.values());
   }
 
   applyFiltersAndPagination(event?: any): void {
@@ -254,11 +343,13 @@ export class EmployeeDevPlanComponent implements OnInit {
       user_id: '',
       dev_plan_id: '',
       description: '',
-      assessment_year: '',
+      assessment_year: null,
     });
 
     this.displayEditDialog = true;
     this.isProcessing = false;
+    this.fetchDevPlans();
+    this.assessmentYear = null;
   }
 
   deleteEmpDevPlan(planId: string): void {
@@ -345,90 +436,64 @@ export class EmployeeDevPlanComponent implements OnInit {
   async saveEmployeeDevPlan(): Promise<void> {
     console.log('Saving Employee DevPlan. Mode:', this.mode);
 
-    if (!this.editForm.valid) {
-      console.error('Form Validation Failed:', this.editForm.errors);
+    if (!this.assessmentYear) {
+      console.error('Assessment year is missing or invalid.');
       this.isProcessing = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Please fill in all required fields.',
+        detail: 'Assessment year is required.',
       });
       return;
     }
 
-    const date = new Date(this.editForm.value.assessment_year);
-    const assessmentYear = date.getFullYear();
+    const year = this.assessmentYear.getFullYear();
+    this.isProcessing = true;
 
-    try {
-      const isDuplicate = await this.confirmDuplicate(
-        this.currentUserId,
-        this.editForm.value.dev_plan_id,
-        assessmentYear
-      );
-      console.log('Duplicate Check Result:', isDuplicate);
-      if (isDuplicate) {
-        console.log(this.currentUserId, assessmentYear);
-        this.isProcessing = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'You have already submitted an employee plan for this year.',
-        });
-        return;
+    for (const entry of this.devPlanEntries) {
+      for (const description of entry.descriptions) {
+        if (!description || description.trim() === '') {
+          continue; // Skip empty descriptions
+        }
+
+        const payload = {
+          user_id: this.currentUserId,
+          dev_plan_id: entry.dev_plan_id,
+          assessment_year: year,
+          too_bright: description,
+          created_by: this.currentUserId,
+        };
+
+        console.log('Submitting Payload:', payload);
+
+        try {
+          await this.http
+            .post(
+              'https://lokakarya-be.up.railway.app/empdevplan/create',
+              payload
+            )
+            .toPromise();
+
+          console.log(`Plan "${entry.dev_plan_name}" saved successfully.`);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Plan "${entry.dev_plan_name}" saved successfully.`,
+          });
+        } catch (error) {
+          console.error(`Error saving plan "${entry.dev_plan_name}":`, error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `Failed to save plan "${entry.dev_plan_name}".`,
+          });
+        }
       }
-    } catch (error) {
-      console.error('Error during duplicate check:', error);
-      this.isProcessing = false;
-      return;
     }
 
-    const payload = {
-      ...this.editForm.value,
-      user_id: this.currentUserId,
-      too_bright: this.editForm.value.description,
-      assessment_year: assessmentYear,
-      ...(this.mode === 'create'
-        ? { created_by: this.currentUserId }
-        : { updated_by: this.currentUserId }),
-    };
-
-    console.log(payload);
-
-    const request$ =
-      this.mode === 'create'
-        ? this.http.post(
-            'https://lokakarya-be.up.railway.app/empdevplan/create',
-            payload
-          )
-        : this.http.put(
-            'https://lokakarya-be.up.railway.app/empdevplan/update',
-            payload
-          );
-
-    request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
-      next: (response: any) => {
-        console.log('Employee DevPlan Saved Successfully:', response);
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Employee plan saved successfully.',
-        });
-
-        this.resetSortAndFilter();
-
-        this.displayEditDialog = false;
-        this.fetchEmpDevPlans();
-      },
-      error: (error) => {
-        console.error('Error Saving Employee DevPlan:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to save employee plan.',
-        });
-      },
-    });
+    this.isProcessing = false;
+    this.displayEditDialog = false;
+    this.fetchEmpDevPlans();
   }
 
   async confirmDuplicate(
@@ -501,8 +566,13 @@ export class EmployeeDevPlanComponent implements OnInit {
             (plan: any) => plan.enabled === true
           );
           console.log('Fetched DevPlans:', this.devPlans);
-        },
 
+          this.devPlanEntries = this.devPlans.map((plan: any) => ({
+            dev_plan_id: plan.id,
+            dev_plan_name: plan.plan,
+            descriptions: [''],
+          }));
+        },
         error: (error) => {
           console.error('Error fetching dev plans:', error);
           this.messageService.add({
@@ -512,5 +582,23 @@ export class EmployeeDevPlanComponent implements OnInit {
           });
         },
       });
+  }
+
+  addDescription(entry: any): void {
+    entry.descriptions.push('');
+  }
+
+  removeDescription(entry: any, index: number): void {
+    if (entry.descriptions.length > 1) {
+      entry.descriptions.splice(index, 1);
+    }
+  }
+
+  trackByDevPlanId(index: number, entry: any): string {
+    return entry.dev_plan_id;
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 }
