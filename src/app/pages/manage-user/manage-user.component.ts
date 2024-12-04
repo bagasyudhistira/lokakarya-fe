@@ -50,9 +50,12 @@ export class ManageUserComponent implements OnInit {
   currentUserId: string = this.decodeJWT() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
+  displayCreatedDialog: boolean = true;
   editForm!: FormGroup;
   allEmployees: any[] = [];
   globalFilterValue: string = '';
+  userName: string = '';
+  generatedPassword: string = '';
   private previouslyAssignedRoles: string[] = [];
 
   constructor(
@@ -97,6 +100,26 @@ export class ManageUserComponent implements OnInit {
     }
   }
 
+  // private initializeForm() {
+  //   console.log('Initializing Edit Form...');
+  //   this.editForm = this.fb.group({
+  //     id: [''],
+  //     username: ['', Validators.required],
+  //     full_name: ['', Validators.required],
+  //     position: ['', Validators.required],
+  //     email_address: ['', [Validators.required, Validators.email]],
+  //     employee_status: ['', Validators.required],
+  //     join_date: ['', Validators.required],
+  //     enabled: [true],
+  //     division_id: ['', Validators.required],
+  //     password: ['', Validators.required],
+  //     roles: this.fb.array([]),
+  //   });
+  //   this.currentUserId = this.decodeJWT() || '';
+  //
+  //   console.log('Form Initialized:', this.editForm.value);
+  // }
+
   private initializeForm() {
     console.log('Initializing Edit Form...');
     this.editForm = this.fb.group({
@@ -109,7 +132,6 @@ export class ManageUserComponent implements OnInit {
       join_date: ['', Validators.required],
       enabled: [true],
       division_id: ['', Validators.required],
-      password: ['', Validators.required],
       roles: this.fb.array([]),
     });
     this.currentUserId = this.decodeJWT() || '';
@@ -195,6 +217,30 @@ export class ManageUserComponent implements OnInit {
     this.employees = this.allEmployees.slice(startIndex, endIndex);
   }
 
+  // openCreateDialog(): void {
+  //   console.log('Opening Create Dialog');
+  //   this.mode = 'create';
+  //   this.isProcessing = true;
+  //   this.editForm.reset({
+  //     id: '',
+  //     username: '',
+  //     full_name: '',
+  //     position: '',
+  //     email_address: '',
+  //     employee_status: '',
+  //     join_date: '',
+  //     enabled: true,
+  //     division_id: '',
+  //     password: '',
+  //   });
+  //
+  //   this.fetchDivisions(() => {
+  //     console.log('Divisions Fetched for Create');
+  //     this.displayEditDialog = true;
+  //     this.isProcessing = false;
+  //   });
+  // }
+
   openCreateDialog(): void {
     console.log('Opening Create Dialog');
     this.mode = 'create';
@@ -209,7 +255,6 @@ export class ManageUserComponent implements OnInit {
       join_date: '',
       enabled: true,
       division_id: '',
-      password: '',
     });
 
     this.fetchDivisions(() => {
@@ -218,6 +263,7 @@ export class ManageUserComponent implements OnInit {
       this.isProcessing = false;
     });
   }
+
   deleteEmployee(employeeId: string): void {
     console.log('Deleting Employee with ID:', employeeId);
 
@@ -263,6 +309,62 @@ export class ManageUserComponent implements OnInit {
     });
   }
 
+  // editEmployee(employeeId: string): void {
+  //   console.log('Editing Employee with ID:', employeeId);
+  //   this.isEditFormLoading = true; // Start loading form
+  //   this.isProcessing = true; // Start processing
+  //   this.mode = 'edit';
+  //
+  //   const employeeRequest = this.http.get<any>(
+  //     `https://lokakarya-be.up.railway.app/appuser/${employeeId}`
+  //   );
+  //   const divisionsRequest = this.http.get<any>(
+  //     `https://lokakarya-be.up.railway.app/division/all`
+  //   );
+  //
+  //   // Reset the edit form dialog visibility
+  //   this.displayEditDialog = false;
+  //
+  //   forkJoin([employeeRequest, divisionsRequest])
+  //     .pipe(finalize(() => (this.isProcessing = false))) // Stop processing after all operations
+  //     .subscribe({
+  //       next: ([employeeResponse, divisionsResponse]) => {
+  //         console.log('Employee and Divisions Fetched:', {
+  //           employee: employeeResponse,
+  //           divisions: divisionsResponse,
+  //         });
+  //
+  //         this.divisions = divisionsResponse.content;
+  //         const employee = employeeResponse.content;
+  //
+  //         this.currentUserId = this.decodeJWT() || '';
+  //         console.log('Current User ID:', this.currentUserId);
+  //
+  //         this.editForm.patchValue({
+  //           ...employee,
+  //           password: '', // Clear the password field
+  //           join_date: new Date(employee.join_date),
+  //           updated_by: this.currentUserId,
+  //         });
+  //
+  //         this.fetchUserRoles(employeeId).then(() => {
+  //           console.log('User roles loaded successfully.');
+  //           this.displayEditDialog = true; // Open the dialog after roles are loaded
+  //           this.isEditFormLoading = false; // Form is now fully loaded
+  //         });
+  //       },
+  //       error: (error) => {
+  //         console.error('Error Fetching Employee or Divisions:', error);
+  //         this.messageService.add({
+  //           severity: 'error',
+  //           summary: 'Error',
+  //           detail: 'Failed to fetch employee or division details.',
+  //         });
+  //         this.isEditFormLoading = false; // Stop loading in case of error
+  //       },
+  //     });
+  // }
+
   editEmployee(employeeId: string): void {
     console.log('Editing Employee with ID:', employeeId);
     this.isEditFormLoading = true; // Start loading form
@@ -296,7 +398,6 @@ export class ManageUserComponent implements OnInit {
 
           this.editForm.patchValue({
             ...employee,
-            password: '', // Clear the password field
             join_date: new Date(employee.join_date),
             updated_by: this.currentUserId,
           });
@@ -378,10 +479,16 @@ export class ManageUserComponent implements OnInit {
 
     request$.pipe(finalize(() => (this.isProcessing = false))).subscribe({
       next: (response: any) => {
-        const userId =
-          this.mode === 'create'
-            ? response?.content?.id
-            : this.editForm.get('id')?.value;
+        let userId: string = '';
+        console.log(response.content);
+          if (this.mode === 'create') {
+            userId =  response?.content?.id;
+            this.userName = response?.content?.username;
+            this.generatedPassword = response?.content?.password;
+
+          } else {
+            userId = this.editForm.get('id')?.value;
+          }
         if (!userId) {
           console.error('User ID could not be determined.');
           this.messageService.add({
@@ -391,7 +498,7 @@ export class ManageUserComponent implements OnInit {
           });
           return;
         }
-        console.log('User ID:', userId);
+        console.log('User ID:', );
 
         // Fetch the previously assigned roles from `this.selectedRoles`
         const previouslyAssignedRoles = Object.keys(this.selectedRoles).filter(
@@ -429,6 +536,11 @@ export class ManageUserComponent implements OnInit {
 
         // Reset sort and filter
         this.resetSortAndFilter();
+
+        // Mbuh
+        if (this.mode === 'create') {
+          this.displayCreatedDialog = true;
+        }
 
         // Close dialog and fetch employees
         this.displayEditDialog = false;
@@ -687,6 +799,45 @@ export class ManageUserComponent implements OnInit {
     });
   }
 
+  // submitEmployee(): void {
+  //   console.log('Submitting Employee. Mode:', this.mode);
+  //
+  //   this.isProcessing = true;
+  //
+  //   const username = this.editForm.get('username')?.value;
+  //
+  //   if (this.mode === 'create') {
+  //     this.validateUsername(username).then((isUnique) => {
+  //       if (!isUnique) {
+  //         this.isProcessing = false;
+  //         this.messageService.add({
+  //           severity: 'error',
+  //           summary: 'Error',
+  //           detail:
+  //             'Username already exists. Please choose a different username.',
+  //         });
+  //         return;
+  //       }
+  //       this.saveEmployee();
+  //     });
+  //   } else if (this.mode === 'edit') {
+  //     const password = this.editForm.get('password')?.value;
+  //
+  //     this.validatePassword(username, password).then((isValid) => {
+  //       if (!isValid) {
+  //         this.isProcessing = false;
+  //         this.messageService.add({
+  //           severity: 'error',
+  //           summary: 'Error',
+  //           detail: 'Invalid password. Please try again.',
+  //         });
+  //         return;
+  //       }
+  //       this.saveEmployee();
+  //     });
+  //   }
+  // }
+
   submitEmployee(): void {
     console.log('Submitting Employee. Mode:', this.mode);
 
@@ -709,20 +860,7 @@ export class ManageUserComponent implements OnInit {
         this.saveEmployee();
       });
     } else if (this.mode === 'edit') {
-      const password = this.editForm.get('password')?.value;
-
-      this.validatePassword(username, password).then((isValid) => {
-        if (!isValid) {
-          this.isProcessing = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Invalid password. Please try again.',
-          });
-          return;
-        }
-        this.saveEmployee();
-      });
+      this.saveEmployee();
     }
   }
 
@@ -763,4 +901,16 @@ export class ManageUserComponent implements OnInit {
   applyGlobalFilter(): void {
     console.log('Global filter applied:', this.globalFilterValue);
   }
+
+  copyToClipboard(value: string): void {
+    navigator.clipboard.writeText(value).then(
+      () => {
+        this.messageService.add({ severity: 'success', summary: 'Copied', detail: `Copied to clipboard: ${value}` });
+      },
+      () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to copy to clipboard' });
+      }
+    );
+  }
+
 }
