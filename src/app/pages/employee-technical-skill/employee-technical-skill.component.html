@@ -54,7 +54,7 @@
       <thead>
         <tr>
           <th>Technical Skill</th>
-          <th>SkillEntry</th>
+          <th>Skill</th>
           <th>Score</th>
           <th>Actions</th>
         </tr>
@@ -62,30 +62,30 @@
       <tbody>
         <ng-container *ngFor="let empTS of groupedEmpTechnicalSkills">
           <tr>
-            <td [attr.rowspan]="empTS.skillEntry.length">
-              {{ empTS.technical_skill_name }}
+            <td [attr.rowspan]="empTS.skillEntrys.length">
+              {{ empTS.technical_skill }}
             </td>
-            <td>{{ empTS.skillEntry[0].SkillEntry }}</td>
-            <td>{{ getScoreLabel(empTS.skillEntrys[0].entryScore) }}</td>
+            <td>{{ empTS.skillEntrys[0]?.skillEntry }}</td>
+            <td>{{ getScoreLabel(empTS.skillEntrys[0]?.entryScore) }}</td>
             <td>
               <button
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-rounded p-button-primary"
-                (click)="editEmpTechnicalSkill(empTS.skillEntry[0].id)"
+                (click)="editEmpTechnicalSkill(empTS.skillEntrys[0]?.id)"
                 [disabled]="isProcessing"
               ></button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-rounded p-button-danger"
-                (click)="deleteEmpTechnicalSkill(empTS.skillEntry[0].id)"
+                (click)="deleteEmpTechnicalSkill(empTS.skillEntrys[0]?.id)"
                 [disabled]="isProcessing"
               ></button>
             </td>
           </tr>
           <tr
-            *ngFor="let skill of empTS.skillEntry; let i = index"
+            *ngFor="let skill of empTS.skillEntrys; let i = index"
             [hidden]="i === 0"
           >
             <td>{{ skill.skillEntry }}</td>
@@ -147,7 +147,7 @@
               <thead>
                 <tr>
                   <th>Technical Skill</th>
-                  <th>Skill Entry(s)</th>
+                  <th>Skill(s)</th>
                   <th>Score(s)</th>
                   <th>Actions</th>
                 </tr>
@@ -196,6 +196,7 @@
                         [disabled]="isProcessing"
                         required
                         styleClass="score-dropdown"
+                        appendTo="body"
                       ></p-dropdown>
                     </td>
                     <td>

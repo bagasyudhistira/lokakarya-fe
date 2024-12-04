@@ -105,6 +105,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     { label: 'Professional', value: 50 },
   ];
 
+  technicalSkillsMap: Map<string, string> = new Map();
+
   constructor(
     private http: HttpClient,
     private confirmationService: ConfirmationService,
@@ -129,12 +131,6 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       this.selectedUserId = this.currentUserId;
       this.fetchEmpTechnicalSkills();
     }
-    this.technicalSkillEntries = this.technicalSkills.map((skill: any) => ({
-      technical_skill_id: skill.id,
-      technical_skill_name: skill.technical_skill,
-      skillEntrys: [{ id: this.generateUniqueId(), value: '' }],
-      entryScores: [{ id: this.generateUniqueId(), value: null }],
-    }));
     console.log('Component Initialized');
   }
 
@@ -293,10 +289,17 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     const grouped = new Map<string, any>();
 
     for (const skill of this.empTechnicalSkills) {
-      const key = skill.technical_skill; // 'technical_skill' is the technical skill name
+      const key = skill.technical_skill_id;
+
+      console.log('Grouping TechnicalSkill:', skill);
+
       if (!grouped.has(key)) {
+        // Use the technicalSkillsMap to get the name
+        const technicalSkillName =
+          this.technicalSkillsMap.get(key) || 'Unknown Skill';
+
         grouped.set(key, {
-          technical_skill: key,
+          technical_skill: technicalSkillName,
           skillEntrys: [],
           technical_skill_id: skill.technical_skill_id,
         });
@@ -484,9 +487,9 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
         }
 
         const index = entry.skillEntrys.indexOf(skillEntry);
-        const scoreValue = entry.entryScores[index];
+        const scoreEntry = entry.entryScores[index];
 
-        if (scoreValue == null || scoreValue === undefined) {
+        if (scoreEntry.value == null || scoreEntry.value === undefined) {
           console.error('Score is missing for a skill entry.');
           this.isProcessing = false;
           this.messageService.add({
@@ -501,8 +504,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
           user_id: this.currentUserId,
           technical_skill_id: entry.technical_skill_id,
           assessment_year: year,
-          skill: skillEntry,
-          score: scoreValue,
+          skill: skillEntry.value,
+          score: scoreEntry.value,
           created_by: this.currentUserId,
         };
 
@@ -621,6 +624,13 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
           );
           console.log('Fetched TechnicalSkills:', this.technicalSkills);
 
+          // Create a map for quick lookup
+          this.technicalSkillsMap.clear();
+          this.technicalSkills.forEach((skill: any) => {
+            this.technicalSkillsMap.set(skill.id, skill.technical_skill);
+          });
+
+          // Initialize technicalSkillEntries if needed
           this.technicalSkillEntries = this.technicalSkills.map(
             (skill: any) => ({
               technical_skill_id: skill.id,
