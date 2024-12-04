@@ -292,9 +292,9 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       const key = skill.technical_skill_id;
 
       console.log('Grouping TechnicalSkill:', skill);
+      console.log('Key:', key);
 
       if (!grouped.has(key)) {
-        // Use the technicalSkillsMap to get the name
         const technicalSkillName =
           this.technicalSkillsMap.get(key) || 'Unknown Skill';
 
@@ -433,23 +433,42 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       .get<any>(
         `https://lokakarya-be.up.railway.app/emptechnicalskill/${skillId}`
       )
-      .pipe(finalize(() => (this.isProcessing = false)))
+      .pipe(
+        finalize(() => {
+          this.isProcessing = false;
+          this.isEditFormLoading = false;
+        })
+      )
       .subscribe({
         next: (response) => {
           const empTechnicalSkill = response.content;
           console.log('Fetched Employee TechnicalSkill:', empTechnicalSkill);
 
-          this.editForm.patchValue({
-            id: empTechnicalSkill.id,
-            user_id: this.currentUserId,
-            technical_skill_id: empTechnicalSkill.technical_skill_id,
-            skillEntry: empTechnicalSkill.skill,
-            entryScore: empTechnicalSkill.score,
-            assessment_year: new Date(empTechnicalSkill.assessment_year, 0, 1),
-          });
+          // Reset technicalSkillEntries for update mode
+          this.technicalSkillEntries = [
+            {
+              technical_skill_id: empTechnicalSkill.technical_skill_id,
+              technical_skill_name:
+                this.technicalSkillsMap.get(
+                  empTechnicalSkill.technical_skill_id
+                ) || 'Unknown Skill',
+              skillEntrys: [
+                { id: empTechnicalSkill.id, value: empTechnicalSkill.skill },
+              ],
+              entryScores: [
+                { id: this.generateUniqueId(), value: empTechnicalSkill.score },
+              ],
+            },
+          ];
+
+          // Set the assessment year
+          this.assessmentYear = new Date(
+            empTechnicalSkill.assessment_year,
+            0,
+            1
+          );
 
           this.displayEditDialog = true;
-          this.isEditFormLoading = false;
         },
         error: (error) => {
           console.error('Error Fetching Employee TechnicalSkill:', error);
@@ -458,7 +477,6 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
             summary: 'Error',
             detail: 'Failed to fetch employee skill details.',
           });
-          this.isEditFormLoading = false;
         },
       });
   }
@@ -546,6 +564,93 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     this.fetchEmpTechnicalSkills();
   }
 
+  async updateEmployeeTechnicalSkill(): Promise<void> {
+    console.log('Updating Employee TechnicalSkill.');
+
+    if (!this.assessmentYear) {
+      console.error('Assessment year is missing or invalid.');
+      this.isProcessing = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Assessment year is required.',
+      });
+      return;
+    }
+
+    const year = this.assessmentYear.getFullYear();
+
+    const entry = this.technicalSkillEntries[0];
+    const skillEntry = entry.skillEntrys[0];
+    const scoreEntry = entry.entryScores[0];
+
+    if (!skillEntry || skillEntry.value.trim() === '') {
+      console.error('Skill entry is missing.');
+      this.isProcessing = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Skill entry is required.',
+      });
+      return;
+    }
+
+    if (scoreEntry.value == null || scoreEntry.value === undefined) {
+      console.error('Score is missing for the skill entry.');
+      this.isProcessing = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please select a score for the skill entry.',
+      });
+      return;
+    }
+
+    const payload = {
+      id: skillEntry.id,
+      user_id: this.currentUserId,
+      technical_skill_id: entry.technical_skill_id,
+      assessment_year: year,
+      skill: skillEntry.value,
+      score: scoreEntry.value,
+      updated_by: this.currentUserId,
+    };
+
+    console.log('Submitting Update Payload:', payload);
+
+    try {
+      await this.http
+        .put(
+          'https://lokakarya-be.up.railway.app/emptechnicalskill/update',
+          payload
+        )
+        .toPromise();
+
+      console.log(
+        `Skill "${entry.technical_skill_name}" updated successfully.`
+      );
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: `Skill "${entry.technical_skill_name}" updated successfully.`,
+      });
+    } catch (error) {
+      console.error(
+        `Error updating skill "${entry.technical_skill_name}":`,
+        error
+      );
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: `Failed to update skill "${entry.technical_skill_name}".`,
+      });
+    } finally {
+      this.isProcessing = false;
+      this.displayEditDialog = false;
+      this.fetchEmpTechnicalSkills();
+    }
+  }
+
   async confirmDuplicate(
     userId: string,
     technicalSkillId: string,
@@ -598,7 +703,11 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   submitEmployeeTechnicalSkill(): void {
     console.log('Submitting Employee TechnicalSkill. Mode:', this.mode);
     this.isProcessing = true;
-    this.saveEmployeeTechnicalSkill();
+    if (this.mode === 'create') {
+      this.saveEmployeeTechnicalSkill();
+    } else {
+      this.updateEmployeeTechnicalSkill();
+    }
   }
 
   onSearch(): void {

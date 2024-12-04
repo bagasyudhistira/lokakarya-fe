@@ -114,8 +114,8 @@
     <p-dialog
       header="{{
         mode === 'create'
-          ? 'Create Employee TechnicalSkill'
-          : 'Edit Employee TechnicalSkill'
+          ? 'Create Employee Technical Skills'
+          : 'Edit Employee Technical Skill'
       }}"
       [(visible)]="displayEditDialog"
       [modal]="true"
@@ -147,9 +147,9 @@
               <thead>
                 <tr>
                   <th>Technical Skill</th>
-                  <th>Skill(s)</th>
-                  <th>Score(s)</th>
-                  <th>Actions</th>
+                  <th>Skill</th>
+                  <th>Score</th>
+                  <th *ngIf="mode === 'create'">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -166,10 +166,8 @@
                       trackBy: trackById
                     "
                   >
-                    <td
-                      *ngIf="i === 0"
-                      [attr.rowspan]="entry.skillEntrys.length"
-                    >
+                    <td>
+                      <!-- Show technical skill name -->
                       {{ entry.technical_skill_name }}
                     </td>
                     <td>
@@ -199,7 +197,8 @@
                         appendTo="body"
                       ></p-dropdown>
                     </td>
-                    <td>
+                    <td *ngIf="mode === 'create'">
+                      <!-- Actions only in create mode -->
                       <button
                         pButton
                         type="button"

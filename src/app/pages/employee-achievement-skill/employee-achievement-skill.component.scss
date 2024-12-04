@@ -1,20 +1,64 @@
 .manage-user-container {
   padding: 2rem;
 
+  .edit-form-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f7f7f7;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    .p-inputgroup {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+
+      textarea {
+        flex: 1;
+        margin-right: 0.5rem;
+        resize: vertical;
+      }
+
+      button {
+        flex-shrink: 0;
+      }
+    }
+
+    .add-description-button {
+      margin-top: 0.5rem;
+    }
+  }
+
   .header-actions {
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
+    flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 1rem;
 
     .top-row {
       display: flex;
-      justify-content: space-between; /* Align search and button */
+      justify-content: space-between;
       align-items: center;
       width: 100%;
 
       .search-container {
-        flex: 1; /* Allow the search bar to expand */
+        flex: 1;
         max-width: 400px;
       }
 
@@ -22,6 +66,7 @@
         font-size: 1rem;
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
+        margin-left: auto;
       }
     }
 
@@ -48,66 +93,90 @@
     margin-bottom: 2rem;
   }
 
-  p-calendar {
-    .ui-datepicker {
-      font-size: 0.75rem;
-      padding: 0.4rem;
-    }
-
-    .ui-datepicker-header {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.2rem 0.4rem;
-      font-size: 0.8rem;
-    }
-
-    .ui-datepicker-title {
-      font-size: 0.75rem;
-      margin: 0;
-    }
-
-    .ui-datepicker-calendar {
-      font-size: 0.7rem;
-      gap: 0.1rem;
-    }
-
-    .ui-datepicker-calendar th,
-    .ui-datepicker-calendar td {
-      padding: 0.2rem;
-      min-width: 1.5rem;
-      min-height: 1.5rem;
-    }
-
-    .ui-datepicker-next,
-    .ui-datepicker-prev {
-      font-size: 0.7rem;
-      padding: 0.2rem;
-    }
-
-    .ui-datepicker-today-button,
-    .ui-datepicker-clear-button {
-      font-size: 0.7rem;
-      padding: 0.3rem 0.5rem;
-    }
-
-    .ui-datepicker-year,
-    .ui-datepicker-month {
-      font-size: 0.7rem;
-      padding: 0.2rem;
-    }
-  }
-
   .input {
     padding: 0.75rem;
   }
 }
 
-td button {
+/* Button styles */
+td button,
+.add-description-button,
+.create-button,
+.dialog-footer button {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   margin-right: 0.5rem;
+  border: none;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-td button:last-child {
+td button:last-child,
+.dialog-footer button:last-child {
   margin-right: 0;
+}
+
+/* Primary button */
+.p-button-primary {
+  background-color: #007ad9;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #006bb3;
+  }
+}
+
+/* Danger button */
+.p-button-danger {
+  background-color: #e74c3c;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #c0392b;
+  }
+}
+
+/* Rounded buttons */
+.p-button-rounded {
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+/* Text buttons */
+.p-button-text {
+  background-color: transparent;
+  color: #007ad9;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 122, 217, 0.1);
+  }
+}
+
+/* Align action buttons */
+td {
+  vertical-align: middle;
+}
+
+td:last-child {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Focus styles */
+button:focus {
+  outline: 2px solid #007ad9;
+  outline-offset: 2px;
+}
+
+/* Hover cursor */
+button:hover:not(:disabled) {
+  cursor: pointer;
 }
 
 .page-title {
@@ -144,4 +213,61 @@ td button:last-child {
 
 .p-dialog {
   display: flex;
+}
+
+.achievement-skill-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #f7f7f7;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+}
+
+.score-dropdown {
+  width: 100px; // Adjust the width as needed
+}
+
+.p-inputgroup .p-dropdown {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+/* Styles for the table container */
+.table-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align items to the right */
+  width: 100%;
+}
+
+/* Ensure the table takes full width */
+.table-container .achievement-skill-table {
+  width: 100%;
+  /* Add any other table styles you have */
+}
+
+/* Styles for the edit button container */
+.edit-button-container {
+  margin-top: 15px; /* Space between the table and the button */
+}
+
+/* Align the button to the right */
+.edit-button-container button {
+  align-self: flex-end;
 }

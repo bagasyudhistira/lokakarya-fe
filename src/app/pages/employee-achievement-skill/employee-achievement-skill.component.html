@@ -3,21 +3,8 @@
 <app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
-    <h1 class="page-title">Employee Achievement Skill</h1>
     <div class="header-actions">
       <div class="top-row">
-        <div class="search-container">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input
-              pInputText
-              type="text"
-              placeholder="Search..."
-              [(ngModel)]="globalFilterValue"
-              (input)="onSearch()"
-            />
-          </span>
-        </div>
         <button
           pButton
           label="Create"
@@ -27,181 +14,200 @@
           [disabled]="isProcessing || isEditFormLoading"
         ></button>
       </div>
-      <div class="checkbox-container" *ngIf="currentRoles.includes('HR')">
-        <p-checkbox
-          binary="true"
-          [(ngModel)]="showOnlyMine"
-          (onChange)="applyFiltersAndPagination()"
-          label="Show Only Mine"
-        ></p-checkbox>
+    </div>
+
+    <div class="page-title">
+      <h1>{{ selectedName }}'s {{ selectedYear }} Achievement Group</h1>
+    </div>
+
+    <div class="header-actions">
+      <div class="top-row">
+        <!-- For HR users, show the user dropdown -->
+        <div *ngIf="currentRoles.includes('HR')" class="user-selection">
+          <label for="userSelect">Select User:</label>
+          <p-dropdown
+            id="userSelect"
+            [options]="employees"
+            [(ngModel)]="selectedUserId"
+            optionLabel="full_name"
+            optionValue="id"
+            placeholder="Select a user"
+            (onChange)="fetchEmpAchievementSkills()"
+          ></p-dropdown>
+        </div>
+        <!-- Assessment Year -->
+        <div class="assessment-year-selection">
+          <label for="assessmentYear">Assessment Year:</label>
+          <p-calendar
+            id="assessmentYear"
+            [(ngModel)]="selectedAssessmentYear"
+            view="year"
+            dateFormat="yy"
+            (onSelect)="fetchEmpAchievementSkills()"
+            [maxDate]="maxDate"
+          ></p-calendar>
+        </div>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="achievement-skill-table">
+        <thead>
+          <tr>
+            <th>Group Name</th>
+            <th>Achievement</th>
+            <th>Notes</th>
+            <th>Score</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let group of groupedEmpAchievementSkills">
+            <tr>
+              <td [attr.rowspan]="group.achievements.length">
+                {{ group.group_name }}
+              </td>
+              <td>{{ group.achievements[0]?.achievement_name }}</td>
+              <td>{{ group.achievements[0]?.notes }}</td>
+              <td>{{ getScoreLabel(group.achievements[0]?.score) }}</td>
+              <td>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-danger"
+                  (click)="deleteEmpAchievementSkill(group.achievements[0]?.id)"
+                  [disabled]="isProcessing"
+                ></button>
+              </td>
+            </tr>
+            <tr
+              *ngFor="let achievement of group.achievements; let i = index"
+              [hidden]="i === 0"
+            >
+              <td>{{ achievement.achievement_name }}</td>
+              <td>{{ achievement.notes }}</td>
+              <td>{{ getScoreLabel(achievement.score) }}</td>
+              <td>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-danger"
+                  (click)="deleteEmpAchievementSkill(achievement.id)"
+                  [disabled]="isProcessing"
+                ></button>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+      <div class="edit-button-container">
+        <button
+          pButton
+          label="Edit"
+          icon="pi pi-pencil"
+          class="p-button-primary"
+          (click)="openEditDialog()"
+          [disabled]="isProcessing || isEditFormLoading"
+        ></button>
       </div>
     </div>
 
-    <p-card>
-      <p-table
-        #dt
-        [value]="empAchievementSkills"
-        [lazy]="true"
-        [paginator]="true"
-        [rows]="rowsPerPage"
-        [totalRecords]="totalRecords"
-        [loading]="loading"
-        (onLazyLoad)="fetchEmpAchievementSkills($event)"
-        [resizableColumns]="true"
-        responsiveLayout="scroll"
-        [sortMode]="'single'"
-      >
-        <ng-template pTemplate="header">
-          <tr>
-            <th pSortableColumn="full_name">
-              Full Name <p-sortIcon field="full_name"></p-sortIcon>
-            </th>
-            <th pSortableColumn="achievement_skill">
-              Achievement Skill
-              <p-sortIcon field="achievement_skill"></p-sortIcon>
-            </th>
-            <th pSortableColumn="notes">
-              Notes
-              <p-sortIcon field="notes"></p-sortIcon>
-            </th>
-            <th pSortableColumn="score">
-              Score <p-sortIcon field="score"></p-sortIcon>
-            </th>
-            <th pSortableColumn="assessment_year">
-              Assessment Year <p-sortIcon field="assessment_year"></p-sortIcon>
-            </th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-empAchievementSkill>
-          <tr>
-            <td *ngIf="currentRoles.includes('HR')">
-              {{ empAchievementSkill.full_name }}
-            </td>
-            <td>{{ empAchievementSkill.achievement }}</td>
-            <td>{{ empAchievementSkill.notes }}</td>
-            <td>{{ empAchievementSkill.score }}</td>
-            <td>{{ empAchievementSkill.assessment_year }}</td>
-            <td>
-              <button
-                pButton
-                [icon]="
-                  isEditFormLoading || isProcessing
-                    ? 'pi pi-spin pi-spinner'
-                    : 'pi pi-pencil'
-                "
-                class="p-button-rounded p-button-primary"
-                (click)="editEmpAchievementSkill(empAchievementSkill.id)"
-                [disabled]="isEditFormLoading || isProcessing"
-              ></button>
-              <button
-                pButton
-                [icon]="
-                  isEditFormLoading || isProcessing
-                    ? 'pi pi-spin pi-spinner'
-                    : 'pi pi-trash'
-                "
-                class="p-button-rounded p-button-danger"
-                (click)="deleteEmpAchievementSkill(empAchievementSkill.id)"
-                [disabled]="isEditFormLoading || isProcessing"
-              ></button>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
-
     <p-dialog
-      header="{{
-        mode === 'create'
-          ? 'Create Employee AchievementSkill'
-          : 'Edit Employee AchievementSkill'
-      }}"
+      header="Edit Employee Achievement Skills"
       [(visible)]="displayEditDialog"
       [modal]="true"
       [closable]="true"
       [dismissableMask]="true"
-      [style]="{ width: '50vw' }"
+      [style]="{ width: '70vw' }"
       [resizable]="false"
     >
-      <form
-        [formGroup]="editForm"
-        (ngSubmit)="submitEmployeeAchievementSkill()"
-      >
+      <form (ngSubmit)="submitEmployeeAchievementSkill()">
         <div class="p-fluid">
-          <div class="p-field">
-            <label for="id">Employee</label>
-            <p-dropdown
-              id="user_id"
-              formControlName="user_id"
-              [options]="employees"
-              optionLabel="full_name"
-              optionValue="id"
-              placeholder="Select an Employee"
-              [disabled]="isProcessing || mode === 'update'"
-            ></p-dropdown>
-          </div>
-
-          <div class="p-field">
-            <label for="achievement_id">Achievement</label>
-            <p-dropdown
-              id="achievement_id"
-              formControlName="achievement_id"
-              [options]="achievementSkills"
-              optionLabel="achievement"
-              optionValue="id"
-              placeholder="Select an Achievement"
-              [disabled]="isProcessing"
-            ></p-dropdown>
-          </div>
-
           <div class="p-field">
             <label for="assessment_year">Assessment Year</label>
             <div style="padding: 0.5rem 0">
               <p-calendar
                 id="assessment_year"
+                [(ngModel)]="assessmentYear"
+                name="assessment_year"
                 view="year"
-                formControlName="assessment_year"
                 dateFormat="yy"
-                [disabled]="mode === 'update'"
                 [maxDate]="maxDate"
+                required
               ></p-calendar>
             </div>
+          </div>
 
-            <div class="p-field">
-              <label for="notes">Notes</label>
-              <div style="padding: 0.5rem 0">
-                <textarea
-                  id="notes"
-                  pInputTextarea
-                  formControlName="notes"
-                  [disabled]="isProcessing"
-                  rows="5"
-                  cols="30"
-                  style="width: 100%; resize: none"
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="p-field">
-              <label for="score">Score</label>
-              <div style="padding: 0.5rem 0">
-                <input
-                  id="score"
-                  type="number"
-                  pInputText
-                  formControlName="score"
-                  [disabled]="isProcessing"
-                  rows="5"
-                  cols="30"
-                  style="width: 100%; resize: none"
-                  max="100"
-                  min="0"
-                  placeholder="0-100"
-                  pattern="[0-9]{1,3}"
-                />
-              </div>
-            </div>
+          <div class="p-field">
+            <table class="p-datatable edit-form-table">
+              <thead>
+                <tr>
+                  <th>Group</th>
+                  <th>Achievement</th>
+                  <th>Notes</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let group of groupedEmpAchievementSkills">
+                  <!-- Group Row -->
+                  <tr>
+                    <td [attr.rowspan]="group.achievements.length">
+                      {{ group.group_name }}
+                    </td>
+                    <td>{{ group.achievements[0]?.achievement_name }}</td>
+                    <td>
+                      <input
+                        [(ngModel)]="group.achievements[0].notes"
+                        name="Notes_{{ group.group_id }}_0"
+                        pInputText
+                        [disabled]="isProcessing"
+                      />
+                    </td>
+                    <td>
+                      <p-dropdown
+                        [(ngModel)]="group.achievements[0].score"
+                        name="Score_{{ group.group_id }}_0"
+                        [options]="scoreOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Select Score"
+                        [disabled]="isProcessing"
+                      ></p-dropdown>
+                    </td>
+                  </tr>
+                  <!-- Achievement Rows -->
+                  <tr
+                    *ngFor="
+                      let achievement of group.achievements;
+                      let i = index;
+                      trackBy: trackByIndex
+                    "
+                    [hidden]="i === 0"
+                  >
+                    <td>{{ achievement.achievement_name }}</td>
+                    <td>
+                      <input
+                        [(ngModel)]="achievement.notes"
+                        name="Notes_{{ group.group_id }}_{{ i }}"
+                        pInputText
+                        [disabled]="isProcessing"
+                      />
+                    </td>
+                    <td>
+                      <p-dropdown
+                        [(ngModel)]="achievement.score"
+                        name="Score_{{ group.group_id }}_{{ i }}"
+                        [options]="scoreOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Select Score"
+                        [disabled]="isProcessing"
+                      ></p-dropdown>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
           </div>
         </div>
         <div class="dialog-footer">
@@ -217,15 +223,7 @@
           <button
             pButton
             type="submit"
-            [label]="
-              isProcessing
-                ? mode === 'create'
-                  ? 'Creating...'
-                  : 'Saving...'
-                : mode === 'create'
-                ? 'Create'
-                : 'Save'
-            "
+            [label]="isProcessing ? 'Saving...' : 'Save'"
             [disabled]="isProcessing"
             class="p-button-primary"
           >
