@@ -50,7 +50,7 @@ export class ManageUserComponent implements OnInit {
   currentUserId: string = this.decodeJWT() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
-  displayCreatedDialog: boolean = true;
+  displayCreatedDialog: boolean = false;
   editForm!: FormGroup;
   allEmployees: any[] = [];
   globalFilterValue: string = '';

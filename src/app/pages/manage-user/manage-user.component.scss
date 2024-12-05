@@ -177,3 +177,78 @@ td button:last-child {
   width: 100%;
   max-width: 400px;
 }
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* or specify a fixed height */
+  width: 100%;  /* or specify a fixed width */
+}
+
+.pi-check-circle {
+  font-size: 5rem; /* Make the icon larger */
+  margin: 1rem;    /* Add spacing around the icon */
+  color: green;    /* Keep the green color */
+}
+
+.message-container {
+  text-align: center;
+}
+
+.success-message {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0; /* Add 1rem spacing below the message */
+}
+
+.user-info-container > .copy-text {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem; /* Add 1rem spacing between username and password sections */
+}
+
+.label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.copy-text {
+  margin-top: 1rem;
+}
+
+.clickable-text {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.message-container {
+  text-align: center;
+}
+
+.success-message {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0; /* Add 1rem spacing below the message */
+}
+
+.user-info-container > .copy-text {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem; /* Add 1rem spacing between username and password sections */
+}
+
+.label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.clickable-text {
+  cursor: pointer; /* Makes the text clickable */
+  text-decoration: underline; /* Optional: Indicates it is interactive */
+}
+
+.clickable-text:hover {
+  color: #007bff; /* Optional: Change color on hover for better feedback */
+}
+
