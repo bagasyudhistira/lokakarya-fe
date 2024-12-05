@@ -3,26 +3,11 @@
 <app-navbar></app-navbar>
 <div class="manage-user-container">
   <div class="manage-user-container">
-    <div class="header-actions">
-      <div class="top-row">
-        <button
-          pButton
-          label="Create"
-          icon="pi pi-plus"
-          class="create-button"
-          (click)="openCreateDialog()"
-          [disabled]="isProcessing || isEditFormLoading"
-        ></button>
-      </div>
-    </div>
-
     <div class="page-title">
-      <h1>{{ selectedName }}'s {{ selectedYear }} Achievement Group</h1>
+      <h1>{{ selectedName }}'s {{ selectedYear }} Achievements</h1>
     </div>
-
     <div class="header-actions">
       <div class="top-row">
-        <!-- For HR users, show the user dropdown -->
         <div *ngIf="currentRoles.includes('HR')" class="user-selection">
           <label for="userSelect">Select User:</label>
           <p-dropdown
@@ -31,11 +16,10 @@
             [(ngModel)]="selectedUserId"
             optionLabel="full_name"
             optionValue="id"
-            placeholder="Select a user"
+            placeholder="{{ selectedName }}"
             (onChange)="fetchEmpAchievementSkills()"
           ></p-dropdown>
         </div>
-        <!-- Assessment Year -->
         <div class="assessment-year-selection">
           <label for="assessmentYear">Assessment Year:</label>
           <p-calendar
@@ -45,6 +29,7 @@
             dateFormat="yy"
             (onSelect)="fetchEmpAchievementSkills()"
             [maxDate]="maxDate"
+            placeholder="{{ selectedYear }}"
           ></p-calendar>
         </div>
       </div>
@@ -53,11 +38,10 @@
       <table class="achievement-skill-table">
         <thead>
           <tr>
-            <th>Group Name</th>
+            <th>Type</th>
             <th>Achievement</th>
             <th>Notes</th>
             <th>Score</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -69,15 +53,6 @@
               <td>{{ group.achievements[0]?.achievement_name }}</td>
               <td>{{ group.achievements[0]?.notes }}</td>
               <td>{{ getScoreLabel(group.achievements[0]?.score) }}</td>
-              <td>
-                <button
-                  pButton
-                  icon="pi pi-trash"
-                  class="p-button-rounded p-button-danger"
-                  (click)="deleteEmpAchievementSkill(group.achievements[0]?.id)"
-                  [disabled]="isProcessing"
-                ></button>
-              </td>
             </tr>
             <tr
               *ngFor="let achievement of group.achievements; let i = index"
@@ -86,15 +61,6 @@
               <td>{{ achievement.achievement_name }}</td>
               <td>{{ achievement.notes }}</td>
               <td>{{ getScoreLabel(achievement.score) }}</td>
-              <td>
-                <button
-                  pButton
-                  icon="pi pi-trash"
-                  class="p-button-rounded p-button-danger"
-                  (click)="deleteEmpAchievementSkill(achievement.id)"
-                  [disabled]="isProcessing"
-                ></button>
-              </td>
             </tr>
           </ng-container>
         </tbody>

@@ -27,10 +27,8 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { PrimeNgModule } from '../../shared/primeng/primeng.module';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { finalize } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
@@ -69,7 +67,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
   rowsPerPage: number = 5;
   maxDate: Date = new Date();
   employees: any[] = [];
-  mode: 'create' | 'update' = 'create';
   roles: any[] = [];
   selectedRoles: { [roleId: string]: boolean } = {};
   currentUserId: string = this.extractCurrentUserId() || '';
@@ -112,11 +109,9 @@ export class EmployeeAchievementSkillComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private fb: FormBuilder,
-    private primengConfig: PrimeNGConfig,
-    private router: Router
+    private primengConfig: PrimeNGConfig
   ) {}
 
   ngOnInit(): void {
@@ -138,10 +133,11 @@ export class EmployeeAchievementSkillComponent implements OnInit {
     this.fetchSelectedUserName();
     if (this.currentRoles.includes('HR')) {
       this.fetchEmployees();
-      this.selectedUserId = ''; // HR needs to select a user
+      this.selectedUserId = '';
     } else {
       this.selectedUserId = this.currentUserId;
     }
+    this.selectedAssessmentYear = new Date();
     console.log('Component Initialized');
   }
 
@@ -257,6 +253,10 @@ export class EmployeeAchievementSkillComponent implements OnInit {
       console.warn('No user selected.');
       this.selectedUserId = this.currentUserId;
     }
+    if (!this.selectedAssessmentYear) {
+      console.warn('No year selected.');
+      this.selectedAssessmentYear = new Date();
+    }
 
     this.fetchSelectedUserName();
     this.selectedYear = this.selectedAssessmentYear.getFullYear();
@@ -265,13 +265,13 @@ export class EmployeeAchievementSkillComponent implements OnInit {
       `Fetching ${this.selectedYear} EmpAchievementSkills for User ID: ${this.selectedUserId}`
     );
 
-    this.loading = true;
+    this.loading = true; // Show the spinner
 
     const skillUrl = `https://lokakarya-be.up.railway.app/empachievementskill/get/${this.selectedUserId}/${this.selectedYear}`;
 
     this.http
       .get<any>(skillUrl)
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => (this.loading = false))) // Hide spinner after loading
       .subscribe({
         next: (response) => {
           this.empAchievementSkills = response.content || [];
@@ -292,44 +292,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
           });
         },
       });
-  }
-
-  private groupEmpAchievementSkills(): void {
-    const grouped = new Map<string, any>();
-
-    for (const skill of this.empAchievementSkills) {
-      console.log('Grouping EmpAchievementSkill:', skill);
-      const groupId = skill.group_id;
-      const achievementId = skill.achievement_id;
-
-      // Check if the group already exists
-      if (!grouped.has(groupId)) {
-        const groupName =
-          this.groupAchievementsMap.get(groupId) || 'Unknown Group';
-
-        grouped.set(groupId, {
-          group_name: groupName,
-          group_id: groupId,
-          achievements: [],
-        });
-      }
-
-      // Get the achievement name
-      const achievementName =
-        this.achievementSkillsMap.get(achievementId) || 'Unknown Achievement';
-
-      // Add the achievement to the group
-      grouped.get(groupId).achievements.push({
-        id: skill.id,
-        achievement_id: achievementId,
-        achievement_name: achievementName,
-        notes: skill.notes,
-        score: skill.score,
-      });
-    }
-
-    // Convert grouped data into an array for display
-    this.groupedEmpAchievementSkills = Array.from(grouped.values());
   }
 
   applyFiltersAndPagination(event?: any): void {
@@ -377,75 +339,10 @@ export class EmployeeAchievementSkillComponent implements OnInit {
     this.totalRecords = filteredAchievementSkills.length;
   }
 
-  openCreateDialog(): void {
-    console.log('Opening Create Dialog');
-    this.mode = 'create';
-    this.editForm.reset({
-      id: '',
-      user_id: '',
-      achievement_id: '',
-      skillEntry: '',
-      entryScore: '',
-      assessment_year: null,
-    });
-
-    this.displayEditDialog = true;
-    this.isProcessing = false;
-    this.fetchAchievementSkills();
-    this.assessmentYear = null;
-  }
-
-  deleteEmpAchievementSkill(skillId: string): void {
-    console.log('Deleting Employee AchievementSkill with ID:', skillId);
-
-    if (this.isProcessing) {
-      console.warn('Delete action skipped - already processing');
-      return;
-    }
-
-    this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this employee skill?',
-      accept: () => {
-        // User confirmed deletion
-        this.isProcessing = true;
-        this.http
-          .delete(
-            `https://lokakarya-be.up.railway.app/empachievementskill/${skillId}`
-          )
-          .pipe(finalize(() => (this.isProcessing = false)))
-          .subscribe({
-            next: () => {
-              console.log('Employee AchievementSkill Deleted Successfully');
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Employee AchievementSkill Deleted Successfully!',
-              });
-              this.fetchEmpAchievementSkills();
-            },
-            error: (error) => {
-              console.error('Error Deleting Employee:', error);
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to delete employee skill.',
-              });
-            },
-          });
-      },
-      reject: () => {
-        // User canceled deletion
-        console.log('Delete action canceled');
-        this.isProcessing = false;
-      },
-    });
-  }
-
   editEmpAchievementSkill(skillId: string): void {
     console.log('Editing Employee AchievementSkill with ID:', skillId);
     this.isEditFormLoading = true;
     this.isProcessing = true;
-    this.mode = 'update';
 
     this.http
       .get<any>(
@@ -465,7 +362,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
             empAchievementSkill
           );
 
-          // Reset achievementSkillEntries for update mode
           this.achievementSkillEntries = [
             {
               achievement_id: empAchievementSkill.achievement_id,
@@ -526,7 +422,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
 
     for (const group of this.groupedEmpAchievementSkills) {
       for (const achievement of group.achievements) {
-        // Skip if no notes and score provided
         if (
           (!achievement.notes || achievement.notes.trim() === '') &&
           (achievement.score == null || achievement.score === undefined)
@@ -542,9 +437,7 @@ export class EmployeeAchievementSkillComponent implements OnInit {
           score: achievement.score,
         };
 
-        // Check if updating or creating
         if (achievement.emp_skill_id) {
-          // Update existing
           payload['id'] = achievement.emp_skill_id;
           payload['updated_by'] = this.currentUserId;
           requests.push(
@@ -556,7 +449,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
               .toPromise()
           );
         } else {
-          // Create new
           payload['created_by'] = this.currentUserId;
           requests.push(
             this.http
@@ -730,7 +622,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
     this.isProcessing = false;
     this.assessmentYear = this.selectedAssessmentYear;
 
-    // Ensure the latest data is loaded
     this.fetchEmpAchievementSkills();
   }
 

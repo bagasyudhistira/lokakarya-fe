@@ -271,3 +271,12 @@ button:hover:not(:disabled) {
 .edit-button-container button {
   align-self: flex-end;
 }
+
+.loading-text {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.table-container {
+  position: relative;
+}

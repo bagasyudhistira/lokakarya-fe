@@ -197,6 +197,36 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
+  private groupAllTechnicalSkills(): void {
+    const grouped = new Map<string, any>();
+
+    this.technicalSkills.forEach((techSkill) => {
+      grouped.set(techSkill.id, {
+        technical_skill_id: techSkill.id,
+        technical_skill_name: techSkill.technical_skill,
+        skillEntrys: [],
+      });
+    });
+
+    this.empTechnicalSkills.forEach((empSkill) => {
+      const techSkillId = empSkill.technical_skill_id;
+      const group = grouped.get(techSkillId);
+      if (group) {
+        group.skillEntrys.push({
+          id: empSkill.id,
+          skillEntry: empSkill.skill,
+          entryScore: empSkill.score,
+        });
+      } else {
+        console.warn(
+          `Technical Skill ID ${techSkillId} not found for employee skill ${empSkill.id}`
+        );
+      }
+    });
+
+    this.groupedEmpTechnicalSkills = Array.from(grouped.values());
+  }
+
   fetchSelectedUserName(): void {
     if (!this.selectedUserId || this.selectedUserId === '') {
       console.warn('No user selected.');
