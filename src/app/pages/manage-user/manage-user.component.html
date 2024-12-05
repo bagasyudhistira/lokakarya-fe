@@ -86,6 +86,7 @@
               ></button>
               <button
                 pButton
+                *ngIf="currentUserId !== employee.id"
                 [icon]="
                   isEditFormLoading || isProcessing
                     ? 'pi pi-spin pi-spinner'
