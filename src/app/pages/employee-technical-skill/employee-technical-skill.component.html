@@ -1,260 +1,211 @@
 <p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
 <app-navbar></app-navbar>
 <div class="manage-user-container">
-  <div class="manage-user-container">
-    <div class="header-actions">
-      <div class="top-row">
-        <button
-          pButton
-          label="Create"
-          icon="pi pi-plus"
-          class="create-button"
-          (click)="openCreateDialog()"
-          [disabled]="isProcessing || isEditFormLoading"
-        ></button>
+  <div class="page-title">
+    <h1>{{ selectedName }}'s {{ selectedYear }} Technical Skill</h1>
+  </div>
+
+  <div class="header-actions">
+    <div class="top-row">
+      <!-- For HR users, show the user dropdown -->
+      <div *ngIf="currentRoles.includes('HR')" class="user-selection">
+        <label for="userSelect">Select User:</label>
+        <p-dropdown
+          id="userSelect"
+          [options]="employees"
+          [(ngModel)]="selectedUserId"
+          optionLabel="full_name"
+          optionValue="id"
+          placeholder="Select a user"
+          (onChange)="fetchEmpTechnicalSkills()"
+        ></p-dropdown>
+      </div>
+      <!-- Assessment Year -->
+      <div class="assessment-year-selection">
+        <label for="assessmentYear">Assessment Year:</label>
+        <p-calendar
+          id="assessmentYear"
+          [(ngModel)]="selectedAssessmentYear"
+          view="year"
+          dateFormat="yy"
+          (onSelect)="fetchEmpTechnicalSkills()"
+          [maxDate]="maxDate"
+        ></p-calendar>
       </div>
     </div>
+  </div>
 
-    <div class="page-title">
-      <h1>{{ selectedName }}'s {{ selectedYear }} Technical Skill</h1>
-    </div>
-
-    <div class="header-actions">
-      <div class="top-row">
-        <!-- For HR users, show the user dropdown -->
-        <div *ngIf="currentRoles.includes('HR')" class="user-selection">
-          <label for="userSelect">Select User:</label>
-          <p-dropdown
-            id="userSelect"
-            [options]="employees"
-            [(ngModel)]="selectedUserId"
-            optionLabel="full_name"
-            optionValue="id"
-            placeholder="Select a user"
-            (onChange)="fetchEmpTechnicalSkills()"
-          ></p-dropdown>
-        </div>
-        <!-- Assessment Year -->
-        <div class="assessment-year-selection">
-          <label for="assessmentYear">Assessment Year:</label>
-          <p-calendar
-            id="assessmentYear"
-            [(ngModel)]="selectedAssessmentYear"
-            view="year"
-            dateFormat="yy"
-            (onSelect)="fetchEmpTechnicalSkills()"
-            [maxDate]="maxDate"
-          ></p-calendar>
-        </div>
-      </div>
-    </div>
-
+  <div class="table-container">
+    <!-- Technical Skill Table -->
     <table class="technical-skill-table">
       <thead>
         <tr>
-          <th>Technical Skill</th>
+          <th>Type</th>
           <th>Skill</th>
           <th>Score</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let empTS of groupedEmpTechnicalSkills">
+        <ng-container
+          *ngFor="
+            let group of groupedEmpTechnicalSkills;
+            trackBy: trackByTechnicalSkillId
+          "
+        >
           <tr>
-            <td [attr.rowspan]="empTS.skillEntrys.length">
-              {{ empTS.technical_skill }}
+            <td [attr.rowspan]="group.skillEntrys.length">
+              {{ group.technical_skill_name }}
             </td>
-            <td>{{ empTS.skillEntrys[0]?.skillEntry }}</td>
-            <td>{{ getScoreLabel(empTS.skillEntrys[0]?.entryScore) }}</td>
-            <td>
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary"
-                (click)="editEmpTechnicalSkill(empTS.skillEntrys[0]?.id)"
-                [disabled]="isProcessing"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger"
-                (click)="deleteEmpTechnicalSkill(empTS.skillEntrys[0]?.id)"
-                [disabled]="isProcessing"
-              ></button>
-            </td>
+            <td>{{ group.skillEntrys[0]?.skillEntry }}</td>
+            <td>{{ getScoreLabel(group.skillEntrys[0]?.entryScore) }}</td>
           </tr>
           <tr
-            *ngFor="let skill of empTS.skillEntrys; let i = index"
+            *ngFor="
+              let entry of group.skillEntrys;
+              let i = index;
+              trackBy: trackByIndex
+            "
             [hidden]="i === 0"
           >
-            <td>{{ skill.skillEntry }}</td>
-            <td>{{ getScoreLabel(skill.entryScore) }}</td>
-            <td>
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary"
-                (click)="editEmpTechnicalSkill(skill.id)"
-                [disabled]="isProcessing"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger"
-                (click)="deleteEmpTechnicalSkill(skill.id)"
-                [disabled]="isProcessing"
-              ></button>
-            </td>
+            <td>{{ entry.skillEntry }}</td>
+            <td>{{ getScoreLabel(entry.entryScore) }}</td>
           </tr>
         </ng-container>
       </tbody>
     </table>
 
-    <p-dialog
-      header="{{
-        mode === 'create'
-          ? 'Create Employee Technical Skills'
-          : 'Edit Employee Technical Skill'
-      }}"
-      [(visible)]="displayEditDialog"
-      [modal]="true"
-      [closable]="true"
-      [dismissableMask]="true"
-      [style]="{ width: '70vw' }"
-      [resizable]="false"
-    >
-      <form (ngSubmit)="submitEmployeeTechnicalSkill()">
-        <div class="p-fluid">
-          <div class="p-field">
-            <label for="assessment_year">Assessment Year</label>
-            <div style="padding: 0.5rem 0">
-              <p-calendar
-                id="assessment_year"
-                [(ngModel)]="assessmentYear"
-                name="assessment_year"
-                view="year"
-                dateFormat="yy"
-                [disabled]="mode === 'update'"
-                [maxDate]="maxDate"
-                required
-              ></p-calendar>
-            </div>
-          </div>
+    <!-- Edit Button -->
+    <div class="edit-button-container">
+      <button
+        pButton
+        label="Edit"
+        icon="pi pi-pencil"
+        class="p-button-primary"
+        (click)="openEditDialog()"
+        [disabled]="isProcessing || isEditFormLoading"
+      ></button>
+    </div>
+  </div>
 
-          <div class="p-field">
-            <table class="p-datatable edit-form-table">
-              <thead>
+  <!-- Edit Dialog -->
+  <p-dialog
+    header="Edit Employee Technical Skills"
+    [(visible)]="displayEditDialog"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [style]="{ width: '70vw' }"
+    [resizable]="false"
+  >
+    <form (ngSubmit)="submitEmployeeTechnicalSkill()">
+      <div class="p-fluid">
+        <div class="p-field">
+          <label for="assessment_year">Assessment Year</label>
+          <div style="padding: 0.5rem 0">
+            <p-calendar
+              id="assessment_year"
+              [(ngModel)]="assessmentYear"
+              name="assessment_year"
+              view="year"
+              dateFormat="yy"
+              [maxDate]="maxDate"
+              required
+            ></p-calendar>
+          </div>
+        </div>
+
+        <div class="p-field">
+          <table class="p-datatable edit-form-table">
+            <thead>
+              <tr>
+                <th>Technical Skill</th>
+                <th>Skill Entry</th>
+                <th>Score</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container
+                *ngFor="
+                  let group of groupedEmpTechnicalSkills;
+                  trackBy: trackByTechnicalSkillId
+                "
+              >
+                <!-- Group Row -->
                 <tr>
-                  <th>Technical Skill</th>
-                  <th>Skill</th>
-                  <th>Score</th>
-                  <th *ngIf="mode === 'create'">Actions</th>
+                  <td [attr.rowspan]="group.skillEntrys.length + 1">
+                    {{ group.technical_skill_name }}
+                  </td>
+                  <td colspan="3">
+                    <button
+                      (click)="addSkillEntry(group)"
+                      pButton
+                      label="Add Skill Entry"
+                    ></button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <ng-container
+                <!-- Skill Entries -->
+                <tr
                   *ngFor="
-                    let entry of technicalSkillEntries;
-                    trackBy: trackByTechnicalSkillId
+                    let entry of group.skillEntrys;
+                    let i = index;
+                    trackBy: trackByIndex
                   "
                 >
-                  <tr
-                    *ngFor="
-                      let skillEntry of entry.skillEntrys;
-                      let i = index;
-                      trackBy: trackById
-                    "
-                  >
-                    <td>
-                      <!-- Show technical skill name -->
-                      {{ entry.technical_skill_name }}
-                    </td>
-                    <td>
-                      <input
-                        [(ngModel)]="skillEntry.value"
-                        name="SkillEntry_{{ entry.technical_skill_id }}_{{
-                          skillEntry.id
-                        }}"
-                        pInputText
-                        [disabled]="isProcessing"
-                        required
-                      />
-                    </td>
-                    <td>
-                      <p-dropdown
-                        [(ngModel)]="entry.entryScores[i].value"
-                        name="score_{{ entry.technical_skill_id }}_{{
-                          entry.entryScores[i].id
-                        }}"
-                        [options]="scoreOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Select Score"
-                        [disabled]="isProcessing"
-                        required
-                        styleClass="score-dropdown"
-                        appendTo="body"
-                      ></p-dropdown>
-                    </td>
-                    <td *ngIf="mode === 'create'">
-                      <!-- Actions only in create mode -->
-                      <button
-                        pButton
-                        type="button"
-                        icon="pi pi-times"
-                        class="p-button-danger p-button-text"
-                        (click)="removeSkillEntry(entry, i)"
-                        [disabled]="
-                          isProcessing || entry.skillEntrys.length === 1
-                        "
-                      ></button>
-                      <button
-                        pButton
-                        type="button"
-                        icon="pi pi-plus"
-                        class="p-button-text add-SkillEntry-button"
-                        (click)="addSkillEntry(entry)"
-                        [disabled]="isProcessing"
-                      ></button>
-                    </td>
-                  </tr>
-                </ng-container>
-              </tbody>
-            </table>
-          </div>
+                  <td>
+                    <input
+                      [(ngModel)]="entry.skillEntry"
+                      name="skillEntry_{{ group.technical_skill_id }}_{{ i }}"
+                      pInputText
+                      required
+                    />
+                  </td>
+                  <td>
+                    <p-dropdown
+                      [(ngModel)]="entry.entryScore"
+                      name="entryScore_{{ group.technical_skill_id }}_{{ i }}"
+                      [options]="scoreOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Select Score"
+                      required
+                    ></p-dropdown>
+                  </td>
+                  <td>
+                    <button
+                      (click)="removeSkillEntry(group, i)"
+                      pButton
+                      icon="pi pi-trash"
+                    ></button>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
         </div>
-        <div class="dialog-footer">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-times"
-            class="p-button-text"
-            label="Cancel"
-            [disabled]="isProcessing"
-            (click)="displayEditDialog = false"
-          ></button>
-          <button
-            pButton
-            type="submit"
-            [label]="
-              isProcessing
-                ? mode === 'create'
-                  ? 'Creating...'
-                  : 'Saving...'
-                : mode === 'create'
-                ? 'Create'
-                : 'Save'
-            "
-            [disabled]="isProcessing"
-            class="p-button-primary"
-          >
-            <ng-container *ngIf="isProcessing">
-              <i class="pi pi-spin pi-spinner"></i>
-            </ng-container>
-          </button>
-        </div>
-      </form>
-    </p-dialog>
-  </div>
+      </div>
+      <div class="dialog-footer">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-times"
+          class="p-button-text"
+          label="Cancel"
+          [disabled]="isProcessing"
+          (click)="displayEditDialog = false"
+        ></button>
+        <button
+          pButton
+          type="submit"
+          [label]="isProcessing ? 'Saving...' : 'Save'"
+          [disabled]="isProcessing"
+          class="p-button-primary"
+        >
+          <ng-container *ngIf="isProcessing">
+            <i class="pi pi-spin pi-spinner"></i>
+          </ng-container>
+        </button>
+      </div>
+    </form>
+  </p-dialog>
 </div>
