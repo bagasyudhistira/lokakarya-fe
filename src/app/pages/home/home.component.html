@@ -1,5 +1,7 @@
-<app-navbar (onLogout)="logout()"></app-navbar>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
+<app-navbar (onLogout)="logout()"></app-navbar>
 <div class="home-container">
   <h1 *ngIf="!loading && !errorMessage">
     Welcome, {{ userDetails?.full_name }}
@@ -18,6 +20,97 @@
       <h2 class="card-title">Profile</h2>
       <p><strong>Position:</strong> {{ userDetails?.position }}</p>
       <p><strong>Division:</strong> {{ userDetails?.division_name }}</p>
+
+      <!-- Button to open the Change Password dialog -->
+      <button
+        pButton
+        label="Change Password"
+        icon="pi pi-key"
+        class="p-button-warning"
+        (click)="openChangePasswordDialog()"
+      ></button>
     </div>
   </div>
+
+  <p-dialog
+    class="change-password-dialog"
+    [(visible)]="displayChangePasswordDialog"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [resizable]="false"
+    [closable]="true"
+  >
+    <p-header>Change Password</p-header>
+    <form [formGroup]="changePasswordForm" (ngSubmit)="changePassword()">
+      <div class="p-field">
+        <label for="currentPassword">Current Password</label>
+        <input
+          type="password"
+          id="currentPassword"
+          pInputText
+          formControlName="currentPassword"
+          placeholder="Enter current password"
+          required
+          [attr.disabled]="changePassLoading ? true : null"
+        />
+      </div>
+
+      <div class="p-field">
+        <label for="newPassword">New Password</label>
+        <input
+          type="password"
+          id="newPassword"
+          pInputText
+          formControlName="newPassword"
+          placeholder="Enter new password"
+          required
+          [attr.disabled]="changePassLoading ? true : null"
+        />
+      </div>
+
+      <div class="p-field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          pInputText
+          formControlName="confirmPassword"
+          placeholder="Confirm new password"
+          required
+          [attr.disabled]="changePassLoading ? true : null"
+          (input)="checkPasswordMatch()"
+        />
+      </div>
+
+      <div class="dialog-footer">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          icon="pi pi-times"
+          class="p-button-text"
+          (click)="displayChangePasswordDialog = false"
+          [disabled]="changePassLoading"
+        ></button>
+        <button
+          pButton
+          type="submit"
+          label="Submit"
+          icon="pi pi-check"
+          class="p-button-primary"
+          [disabled]="
+            changePassLoading || !changePasswordForm.valid || !passwordMatches
+          "
+        ></button>
+      </div>
+      <p
+        *ngIf="
+          !passwordMatches && changePasswordForm.get('confirmPassword')?.touched
+        "
+        class="validation-message"
+      >
+        Passwords do not match.
+      </p>
+    </form>
+  </p-dialog>
 </div>

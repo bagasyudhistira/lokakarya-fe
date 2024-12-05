@@ -485,14 +485,13 @@ export class ManageUserComponent implements OnInit {
       next: (response: any) => {
         let userId: string = '';
         console.log(response.content);
-          if (this.mode === 'create') {
-            userId =  response?.content?.id;
-            this.userName = response?.content?.username;
-            this.generatedPassword = response?.content?.password;
-
-          } else {
-            userId = this.editForm.get('id')?.value;
-          }
+        if (this.mode === 'create') {
+          userId = response?.content?.id;
+          this.userName = response?.content?.username;
+          this.generatedPassword = response?.content?.password;
+        } else {
+          userId = this.editForm.get('id')?.value;
+        }
         if (!userId) {
           console.error('User ID could not be determined.');
           this.messageService.add({
@@ -502,7 +501,7 @@ export class ManageUserComponent implements OnInit {
           });
           return;
         }
-        console.log('User ID:', );
+        console.log('User ID:');
 
         // Fetch the previously assigned roles from `this.selectedRoles`
         const previouslyAssignedRoles = Object.keys(this.selectedRoles).filter(
@@ -909,10 +908,18 @@ export class ManageUserComponent implements OnInit {
   copyToClipboard(value: string): void {
     navigator.clipboard.writeText(value).then(
       () => {
-        this.messageService.add({ severity: 'success', summary: 'Copied', detail: `Copied to clipboard: ${value}` });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Copied',
+          detail: `Copied to clipboard: ${value}`,
+        });
       },
       () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to copy to clipboard' });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to copy to clipboard',
+        });
       }
     );
   }
@@ -937,7 +944,7 @@ export class ManageUserComponent implements OnInit {
 
   async resetPassword(): Promise<void> {
     this.confirmationService.confirm({
-      message:"Are sure you want to reset password?",
+      message: 'Are sure you want to reset password?',
       accept: async () => {
         const payload = {
           user_id: this.selectedUserId,
@@ -948,7 +955,10 @@ export class ManageUserComponent implements OnInit {
 
         try {
           const response = await this.http
-            .put<any>('https://lokakarya-be.up.railway.app/auth/resetpassword', payload)
+            .put<any>(
+              'https://lokakarya-be.up.railway.app/auth/resetpassword',
+              payload
+            )
             .toPromise();
 
           console.log('Password reset response:', response);
@@ -958,14 +968,10 @@ export class ManageUserComponent implements OnInit {
           this.displayCreatedDialog = true;
         } catch (error) {
           console.error('Error during password reset:', error);
-          // Optionally handle error, e.g., show a message
         }
       },
 
-      reject: () => {
-
-      }
-  })}
-
-
+      reject: () => {},
+    });
+  }
 }

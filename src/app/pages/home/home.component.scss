@@ -47,3 +47,103 @@ h1 {
   font-weight: bold;
   text-align: center;
 }
+
+.validation-message {
+  color: #d9534f;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Scoped styles for Change Password Dialog */
+.change-password-dialog {
+  width: 500px !important; /* Sets the dialog width */
+  max-width: 90vw; /* Ensures responsiveness on smaller screens */
+}
+
+/* Header Styling */
+.change-password-dialog ::ng-deep .p-dialog-header {
+  background-color: #1565c0;
+  color: #fff;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 1rem;
+}
+
+/* Content Styling */
+.change-password-dialog ::ng-deep .p-dialog-content {
+  padding: 2rem;
+}
+
+.change-password-dialog ::ng-deep .p-dialog-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Space between form fields */
+}
+
+/* Form Field Styling */
+.change-password-dialog ::ng-deep .p-dialog-content form .p-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+.change-password-dialog ::ng-deep .p-dialog-content form .p-field label {
+  flex: 0 0 150px; /* Fixed width for labels */
+  text-align: left;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #0d47a1;
+}
+
+.change-password-dialog ::ng-deep .p-dialog-content form .p-field input {
+  flex: 1; /* Input fills the remaining space */
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.change-password-dialog ::ng-deep .p-dialog-content form .p-field input:focus {
+  border-color: #1565c0;
+  box-shadow: 0 0 6px rgba(21, 101, 192, 0.5);
+}
+
+/* Footer Styling */
+.change-password-dialog ::ng-deep .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Button Styling */
+.change-password-dialog ::ng-deep .dialog-footer button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+}
+
+.change-password-dialog ::ng-deep .dialog-footer button.p-button-primary {
+  background-color: #1565c0;
+  color: #fff;
+}
+
+.change-password-dialog
+  ::ng-deep
+  .dialog-footer
+  button.p-button-primary:hover:not(:disabled) {
+  background-color: #0d47a1;
+}
+
+.change-password-dialog ::ng-deep .dialog-footer button.p-button-text {
+  color: #d9534f;
+}
+
+.change-password-dialog
+  ::ng-deep
+  .dialog-footer
+  button.p-button-text:hover:not(:disabled) {
+  background-color: rgba(217, 83, 79, 0.1);
+}
