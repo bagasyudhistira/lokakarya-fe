@@ -57,6 +57,7 @@ export class ManageUserComponent implements OnInit {
   userName: string = '';
   generatedPassword: string = '';
   private previouslyAssignedRoles: string[] = [];
+  selectedUserId: string = '';
 
   constructor(
     private http: HttpClient,
@@ -394,6 +395,8 @@ export class ManageUserComponent implements OnInit {
           const employee = employeeResponse.content;
 
           this.currentUserId = this.decodeJWT() || '';
+          this.selectedUserId = employee.id;
+          this.userName = employee.username;
           console.log('Current User ID:', this.currentUserId);
 
           this.editForm.patchValue({
@@ -448,6 +451,7 @@ export class ManageUserComponent implements OnInit {
   saveEmployee(): void {
     console.log('Saving Employee. Mode:', this.mode);
 
+    this.selectedUserId = '';
     if (!this.editForm.valid) {
       console.error('Form Validation Failed:', this.editForm.errors);
       this.isProcessing = false;
@@ -912,5 +916,56 @@ export class ManageUserComponent implements OnInit {
       }
     );
   }
+
+  // resetPassword(): void {
+  //   const payload = {
+  //       user_id : this.selectedUserId
+  //   };
+  //   const request$ =
+  //       this.http.put<any>(
+  //         'https://lokakarya-be.up.railway.app/auth/resetpassword',
+  //         payload
+  //       ).subscribe({
+  //         next: (response: any) => {
+  //           console.log('Password validation response:', response);
+  //           this.generatedPassword = response?.content;
+  //         }
+  //       });
+  //   this.displayEditDialog = false;
+  //   this.displayCreatedDialog = true;
+  // }
+
+  async resetPassword(): Promise<void> {
+    this.confirmationService.confirm({
+      message:"Are sure you want to reset password?",
+      accept: async () => {
+        const payload = {
+          user_id: this.selectedUserId,
+        };
+
+        console.log(this.selectedUserId);
+        console.log(payload);
+
+        try {
+          const response = await this.http
+            .put<any>('https://lokakarya-be.up.railway.app/auth/resetpassword', payload)
+            .toPromise();
+
+          console.log('Password reset response:', response);
+          this.generatedPassword = response?.content;
+
+          this.displayEditDialog = false;
+          this.displayCreatedDialog = true;
+        } catch (error) {
+          console.error('Error during password reset:', error);
+          // Optionally handle error, e.g., show a message
+        }
+      },
+
+      reject: () => {
+
+      }
+  })}
+
 
 }
