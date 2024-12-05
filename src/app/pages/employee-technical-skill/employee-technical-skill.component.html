@@ -1,5 +1,6 @@
 <p-toast></p-toast>
 <app-navbar></app-navbar>
+<br />
 <div class="manage-user-container">
   <div class="page-title">
     <h1>{{ selectedName }}'s {{ selectedYear }} Technical Skill</h1>
@@ -9,20 +10,20 @@
     <div class="top-row">
       <!-- For HR users, show the user dropdown -->
       <div *ngIf="currentRoles.includes('HR')" class="user-selection">
-        <label for="userSelect">Select User:</label>
+        <label for="userSelect">Select User: </label>
         <p-dropdown
           id="userSelect"
           [options]="employees"
           [(ngModel)]="selectedUserId"
           optionLabel="full_name"
           optionValue="id"
-          placeholder="Select a user"
+          placeholder="{{ selectedName }}"
           (onChange)="fetchEmpTechnicalSkills()"
         ></p-dropdown>
       </div>
       <!-- Assessment Year -->
       <div class="assessment-year-selection">
-        <label for="assessmentYear">Assessment Year:</label>
+        <label for="assessmentYear">Assessment Year: </label>
         <p-calendar
           id="assessmentYear"
           [(ngModel)]="selectedAssessmentYear"
@@ -30,6 +31,7 @@
           dateFormat="yy"
           (onSelect)="fetchEmpTechnicalSkills()"
           [maxDate]="maxDate"
+          placeholder="{{ selectedYear }}"
         ></p-calendar>
       </div>
     </div>
@@ -46,35 +48,44 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container
-          *ngFor="
-            let group of groupedEmpTechnicalSkills;
-            trackBy: trackByTechnicalSkillId
-          "
-        >
-          <tr>
-            <td [attr.rowspan]="group.skillEntrys.length">
-              {{ group.technical_skill_name }}
-            </td>
-            <td>{{ group.skillEntrys[0]?.skillEntry }}</td>
-            <td>{{ getScoreLabel(group.skillEntrys[0]?.entryScore) }}</td>
-          </tr>
-          <tr
+        <ng-container *ngIf="groupedEmpTechnicalSkills.length > 0; else noData">
+          <ng-container
             *ngFor="
-              let entry of group.skillEntrys;
-              let i = index;
-              trackBy: trackByIndex
+              let group of groupedEmpTechnicalSkills;
+              trackBy: trackByTechnicalSkillId
             "
-            [hidden]="i === 0"
           >
-            <td>{{ entry.skillEntry }}</td>
-            <td>{{ getScoreLabel(entry.entryScore) }}</td>
-          </tr>
+            <tr>
+              <td [attr.rowspan]="group.skillEntrys.length">
+                {{ group.technical_skill_name }}
+              </td>
+              <td>{{ group.skillEntrys[0]?.skillEntry }}</td>
+              <td>{{ getScoreLabel(group.skillEntrys[0]?.entryScore) }}</td>
+            </tr>
+            <tr
+              *ngFor="
+                let entry of group.skillEntrys;
+                let i = index;
+                trackBy: trackByIndex
+              "
+              [hidden]="i === 0"
+            >
+              <td>{{ entry.skillEntry }}</td>
+              <td>{{ getScoreLabel(entry.entryScore) }}</td>
+            </tr>
+          </ng-container>
         </ng-container>
       </tbody>
-    </table>
 
-    <!-- Edit Button -->
+      <!-- Template to show when there's no data -->
+      <ng-template #noData>
+        <tr>
+          <td colspan="3">
+            No data available for the selected assessment year.
+          </td>
+        </tr>
+      </ng-template>
+    </table>
     <div class="edit-button-container">
       <button
         pButton
@@ -87,7 +98,6 @@
     </div>
   </div>
 
-  <!-- Edit Dialog -->
   <p-dialog
     header="Edit Employee Technical Skills"
     [(visible)]="displayEditDialog"
@@ -110,6 +120,8 @@
               dateFormat="yy"
               [maxDate]="maxDate"
               required
+              placeholder="{{ selectedYear }}"
+              disabled
             ></p-calendar>
           </div>
         </div>
@@ -138,6 +150,7 @@
                   </td>
                   <td colspan="3">
                     <button
+                      type="button"
                       (click)="addSkillEntry(group)"
                       pButton
                       label="Add Skill Entry"
@@ -173,6 +186,7 @@
                   </td>
                   <td>
                     <button
+                      type="button"
                       (click)="removeSkillEntry(group, i)"
                       pButton
                       icon="pi pi-trash"

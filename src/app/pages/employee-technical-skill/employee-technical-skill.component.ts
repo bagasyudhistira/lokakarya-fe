@@ -283,8 +283,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
             this.empTechnicalSkills = response.content || [];
             console.log('Fetched EmpTechnicalSkills:', this.empTechnicalSkills);
 
-            // Fetch the selected user's full name
-            this.fetchSelectedUserName();
+            // Group the technical skills after fetching data
+            this.groupAllTechnicalSkills();
 
             resolve();
           },
@@ -301,7 +301,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     });
   }
 
-  private groupAllTechnicalSkills(): void {
+  private groupAllTechnicalSkills(includeAll: boolean = false): void {
     const grouped = new Map<string, any>();
 
     // Initialize groups with all technical skills
@@ -324,14 +324,20 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
           entryScore: empSkill.score,
         });
       } else {
-        // Handle if the technical skill is not found in the master list
         console.warn(
           `Technical Skill ID ${techSkillId} not found for employee skill ${empSkill.id}`
         );
       }
     });
 
-    // For technical skills without entries, skillEntrys will be empty
+    // If includeAll is false, filter out groups with empty skillEntrys
+    if (!includeAll) {
+      for (const [key, group] of grouped) {
+        if (group.skillEntrys.length === 0) {
+          grouped.delete(key);
+        }
+      }
+    }
 
     this.groupedEmpTechnicalSkills = Array.from(grouped.values());
   }
@@ -342,8 +348,19 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     this.isProcessing = false;
     this.assessmentYear = this.selectedAssessmentYear;
 
-    // Prepare the data structure
-    this.groupAllTechnicalSkills();
+    // Prepare the data structure, including all technical skills
+    this.groupAllTechnicalSkills(true);
+
+    // Optional: Add a default empty entry for technical skills with no entries
+    this.groupedEmpTechnicalSkills.forEach((group) => {
+      if (group.skillEntrys.length === 0) {
+        group.skillEntrys.push({
+          id: this.generateUniqueId(),
+          skillEntry: '',
+          entryScore: null,
+        });
+      }
+    });
   }
 
   async saveEmployeeTechnicalSkill(): Promise<void> {
@@ -367,11 +384,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
 
     for (const group of this.groupedEmpTechnicalSkills) {
       for (const entry of group.skillEntrys) {
-        // Skip if no skill entry and score provided
-        if (
-          (!entry.skillEntry || entry.skillEntry.trim() === '') &&
-          (entry.entryScore == null || entry.entryScore === undefined)
-        ) {
+        if (!entry.skillEntry || !entry.entryScore) {
+          console.warn('Skipping incomplete entry:', entry);
           continue;
         }
 
@@ -383,9 +397,8 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
           score: entry.entryScore,
         };
 
-        // Check if updating or creating
         if (entry.id && !entry.id.startsWith('new_')) {
-          // Update existing
+          // Update existing entry
           payload['id'] = entry.id;
           payload['updated_by'] = this.currentUserId;
           requests.push(
@@ -397,7 +410,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
               .toPromise()
           );
         } else {
-          // Create new
+          // Create new entry
           payload['created_by'] = this.currentUserId;
           requests.push(
             this.http
@@ -429,10 +442,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     } finally {
       this.isProcessing = false;
       this.displayEditDialog = false;
-      // Fetch updated data
-      this.fetchEmpTechnicalSkills().then(() => {
-        this.groupAllTechnicalSkills();
-      });
+      this.fetchEmpTechnicalSkills().then(() => this.groupAllTechnicalSkills());
     }
   }
 
@@ -457,6 +467,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       id: this.generateUniqueId(),
       skillEntry: '',
       entryScore: null,
+      isCompleted: false,
     });
   }
 
