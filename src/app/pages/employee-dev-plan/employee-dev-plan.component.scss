@@ -47,18 +47,18 @@
 
   .header-actions {
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
+    flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 1rem;
 
     .top-row {
       display: flex;
-      justify-content: space-between; /* Align search and button */
+      justify-content: space-between;
       align-items: center;
       width: 100%;
 
       .search-container {
-        flex: 1; /* Allow the search bar to expand */
+        flex: 1;
         max-width: 400px;
       }
 
@@ -98,12 +98,85 @@
   }
 }
 
-td button {
+/* Button styles */
+td button,
+.add-description-button,
+.create-button,
+.dialog-footer button {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   margin-right: 0.5rem;
+  border: none;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-td button:last-child {
+td button:last-child,
+.dialog-footer button:last-child {
   margin-right: 0;
+}
+
+/* Primary button */
+.p-button-primary {
+  background-color: #007ad9;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #006bb3;
+  }
+}
+
+/* Danger button */
+.p-button-danger {
+  background-color: #e74c3c;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #c0392b;
+  }
+}
+
+/* Rounded buttons */
+.p-button-rounded {
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+/* Text buttons */
+.p-button-text {
+  background-color: transparent;
+  color: #007ad9;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 122, 217, 0.1);
+  }
+}
+
+/* Align action buttons */
+td {
+  vertical-align: middle;
+}
+
+td:last-child {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Focus styles */
+button:focus {
+  outline: 2px solid #007ad9;
+  outline-offset: 2px;
+}
+
+/* Hover cursor */
+button:hover:not(:disabled) {
+  cursor: pointer;
 }
 
 .page-title {
@@ -164,4 +237,36 @@ td button:last-child {
   tr:nth-child(even) {
     background-color: #fafafa;
   }
+}
+
+.score-dropdown {
+  width: 100px; // Adjust the width as needed
+}
+
+.p-inputgroup .p-dropdown {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+/* Styles for the table container */
+.table-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align items to the right */
+  width: 100%;
+}
+
+/* Ensure the table takes full width */
+.table-container .dev-plan-table {
+  width: 100%;
+  /* Add any other table styles you have */
+}
+
+.edit-button-container {
+  margin-top: 15px;
+  margin-left: auto;
+}
+
+.table-container {
+  position: relative;
 }

@@ -1,230 +1,205 @@
 <p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
 <app-navbar></app-navbar>
+<br />
 <div class="manage-user-container">
-  <div class="manage-user-container">
-    <div class="header-actions">
-      <div class="top-row create-">
-        <button
-          pButton
-          label="Create"
-          icon="pi pi-plus"
-          class="create-button"
-          (click)="openCreateDialog()"
-          [disabled]="isProcessing || isEditFormLoading"
-        ></button>
+  <div class="page-title">
+    <h1>{{ selectedName }}'s {{ selectedYear }} Development Plan</h1>
+  </div>
+
+  <div class="header-actions">
+    <div class="top-row">
+      <!-- For HR users, show the user dropdown -->
+      <div *ngIf="currentRoles.includes('HR')" class="user-selection">
+        <label for="userSelect">Select User: </label>
+        <p-dropdown
+          id="userSelect"
+          [options]="employees"
+          [(ngModel)]="selectedUserId"
+          optionLabel="full_name"
+          optionValue="id"
+          placeholder="{{ selectedName }}"
+          (onChange)="fetchEmpDevPlans()"
+        ></p-dropdown>
+      </div>
+      <!-- Assessment Year -->
+      <div class="assessment-year-selection">
+        <label for="assessmentYear">Assessment Year: </label>
+        <p-calendar
+          id="assessmentYear"
+          [(ngModel)]="selectedAssessmentYear"
+          view="year"
+          dateFormat="yy"
+          (onSelect)="fetchEmpDevPlans()"
+          [maxDate]="maxDate"
+          placeholder="{{ selectedYear }}"
+        ></p-calendar>
       </div>
     </div>
+  </div>
 
-    <div class="page-title">
-      <h1>{{ selectedName }}'s {{ selectedYear }} Development Plan</h1>
-    </div>
-
-    <div class="header-actions">
-      <div class="top-row">
-        <!-- For HR users, show the user dropdown -->
-        <div *ngIf="currentRoles.includes('HR')" class="user-selection">
-          <label for="userSelect">Select User:</label>
-          <p-dropdown
-            id="userSelect"
-            [options]="employees"
-            [(ngModel)]="selectedUserId"
-            optionLabel="full_name"
-            optionValue="id"
-            placeholder="Select a user"
-            (onChange)="fetchEmpDevPlans()"
-          ></p-dropdown>
-        </div>
-        <!-- Assessment Year -->
-        <div class="assessment-year-selection">
-          <label for="assessmentYear">Assessment Year:</label>
-          <p-calendar
-            id="assessmentYear"
-            [(ngModel)]="selectedAssessmentYear"
-            view="year"
-            dateFormat="yy"
-            (onSelect)="fetchEmpDevPlans()"
-            [maxDate]="maxDate"
-          ></p-calendar>
-        </div>
-      </div>
-    </div>
-
+  <div class="table-container">
+    <!-- Development Plan Table -->
     <table class="dev-plan-table">
       <thead>
         <tr>
-          <th>Development Plan</th>
-          <th>Description</th>
-          <th>Actions</th>
+          <th>Category</th>
+          <th>Plan</th>
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let plan of groupedEmpDevPlans">
-          <tr>
-            <td [attr.rowspan]="plan.descriptions.length">{{ plan.plan }}</td>
-            <td>{{ plan.descriptions[0].description }}</td>
-            <td>
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary"
-                (click)="editEmpDevPlan(plan.descriptions[0].id)"
-                [disabled]="isProcessing"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger"
-                (click)="deleteEmpDevPlan(plan.descriptions[0].id)"
-                [disabled]="isProcessing"
-              ></button>
-            </td>
-          </tr>
-          <tr
-            *ngFor="let desc of plan.descriptions; let i = index"
-            [hidden]="i === 0"
+        <ng-container *ngIf="groupedEmpDevPlans.length > 0; else noData">
+          <ng-container
+            *ngFor="let group of groupedEmpDevPlans; trackBy: trackByDevPlanId"
           >
-            <td>{{ desc.description }}</td>
-            <td>
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary"
-                (click)="editEmpDevPlan(desc.id)"
-                [disabled]="isProcessing"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger"
-                (click)="deleteEmpDevPlan(desc.id)"
-                [disabled]="isProcessing"
-              ></button>
-            </td>
-          </tr>
+            <tr>
+              <td [attr.rowspan]="group.descriptions.length">
+                {{ group.dev_plan_name }}
+              </td>
+              <td>{{ group.descriptions[0]?.description }}</td>
+            </tr>
+            <tr
+              *ngFor="
+                let entry of group.descriptions;
+                let i = index;
+                trackBy: trackByIndex
+              "
+              [hidden]="i === 0"
+            >
+              <td>{{ entry.description }}</td>
+            </tr>
+          </ng-container>
         </ng-container>
       </tbody>
+
+      <ng-template #noData>
+        <tr>
+          <td colspan="3">
+            No data available for the selected assessment year.
+          </td>
+        </tr>
+      </ng-template>
     </table>
+    <div class="edit-button-container">
+      <button
+        pButton
+        label="Edit"
+        icon="pi pi-pencil"
+        class="p-button-primary"
+        (click)="openEditDialog()"
+        [disabled]="isProcessing || isEditFormLoading"
+      ></button>
+    </div>
+  </div>
 
-    <p-dialog
-      header="{{
-        mode === 'create' ? 'Create Employee DevPlan' : 'Edit Employee DevPlan'
-      }}"
-      [(visible)]="displayEditDialog"
-      [modal]="true"
-      [closable]="true"
-      [dismissableMask]="true"
-      [style]="{ width: '70vw' }"
-      [resizable]="false"
-    >
-      <form (ngSubmit)="submitEmployeeDevPlan()">
-        <div class="p-fluid">
-          <div class="p-field">
-            <label for="assessment_year">Assessment Year</label>
-            <div style="padding: 0.5rem 0">
-              <p-calendar
-                id="assessment_year"
-                [(ngModel)]="assessmentYear"
-                name="assessment_year"
-                view="year"
-                dateFormat="yy"
-                [disabled]="mode === 'update'"
-                [maxDate]="maxDate"
-                required
-              ></p-calendar>
-            </div>
+  <p-dialog
+    header="Edit Employee Development Plans"
+    [(visible)]="displayEditDialog"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [style]="{ width: '70vw' }"
+    [resizable]="false"
+  >
+    <form (ngSubmit)="submitEmployeeDevPlan()">
+      <div class="p-fluid">
+        <div class="p-field">
+          <label for="assessment_year">Assessment Year</label>
+          <div style="padding: 0.5rem 0">
+            <p-calendar
+              id="assessment_year"
+              [(ngModel)]="assessmentYear"
+              name="assessment_year"
+              view="year"
+              dateFormat="yy"
+              [maxDate]="maxDate"
+              required
+              placeholder="{{ selectedYear }}"
+              disabled
+            ></p-calendar>
           </div>
+        </div>
 
-          <div class="p-field">
-            <table class="p-datatable edit-form-table">
-              <thead>
+        <div class="p-field">
+          <table class="p-datatable edit-form-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Plan</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container
+                *ngFor="
+                  let group of groupedEmpDevPlans;
+                  trackBy: trackByDevPlanId
+                "
+              >
                 <tr>
-                  <th>Development Plan</th>
-                  <th>Description(s)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  *ngFor="
-                    let entry of devPlanEntries;
-                    trackBy: trackByDevPlanId
-                  "
-                >
-                  <td>{{ entry.dev_plan_name }}</td>
-                  <td>
-                    <div
-                      *ngFor="
-                        let desc of entry.descriptions;
-                        let i = index;
-                        trackBy: trackByIndex
-                      "
-                      class="p-inputgroup"
-                    >
-                      <textarea
-                        [(ngModel)]="entry.descriptions[i]"
-                        name="description_{{ entry.dev_plan_id }}_{{ i }}"
-                        pInputTextarea
-                        rows="3"
-                        cols="30"
-                        [disabled]="isProcessing"
-                        required
-                      ></textarea>
-                      <button
-                        pButton
-                        type="button"
-                        icon="pi pi-times"
-                        class="p-button-danger p-button-text"
-                        (click)="removeDescription(entry, i)"
-                        [disabled]="
-                          isProcessing || entry.descriptions.length === 1
-                        "
-                      ></button>
-                    </div>
+                  <td [attr.rowspan]="group.descriptions.length + 1">
+                    {{ group.dev_plan_name }}
+                  </td>
+                  <td colspan="3">
                     <button
-                      pButton
                       type="button"
-                      icon="pi pi-plus"
-                      class="p-button-sm p-button-text"
-                      (click)="addDescription(entry)"
-                      [disabled]="isProcessing"
+                      (click)="addPlanEntry(group)"
+                      pButton
+                      label="Add Plan"
                     ></button>
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
+                <!-- Skill Entries -->
+                <tr
+                  *ngFor="
+                    let entry of group.descriptions;
+                    let i = index;
+                    trackBy: trackByIndex
+                  "
+                >
+                  <td>
+                    <input
+                      [(ngModel)]="entry.description"
+                      name="PlanEntry_{{ group.dev_plan_id }}_{{ i }}"
+                      pInputText
+                      required
+                    />
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      (click)="removePlanEntry(group, i)"
+                      pButton
+                      icon="pi pi-trash"
+                    ></button>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
         </div>
-        <div class="dialog-footer">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-times"
-            class="p-button-text"
-            label="Cancel"
-            [disabled]="isProcessing"
-            (click)="displayEditDialog = false"
-          ></button>
-          <button
-            pButton
-            type="submit"
-            [label]="
-              isProcessing
-                ? mode === 'create'
-                  ? 'Creating...'
-                  : 'Saving...'
-                : mode === 'create'
-                ? 'Create'
-                : 'Save'
-            "
-            [disabled]="isProcessing"
-            class="p-button-primary"
-          >
-            <ng-container *ngIf="isProcessing">
-              <i class="pi pi-spin pi-spinner"></i>
-            </ng-container>
-          </button>
-        </div>
-      </form>
-    </p-dialog>
-  </div>
+      </div>
+      <div class="dialog-footer">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-times"
+          class="p-button-text"
+          label="Cancel"
+          [disabled]="isProcessing"
+          (click)="displayEditDialog = false"
+        ></button>
+        <button
+          pButton
+          type="submit"
+          [label]="isProcessing ? 'Saving...' : 'Save'"
+          [disabled]="isProcessing"
+          class="p-button-primary"
+        >
+          <ng-container *ngIf="isProcessing">
+            <i class="pi pi-spin pi-spinner"></i>
+          </ng-container>
+        </button>
+      </div>
+    </form>
+  </p-dialog>
 </div>
