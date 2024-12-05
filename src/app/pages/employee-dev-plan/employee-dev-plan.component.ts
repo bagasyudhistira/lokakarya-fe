@@ -387,6 +387,9 @@ export class EmployeeDevPlanComponent implements OnInit {
           too_bright: entry.description,
         };
 
+        console.log('Mode: ', entry.id);
+        console.log('Payload: ', payload);
+
         if (entry.id && !entry.id.startsWith('new_')) {
           payload['id'] = entry.id;
           payload['updated_by'] = this.currentUserId;

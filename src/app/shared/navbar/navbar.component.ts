@@ -25,6 +25,7 @@ export class NavbarComponent implements OnInit {
   errorMessage: string = '';
   loading: boolean = true;
   isHomePage: boolean = false;
+  roles: string[] = [];
 
   constructor(
     private router: Router,
@@ -45,10 +46,12 @@ export class NavbarComponent implements OnInit {
     }
 
     const payload = JSON.parse(atob(token.split('.')[1]));
-    this.userName = payload.fullName;
+    this.userName = payload.username;
 
-    const roles = this.authService.getUserRoles();
-    const menuNamesRequest = this.menuManagerService.getMenusByRoles(roles);
+    this.roles = this.authService.getUserRoles();
+    const menuNamesRequest = this.menuManagerService.getMenusByRoles(
+      this.roles
+    );
 
     menuNamesRequest.subscribe({
       next: (menuResponses: any[]) => {

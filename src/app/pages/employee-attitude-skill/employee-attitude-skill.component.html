@@ -18,6 +18,7 @@
           optionValue="id"
           placeholder="{{ selectedName }}"
           (onChange)="fetchEmpAttitudeSkills()"
+          appendTo="body"
         ></p-dropdown>
       </div>
       <!-- Assessment Year -->
@@ -136,6 +137,7 @@
                       optionValue="value"
                       placeholder="Select Score"
                       [disabled]="isProcessing"
+                      appendTo="body"
                     ></p-dropdown>
                   </td>
                 </tr>
@@ -158,6 +160,7 @@
                       optionValue="value"
                       placeholder="Select Score"
                       [disabled]="isProcessing"
+                      appendTo="body"
                     ></p-dropdown>
                   </td>
                 </tr>

@@ -19,6 +19,7 @@
           optionValue="id"
           placeholder="{{ selectedName }}"
           (onChange)="fetchEmpDevPlans()"
+          appendTo="body"
         ></p-dropdown>
       </div>
       <!-- Assessment Year -->
@@ -32,6 +33,7 @@
           (onSelect)="fetchEmpDevPlans()"
           [maxDate]="maxDate"
           placeholder="{{ selectedYear }}"
+          appendTo="body"
         ></p-calendar>
       </div>
     </div>
