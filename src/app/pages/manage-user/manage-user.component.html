@@ -300,31 +300,37 @@
       [resizable]="false"
     >
       <div class="p-d-flex p-flex-column p-ai-center p-p-4">
-        <i class="pi pi-check-circle" style="font-size: 3rem; color: green; margin-right:auto; margin-left:auto"></i>
+        <div class="icon-container">
+          <i class="pi pi-check-circle"></i>
+        </div>
         <p-card class="p-mt-3" styleClass="p-card-success p-p-3">
-          <div class="p-text-center">
-            <p style="font-size: 1.2rem; font-weight: bold; margin: 0;">User created successfully!</p>
-            <div class="p-d-flex p-flex-column p-ai-center p-mt-3">
+          <div class="p-text-center message-container">
+            <!-- Message -->
+            <p class="success-message">User created successfully!</p>
+
+            <div class="p-d-flex p-flex-column p-ai-center user-info-container">
               <!-- Username Section -->
               <div
-                class="copy-text p-my-2"
+                class="copy-text"
                 title="Click to copy username"
                 (click)="copyToClipboard(userName)"
               >
-                <span style="font-weight: bold; margin-right: 0.5rem;">Username:</span>
-                <span class="clickable-text">TTTT</span>
+                <span class="label">Username:</span>
+                <span class="clickable-text">{{ userName }}</span>
               </div>
+
               <!-- Password Section -->
               <div
-                class="copy-text p-my-2"
+                class="copy-text"
                 title="Click to copy password"
                 (click)="copyToClipboard(generatedPassword)"
               >
-                <span style="font-weight: bold; margin-right: 0.5rem;">Password:</span>
-                <span class="clickable-text">AAAA</span>
+                <span class="label">Password:</span>
+                <span class="clickable-text">{{ generatedPassword }}</span>
               </div>
             </div>
           </div>
+
         </p-card>
       </div>
     </p-dialog>
