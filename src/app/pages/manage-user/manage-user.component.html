@@ -168,6 +168,7 @@
                 optionLabel="division_name"
                 optionValue="id"
                 formControlName="division_id"
+                id="division_id"
                 [disabled]="isProcessing"
                 placeholder="Select a Division"
               ></p-dropdown>
@@ -199,6 +200,7 @@
             <div class="radio-buttons" style="padding: 0.5rem 0">
               <p-radioButton
                 name="employee_status"
+                id="employee_status"
                 value="1"
                 formControlName="employee_status"
                 label="Permanen"
@@ -240,21 +242,21 @@
               ></p-calendar>
             </div>
           </div>
-          <div class="p-field">
-            <label *ngIf="mode === 'create'" for="password">Password</label>
-            <label *ngIf="mode === 'edit'" for="password"
-              >Confirm Current Password</label
-            >
-            <div style="padding: 0.5rem 0">
-              <input
-                id="password"
-                pInputText
-                type="password"
-                formControlName="password"
-                [disabled]="isProcessing"
-              />
-            </div>
-          </div>
+<!--          <div class="p-field">-->
+<!--            <label *ngIf="mode === 'create'" for="password">Password</label>-->
+<!--            <label *ngIf="mode === 'edit'" for="password"-->
+<!--              >Confirm Current Password</label-->
+<!--            >-->
+<!--            <div style="padding: 0.5rem 0">-->
+<!--              <input-->
+<!--                id="password"-->
+<!--                pInputText-->
+<!--                type="password"-->
+<!--                formControlName="password"-->
+<!--                [disabled]="isProcessing"-->
+<!--              />-->
+<!--            </div>-->
+<!--          </div>-->
         </div>
         <div class="dialog-footer">
           <button
@@ -287,6 +289,44 @@
           </button>
         </div>
       </form>
+    </p-dialog>
+    <p-dialog
+      header="🎉 Success"
+      [(visible)]="displayCreatedDialog"
+      [modal]="true"
+      [closable]="true"
+      [dismissableMask]="true"
+      [style]="{ width: '40vw', maxWidth: '500px', minHeight: '300px' }"
+      [resizable]="false"
+    >
+      <div class="p-d-flex p-flex-column p-ai-center p-p-4">
+        <i class="pi pi-check-circle" style="font-size: 3rem; color: green; margin-right:auto; margin-left:auto"></i>
+        <p-card class="p-mt-3" styleClass="p-card-success p-p-3">
+          <div class="p-text-center">
+            <p style="font-size: 1.2rem; font-weight: bold; margin: 0;">User created successfully!</p>
+            <div class="p-d-flex p-flex-column p-ai-center p-mt-3">
+              <!-- Username Section -->
+              <div
+                class="copy-text p-my-2"
+                title="Click to copy username"
+                (click)="copyToClipboard(userName)"
+              >
+                <span style="font-weight: bold; margin-right: 0.5rem;">Username:</span>
+                <span class="clickable-text">TTTT</span>
+              </div>
+              <!-- Password Section -->
+              <div
+                class="copy-text p-my-2"
+                title="Click to copy password"
+                (click)="copyToClipboard(generatedPassword)"
+              >
+                <span style="font-weight: bold; margin-right: 0.5rem;">Password:</span>
+                <span class="clickable-text">AAAA</span>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
     </p-dialog>
   </div>
 </div>
