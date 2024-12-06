@@ -18,8 +18,7 @@
     gap: 1rem;
 
     .home-item,
-    .dropdown-content li,
-    .logout-item {
+    .dropdown-content li {
       color: white;
       font-size: 1rem;
       font-weight: bold;
@@ -104,36 +103,8 @@
         display: block;
       }
     }
-
-    .logout-item {
-      margin-left: auto;
-
-      .logout-button {
-        position: relative;
-        background-color: #b71c1c;
-        color: white;
-        font-size: 1rem;
-        font-weight: bold;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 5px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-          background-color: #9f1b1b;
-        }
-
-        &:active {
-          background-color: #7f1515;
-        }
-
-        /* Ensure button's size doesn't overflow */
-        overflow: hidden;
-      }
-    }
   }
+
   .user-name {
     color: white;
     font-size: 1rem;
@@ -142,4 +113,48 @@
     position: relative;
     padding-right: 0.5rem;
   }
+
+  /* Logout Item Styling */
+  .logout-item {
+    margin-left: auto; /* Push logout to the far right */
+
+    .logout-button {
+      background-color: #b71c1c; /* Dark red background */
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: none; /* Remove box-shadow */
+
+      &:hover {
+        background-color: #9f1b1b;
+      }
+
+      &:active {
+        background-color: #7f1515;
+      }
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(151, 71, 71, 0.5); /* Subtle focus ring */
+      }
+
+      /* Optional: Smooth transition for background color */
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+  }
+}
+
+/* Optional: Ensure no global styles interfere with the logout button */
+.logout-item .logout-button {
+  box-shadow: none;
+}
+
+/* Optional: Adjust z-index if necessary */
+.logout-item .logout-button {
+  z-index: 1001; /* Above other elements */
 }

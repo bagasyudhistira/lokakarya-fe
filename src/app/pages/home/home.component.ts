@@ -12,7 +12,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { finalize, switchMap } from 'rxjs';
+import { EMPTY, finalize, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -120,9 +120,12 @@ export class HomeComponent {
       accept: () => {
         this.changePassLoading = true;
 
+        const currentPassword = this.changePasswordForm.value.currentPassword;
+        const newPassword = this.changePasswordForm.value.newPassword;
+
         const loginPayload = {
           username: this.userDetails.username,
-          password: this.changePasswordForm.value.currentPassword,
+          password: currentPassword,
         };
 
         this.http
@@ -135,9 +138,19 @@ export class HomeComponent {
           )
           .pipe(
             switchMap(() => {
+              if (newPassword == currentPassword) {
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Change Password Failed',
+                  detail:
+                    'New password cannot be the same as the current password.',
+                });
+                this.changePassLoading = false;
+                return EMPTY;
+              }
               const changePassPayload = {
                 user_id: this.userId,
-                new_password: this.changePasswordForm.value.newPassword,
+                new_password: newPassword,
               };
               return this.http.put(
                 'https://lokakarya-be.up.railway.app/auth/changepassword',

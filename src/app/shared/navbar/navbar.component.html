@@ -42,9 +42,13 @@
         </li>
       </ul>
     </li>
+
     <span class="user-name">{{ userName }} ({{ roles }}) </span>
+
     <li class="logout-item">
-      <span class="logout-button" (click)="logout()">Logout</span>
+      <button class="logout-button" (click)="logout()" aria-label="Logout">
+        Logout
+      </button>
     </li>
   </ul>
 </nav>
