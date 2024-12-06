@@ -8,7 +8,6 @@
 
   <div class="header-actions">
     <div class="top-row">
-      <!-- For HR users, show the user dropdown -->
       <div *ngIf="currentRoles.includes('HR')" class="user-selection">
         <label for="userSelect">Select User: </label>
         <p-dropdown
@@ -78,7 +77,6 @@
         </ng-container>
       </tbody>
 
-      <!-- Template to show when there's no data -->
       <ng-template #noData>
         <tr>
           <td colspan="3">
@@ -107,6 +105,7 @@
     [dismissableMask]="true"
     [style]="{ width: '70vw' }"
     [resizable]="false"
+    (onHide)="fetchEmpTechnicalSkills()"
   >
     <form (ngSubmit)="submitEmployeeTechnicalSkill()">
       <div class="p-fluid">
@@ -208,7 +207,7 @@
           class="p-button-text"
           label="Cancel"
           [disabled]="isProcessing"
-          (click)="displayEditDialog = false"
+          (click)="onDialogClose()"
         ></button>
         <button
           pButton

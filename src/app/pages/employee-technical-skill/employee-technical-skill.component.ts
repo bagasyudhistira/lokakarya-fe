@@ -178,6 +178,14 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     console.log('Form Initialized:', this.editForm.value);
   }
 
+  onDialogClose(): void {
+    console.log('Dialog closed without saving. Refetching data...');
+    this.displayEditDialog = false;
+    this.fetchEmpTechnicalSkills().then(() => {
+      this.groupAllTechnicalSkills();
+    });
+  }
+
   fetchSelectedUserName(): void {
     if (!this.selectedUserId || this.selectedUserId === '') {
       console.warn('No user selected.');
@@ -304,7 +312,6 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   private groupAllTechnicalSkills(includeAll: boolean = false): void {
     const grouped = new Map<string, any>();
 
-    // Initialize groups with all technical skills
     this.technicalSkills.forEach((techSkill) => {
       grouped.set(techSkill.id, {
         technical_skill_id: techSkill.id,
@@ -313,7 +320,6 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       });
     });
 
-    // Merge employee data
     this.empTechnicalSkills.forEach((empSkill) => {
       const techSkillId = empSkill.technical_skill_id;
       const group = grouped.get(techSkillId);
@@ -348,18 +354,17 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     this.isProcessing = false;
     this.assessmentYear = this.selectedAssessmentYear;
 
-    // Prepare the data structure, including all technical skills
-    this.groupAllTechnicalSkills(true);
-
-    // Optional: Add a default empty entry for technical skills with no entries
-    this.groupedEmpTechnicalSkills.forEach((group) => {
-      if (group.skillEntrys.length === 0) {
-        group.skillEntrys.push({
-          id: this.generateUniqueId(),
-          skillEntry: '',
-          entryScore: null,
-        });
-      }
+    this.fetchEmpTechnicalSkills().then(() => {
+      this.groupAllTechnicalSkills(true);
+      this.groupedEmpTechnicalSkills.forEach((group) => {
+        if (group.skillEntrys.length === 0) {
+          group.skillEntrys.push({
+            id: this.generateUniqueId(),
+            skillEntry: '',
+            entryScore: null,
+          });
+        }
+      });
     });
   }
 

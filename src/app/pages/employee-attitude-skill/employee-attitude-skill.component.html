@@ -91,6 +91,7 @@
     [dismissableMask]="true"
     [style]="{ width: '70vw' }"
     [resizable]="false"
+    (onHide)="fetchEmpAttitudeSkills()"
   >
     <form (ngSubmit)="submitEmployeeAttitudeSkill()">
       <div class="p-fluid">
