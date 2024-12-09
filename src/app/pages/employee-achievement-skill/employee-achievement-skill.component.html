@@ -47,69 +47,36 @@
       <tbody>
         <ng-container *ngFor="let group of groupedEmpAchievementSkills">
           <ng-container
-            *ngIf="group.skills && group.skills.length > 0; else noSkills"
+            *ngIf="
+              group.achievements && group.achievements.length > 0;
+              else noachievements
+            "
           >
             <!-- Group Row -->
             <tr>
-              <td [attr.rowspan]="group.skills.length">
+              <td [attr.rowspan]="group.achievements.length">
                 {{ group.group_name }}
               </td>
-              <td>{{ group.skills[0]?.achievement_name }}</td>
-              <td>
-                <input
-                  [(ngModel)]="group.skills[0].notes"
-                  name="Notes_{{ group.group_id }}_0"
-                  pInputText
-                  [disabled]="isProcessing"
-                />
-              </td>
-              <td>
-                <p-dropdown
-                  [(ngModel)]="group.skills[0].score"
-                  name="Score_{{ group.group_id }}_0"
-                  [options]="scoreOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select Score"
-                  [disabled]="isProcessing"
-                  appendTo="body"
-                ></p-dropdown>
-              </td>
+              <td>{{ group.achievements[0]?.achievement_name }}</td>
+              <td>{{ group.achievements[0]?.notes }}</td>
+              <td>{{ getScoreLabel(group.achievements[0]?.score) }}</td>
             </tr>
             <!-- Skill Rows -->
             <tr
               *ngFor="
-                let skill of group.skills;
+                let skill of group.achievements;
                 let i = index;
                 trackBy: trackByIndex
               "
               [hidden]="i === 0"
             >
               <td>{{ skill.achievement_name }}</td>
-              <td>
-                <input
-                  [(ngModel)]="skill.notes"
-                  name="Notes_{{ group.group_id }}_{{ i }}"
-                  pInputText
-                  [disabled]="isProcessing"
-                />
-              </td>
-              <td>
-                <p-dropdown
-                  [(ngModel)]="skill.score"
-                  name="Score_{{ group.group_id }}_{{ i }}"
-                  [options]="scoreOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select Score"
-                  [disabled]="isProcessing"
-                  appendTo="body"
-                ></p-dropdown>
-              </td>
+              <td>{{ skill.notes }}</td>
+              <td>{{ getScoreLabel(skill.score) }}</td>
             </tr>
           </ng-container>
-          <!-- Template for Groups with No Skills -->
-          <ng-template #noSkills>
+          <!-- Template for Groups with No achievements -->
+          <ng-template #noachievements>
             <tr>
               <td>{{ group.group_name }}</td>
               <td colspan="3">No achievements available</td>
@@ -132,7 +99,7 @@
 
   <!-- Edit Dialog -->
   <p-dialog
-    header="Edit Employee Achievement Skills"
+    header="Edit Employee Achievement achievements"
     [(visible)]="displayEditDialog"
     [modal]="true"
     [closable]="true"
@@ -174,18 +141,18 @@
               <ng-container *ngFor="let group of groupedEmpAchievementSkills">
                 <ng-container
                   *ngIf="
-                    group.skills && group.skills.length > 0;
-                    else noEditSkills
+                    group.achievements && group.achievements.length > 0;
+                    else noEditachievements
                   "
                 >
                   <tr>
-                    <td [attr.rowspan]="group.skills.length">
+                    <td [attr.rowspan]="group.achievements.length">
                       {{ group.group_name }}
                     </td>
-                    <td>{{ group.skills[0]?.achievement_name }}</td>
+                    <td>{{ group.achievements[0]?.achievement_name }}</td>
                     <td>
                       <input
-                        [(ngModel)]="group.skills[0].notes"
+                        [(ngModel)]="group.achievements[0].notes"
                         name="Notes_{{ group.group_id }}_0"
                         pInputText
                         [disabled]="isProcessing"
@@ -193,7 +160,7 @@
                     </td>
                     <td>
                       <p-dropdown
-                        [(ngModel)]="group.skills[0].score"
+                        [(ngModel)]="group.achievements[0].score"
                         name="Score_{{ group.group_id }}_0"
                         [options]="scoreOptions"
                         optionLabel="label"
@@ -207,7 +174,7 @@
                   <!-- Skill Rows -->
                   <tr
                     *ngFor="
-                      let skill of group.skills;
+                      let skill of group.achievements;
                       let i = index;
                       trackBy: trackByIndex
                     "
@@ -236,8 +203,8 @@
                     </td>
                   </tr>
                 </ng-container>
-                <!-- Template for Groups with No Skills in Edit Dialog -->
-                <ng-template #noEditSkills>
+                <!-- Template for Groups with No achievements in Edit Dialog -->
+                <ng-template #noEditachievements>
                   <tr>
                     <td>{{ group.group_name }}</td>
                     <td colspan="3">No achievements available</td>
