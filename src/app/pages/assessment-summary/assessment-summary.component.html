@@ -1,0 +1,151 @@
+<p-toast></p-toast>
+<app-navbar></app-navbar>
+<br />
+<div class="manage-user-container">
+  <div class="page-title">
+    <h1>{{ selectedName }}'s {{ selectedYear }} Assessment Summary</h1>
+  </div>
+
+  <div class="header-actions">
+    <div class="top-row">
+      <div
+        *ngIf="
+          currentRoles.includes('HR') ||
+          currentRoles.includes('SVP') ||
+          currentRoles.includes('MGR')
+        "
+        class="user-selection"
+      >
+        <label for="userSelect">Select User: </label>
+        <p-dropdown
+          id="userSelect"
+          [options]="employees"
+          [(ngModel)]="selectedUserId"
+          optionLabel="full_name"
+          optionValue="id"
+          placeholder="{{ selectedName }}"
+          (onChange)="fetchAssessmentSummary()"
+          appendTo="body"
+        ></p-dropdown>
+      </div>
+
+      <div class="assessment-year-selection">
+        <label for="assessmentYear">Assessment Year: </label>
+        <p-calendar
+          id="assessmentYear"
+          [(ngModel)]="selectedAssessmentYear"
+          view="year"
+          dateFormat="yy"
+          (onSelect)="fetchAssessmentSummary()"
+          [maxDate]="maxDate"
+          placeholder="{{ selectedYear }}"
+          appendTo="body"
+        ></p-calendar>
+      </div>
+    </div>
+  </div>
+
+  <h4>Achievements</h4>
+
+  <div class="table-container">
+    <table class="achievement-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Score</th>
+          <th>Percentage</th>
+          <th>Final Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="achievements.length > 0; else noData">
+          <ng-container *ngFor="let achievement of achievements">
+            <tr>
+              <td>{{ achievement.group_name }}</td>
+              <td>{{ achievement.sum_score }}</td>
+              <td>{{ achievement.percentage }}%</td>
+              <td>
+                {{
+                  (achievement.sum_score * achievement.percentage) / 100
+                    | number : "1.2-2"
+                }}
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+
+      <ng-template #noData>
+        <tr>
+          <td colspan="4" style="text-align: center; font-style: italic">
+            No data available for the selected assessment year.
+          </td>
+        </tr>
+      </ng-template>
+    </table>
+  </div>
+
+  <h4>Attitude Skill</h4>
+
+  <div class="table-container">
+    <table class="attitude-skill-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Score</th>
+          <th>Percentage</th>
+          <th>Final Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="attitudeSkills.length > 0; else noData">
+          <ng-container *ngFor="let attitudeSkill of attitudeSkills">
+            <tr>
+              <td>{{ attitudeSkill.group_name }}</td>
+              <td>{{ attitudeSkill.sum_score }}</td>
+              <td>{{ attitudeSkill.percentage }}%</td>
+              <td>
+                {{
+                  (attitudeSkill.sum_score * attitudeSkill.percentage) / 100
+                    | number : "1.2-2"
+                }}
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+
+      <ng-template #noData>
+        <tr>
+          <td colspan="4" style="text-align: center; font-style: italic">
+            No data available for the selected assessment year.
+          </td>
+        </tr>
+      </ng-template>
+    </table>
+  </div>
+
+  <h4>Suggestions</h4>
+
+  <div class="table-container">
+    <table class="suggestion-table">
+      <tbody>
+        <ng-container *ngIf="suggestions.length > 0; else noData">
+          <ng-container *ngFor="let suggestion of suggestions">
+            <tr>
+              <td>{{ suggestion.suggestion }}</td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+
+      <ng-template #noData>
+        <tr>
+          <td colspan="4" style="text-align: center; font-style: italic">
+            No data available for the selected assessment year.
+          </td>
+        </tr>
+      </ng-template>
+    </table>
+  </div>
+</div>

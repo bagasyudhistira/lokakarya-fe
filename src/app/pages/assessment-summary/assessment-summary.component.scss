@@ -1,0 +1,281 @@
+.manage-user-container {
+  padding: 2rem;
+
+  .edit-form-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f7f7f7;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    .p-inputgroup {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+
+      textarea {
+        flex: 1;
+        margin-right: 0.5rem;
+        resize: vertical;
+      }
+
+      button {
+        flex-shrink: 0;
+      }
+    }
+
+    .add-description-button {
+      margin-top: 0.5rem;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+
+      .search-container {
+        flex: 1;
+        max-width: 400px;
+      }
+
+      .create-button {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        margin-left: auto;
+      }
+    }
+
+    .checkbox-container {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 0.5rem;
+    }
+  }
+
+  .p-table {
+    margin-top: 1rem;
+    min-height: 400px;
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .p-field {
+    margin-bottom: 2rem;
+  }
+
+  .input {
+    padding: 0.75rem;
+  }
+}
+
+/* Button styles */
+td button,
+.add-description-button,
+.create-button,
+.dialog-footer button {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+  border: none;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+td button:last-child,
+.dialog-footer button:last-child {
+  margin-right: 0;
+}
+
+/* Primary button */
+.p-button-primary {
+  background-color: #007ad9;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #006bb3;
+  }
+}
+
+/* Danger button */
+.p-button-danger {
+  background-color: #e74c3c;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #c0392b;
+  }
+}
+
+/* Rounded buttons */
+.p-button-rounded {
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+/* Text buttons */
+.p-button-text {
+  background-color: transparent;
+  color: #007ad9;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 122, 217, 0.1);
+  }
+}
+
+/* Align action buttons */
+td {
+  vertical-align: middle;
+}
+
+td:last-child {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Focus styles */
+button:focus {
+  outline: 2px solid #007ad9;
+  outline-offset: 2px;
+}
+
+/* Hover cursor */
+button:hover:not(:disabled) {
+  cursor: pointer;
+}
+
+.page-title {
+  text-align: center;
+  margin: 1rem auto;
+}
+
+.p-table-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.disabled-row {
+  color: #a7a5a5;
+}
+
+.search-container {
+  margin-bottom: 0.5rem;
+}
+
+.search-container .p-input-icon-left {
+  width: 100%;
+}
+
+.search-container input {
+  width: 100%;
+  max-width: 400px;
+}
+
+.checkbox-container {
+  margin-top: 0.5rem;
+}
+
+.p-dialog {
+  display: flex;
+}
+
+.achievement-table,
+.attitude-skill-table,
+.suggestion-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #f7f7f7;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+}
+
+.score-dropdown {
+  width: 100px; // Adjust the width as needed
+}
+
+.p-inputgroup .p-dropdown {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+/* Styles for the table container */
+.table-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align items to the right */
+  width: 100%;
+}
+
+/* Ensure the table takes full width */
+.table-container .suggestion-table {
+  width: 100%;
+}
+
+.table-container .achievement-table {
+  width: 100%;
+}
+
+.table-container .attitude-skill-table {
+  width: 100%;
+}
+
+.edit-button-container {
+  margin-top: 15px;
+  margin-left: auto;
+}
+
+.table-container {
+  position: relative;
+}

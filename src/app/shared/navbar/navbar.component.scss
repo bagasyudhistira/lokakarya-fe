@@ -37,20 +37,20 @@
       }
     }
 
+    .assessment-summary-button {
+      @extend .home-item; /* Inherit styles from .home-item */
+
+      /* Add any additional specific styles if necessary */
+    }
+
     .dropdown {
       position: relative;
 
       .dropdown-button {
+        @extend .home-item;
         background-color: #0056b3;
-        color: #ffffff;
-        font-size: 1rem;
-        font-weight: bold;
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
 
         &:hover {
           background-color: #003d80;

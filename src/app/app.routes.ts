@@ -13,6 +13,7 @@ import { ManageRoleAccessComponent } from './pages/manage-role-access/manage-rol
 import { EmployeeTechnicalSkillComponent } from './pages/employee-technical-skill/employee-technical-skill.component';
 import { EmployeeAttitudeSkillComponent } from './pages/employee-attitude-skill/employee-attitude-skill.component';
 import { EmployeeAchievementSkillComponent } from './pages/employee-achievement-skill/employee-achievement-skill.component';
+import { AssessmentSummaryComponent } from './pages/assessment-summary/assessment-summary.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -75,6 +76,11 @@ export const routes: Routes = [
   {
     path: 'employee-achievement-skill',
     component: EmployeeAchievementSkillComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'assessment-summary',
+    component: AssessmentSummaryComponent,
     canActivate: [authGuard],
   },
   { path: '**', redirectTo: '/home' },
