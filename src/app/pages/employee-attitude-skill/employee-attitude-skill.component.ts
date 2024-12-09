@@ -732,14 +732,17 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
           (as: any) => as.attitude_skill_id === attSkillId
         );
         if (attitudeSkill) {
-          attitudeSkill.score = empSkill.score;
-          attitudeSkill.emp_skill_id = empSkill.id; // For updating purposes
+          attitudeSkill.score = empSkill.score ?? null;
+          attitudeSkill.emp_skill_id = empSkill.id ?? null; // For updating purposes
         }
       }
     });
 
+    console.log('Grouped AttitudeSkills:', grouped);
+
     // Convert grouped data into an array for display
     this.groupedEmpAttitudeSkills = Array.from(grouped.values());
+    console.log('Grouped: ', this.groupedEmpAttitudeSkills);
   }
 
   prepareAttitudeSkillEntries(): void {

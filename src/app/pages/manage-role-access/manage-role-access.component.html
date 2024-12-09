@@ -24,6 +24,10 @@
           <td>{{ menu.displayName }}</td>
           <td *ngFor="let role of roles">
             <p-checkbox
+              [disabled]="
+                role.rolename === 'HR' &&
+                menu.menu_name === 'manage-role-access'
+              "
               binary="true"
               [(ngModel)]="checkboxStates[role.id + '~' + menu.id]"
               (onChange)="toggleAssociation(role.id, menu.id)"

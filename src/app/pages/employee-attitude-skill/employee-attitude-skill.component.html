@@ -49,27 +49,38 @@
       </thead>
       <tbody>
         <ng-container *ngFor="let group of groupedEmpAttitudeSkills">
-          <tr>
-            <td [attr.rowspan]="group.attitudeSkills.length">
-              {{ group.group_name }}
+          <tr *ngIf="group.attitudeSkills.length === 0">
+            <!-- Row for groups with no attitude skills -->
+            <td>{{ group.group_name }}</td>
+            <td colspan="2" style="text-align: center; font-style: italic">
+              No attitude skills available
             </td>
-            <td>{{ group.attitudeSkills[0]?.attitude_skill_name }}</td>
-            <td>{{ getScoreLabel(group.attitudeSkills[0]?.score) }}</td>
           </tr>
-          <tr
-            *ngFor="
-              let attitudeSkill of group.attitudeSkills;
-              let i = index;
-              trackBy: trackByIndex
-            "
-            [hidden]="i === 0"
-          >
-            <td>{{ attitudeSkill.attitude_skill_name }}</td>
-            <td>{{ getScoreLabel(attitudeSkill.score) }}</td>
-          </tr>
+
+          <ng-container *ngIf="group.attitudeSkills.length > 0">
+            <tr>
+              <td [attr.rowspan]="group.attitudeSkills.length">
+                {{ group.group_name }}
+              </td>
+              <td>{{ group.attitudeSkills[0]?.attitude_skill_name }}</td>
+              <td>{{ getScoreLabel(group.attitudeSkills[0]?.score) }}</td>
+            </tr>
+            <tr
+              *ngFor="
+                let attitudeSkill of group.attitudeSkills;
+                let i = index;
+                trackBy: trackByIndex
+              "
+              [hidden]="i === 0"
+            >
+              <td>{{ attitudeSkill.attitude_skill_name }}</td>
+              <td>{{ getScoreLabel(attitudeSkill.score) }}</td>
+            </tr>
+          </ng-container>
         </ng-container>
       </tbody>
     </table>
+
     <div class="edit-button-container">
       <button
         pButton
@@ -113,58 +124,48 @@
         </div>
 
         <div class="p-field">
-          <table class="p-datatable edit-form-table">
+          <table>
             <thead>
               <tr>
-                <th>Group</th>
+                <th>Group Name</th>
                 <th>Attitude Skill</th>
                 <th>Score</th>
               </tr>
             </thead>
             <tbody>
               <ng-container *ngFor="let group of groupedEmpAttitudeSkills">
-                <!-- Group Row -->
-                <tr>
-                  <td [attr.rowspan]="group.attitudeSkills.length">
-                    {{ group.group_name }}
-                  </td>
-                  <td>{{ group.attitudeSkills[0]?.attitude_skill_name }}</td>
-                  <td>
-                    <p-dropdown
-                      [(ngModel)]="group.attitudeSkills[0].score"
-                      name="Score_{{ group.group_id }}_0"
-                      [options]="scoreOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Select Score"
-                      [disabled]="isProcessing"
-                      appendTo="body"
-                    ></p-dropdown>
-                  </td>
-                </tr>
-                <!-- Attitude Skill Rows -->
-                <tr
-                  *ngFor="
-                    let attitudeSkill of group.attitudeSkills;
-                    let i = index;
-                    trackBy: trackByIndex
-                  "
-                  [hidden]="i === 0"
-                >
-                  <td>{{ attitudeSkill.attitude_skill_name }}</td>
-                  <td>
-                    <p-dropdown
-                      [(ngModel)]="attitudeSkill.score"
-                      name="Score_{{ group.group_id }}_{{ i }}"
-                      [options]="scoreOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Select Score"
-                      [disabled]="isProcessing"
-                      appendTo="body"
-                    ></p-dropdown>
-                  </td>
-                </tr>
+                <!-- Ensure the group has attitudeSkills before rendering -->
+                <ng-container *ngIf="group.attitudeSkills.length > 0">
+                  <ng-container
+                    *ngFor="
+                      let attitudeSkill of group.attitudeSkills;
+                      let i = index;
+                      trackBy: trackById
+                    "
+                  >
+                    <tr>
+                      <td
+                        *ngIf="i === 0"
+                        [attr.rowspan]="group.attitudeSkills.length"
+                      >
+                        {{ group.group_name }}
+                      </td>
+                      <td>{{ attitudeSkill.attitude_skill_name }}</td>
+                      <td>
+                        <p-dropdown
+                          [(ngModel)]="attitudeSkill.score"
+                          name="Score_{{ group.group_id }}_{{ i }}"
+                          [options]="scoreOptions"
+                          optionLabel="label"
+                          optionValue="value"
+                          placeholder="Select Score"
+                          [disabled]="isProcessing"
+                          appendTo="body"
+                        ></p-dropdown>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </ng-container>
               </ng-container>
             </tbody>
           </table>

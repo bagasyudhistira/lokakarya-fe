@@ -50,20 +50,56 @@
         <ng-template pTemplate="header">
           <tr>
             <th>Group Name</th>
-            <th>Percentage</th>
+            <th>Weight</th>
             <th>Group Actions</th>
             <th>Attitude Skill</th>
             <th>Actions</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-group>
+          <!-- Check if group.skills has any achievements -->
+          <tr
+            *ngIf="group.skills.length === 0"
+            [ngClass]="{ 'disabled-row': group.enabled === false }"
+          >
+            <td>{{ group.group_name }}</td>
+            <td>{{ group.percentage }}</td>
+            <td>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-pencil'
+                "
+                class="p-button-rounded p-button-primary"
+                (click)="editGroupAttSkill(group.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+              <button
+                pButton
+                [icon]="
+                  isEditFormLoading || isProcessing
+                    ? 'pi pi-spin pi-spinner'
+                    : 'pi pi-trash'
+                "
+                class="p-button-rounded p-button-danger"
+                (click)="deleteGroupAttSkill(group.id)"
+                [disabled]="isEditFormLoading || isProcessing"
+              ></button>
+            </td>
+            <td colspan="2" class="empty-message">
+              No attitude skill available
+            </td>
+          </tr>
+
           <ng-container *ngFor="let skill of group.skills; let i = index">
             <tr [ngClass]="{ 'disabled-row': group.enabled === false }">
               <td *ngIf="i === 0" [attr.rowspan]="group.skills.length">
                 {{ group.group_name }}
               </td>
               <td *ngIf="i === 0" [attr.rowspan]="group.skills.length">
-                {{ group.percentage }}%
+                {{ group.percentage }}
               </td>
               <td *ngIf="i === 0" [attr.rowspan]="group.skills.length">
                 <button
@@ -227,15 +263,21 @@
           </div>
 
           <div class="p-field">
-            <label for="percentage">Percentage</label>
+            <label for="percentage">Weight</label>
             <div style="padding: 0.5rem 0">
-              <input
-                id="percentage"
-                type="number"
-                pInputText
-                formControlName="percentage"
-                [disabled]="isProcessing"
-              />
+              <div class="radio-grid">
+                <ng-container
+                  *ngFor="let value of [1, 6, 2, 7, 3, 8, 4, 9, 5, 10]"
+                >
+                  <p-radioButton
+                    [name]="'percentage'"
+                    [value]="value"
+                    formControlName="percentage"
+                    [disabled]="isProcessing"
+                    [label]="value.toString()"
+                  ></p-radioButton>
+                </ng-container>
+              </div>
             </div>
           </div>
 
@@ -258,7 +300,7 @@
             class="p-button-text"
             label="Cancel"
             [disabled]="isProcessing"
-            (click)="displayEditDialog = false"
+            (click)="displayGroupEditDialog = false"
           ></button>
           <button
             pButton

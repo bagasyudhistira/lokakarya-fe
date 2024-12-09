@@ -211,7 +211,7 @@
                 name="employee_status"
                 value="2"
                 formControlName="employee_status"
-                label="Kontrak"
+                label="Contract"
                 [disabled]="isProcessing"
               ></p-radioButton>
             </div>
@@ -243,21 +243,6 @@
               ></p-calendar>
             </div>
           </div>
-<!--          <div class="p-field">-->
-<!--            <label *ngIf="mode === 'create'" for="password">Password</label>-->
-<!--            <label *ngIf="mode === 'edit'" for="password"-->
-<!--              >Confirm Current Password</label-->
-<!--            >-->
-<!--            <div style="padding: 0.5rem 0">-->
-<!--              <input-->
-<!--                id="password"-->
-<!--                pInputText-->
-<!--                type="password"-->
-<!--                formControlName="password"-->
-<!--                [disabled]="isProcessing"-->
-<!--              />-->
-<!--            </div>-->
-<!--          </div>-->
           <div>
             <p-button
               *ngIf="mode === 'edit'"
@@ -302,7 +287,6 @@
       </form>
     </p-dialog>
     <p-dialog
-
       header="🎉 Success"
       [(visible)]="displayCreatedDialog"
       [modal]="true"
@@ -318,8 +302,12 @@
         <p-card class="p-mt-3" styleClass="p-card-success p-p-3">
           <div class="p-text-center message-container">
             <!-- Message -->
-            <p class="success-message" *ngIf = "mode === 'create'">User created successfully!</p>
-            <p class="success-message" *ngIf = "mode === 'edit'">Password reset successfully!</p>
+            <p class="success-message" *ngIf="mode === 'create'">
+              User created successfully!
+            </p>
+            <p class="success-message" *ngIf="mode === 'edit'">
+              Password reset successfully!
+            </p>
             <div class="p-d-flex p-flex-column p-ai-center user-info-container">
               <!-- Username Section -->
               <div
@@ -342,7 +330,6 @@
               </div>
             </div>
           </div>
-
         </p-card>
       </div>
     </p-dialog>

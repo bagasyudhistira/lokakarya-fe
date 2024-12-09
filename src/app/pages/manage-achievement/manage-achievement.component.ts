@@ -81,10 +81,7 @@ export class ManageAchievementComponent implements OnInit {
     this.editGroupForm = this.fb.group({
       id: [''],
       group_name: ['', Validators.required],
-      percentage: [
-        0,
-        [Validators.required, Validators.min(0), Validators.max(100)],
-      ],
+      percentage: [null, Validators.required],
       enabled: [true],
     });
 
@@ -140,13 +137,13 @@ export class ManageAchievementComponent implements OnInit {
 
           this.groupedAchievements = groups.map((group: any) => ({
             ...group,
-            skills: attAchievements.filter(
-              (skill: any) => skill.group_id === group.id
-            ),
+            skills:
+              attAchievements.filter(
+                (skill: any) => skill.group_id === group.id
+              ) || [],
           }));
           this.allAchievements = attAchievements;
 
-          // Populate dropdown options
           this.groupOptions = groups.map((group: any) => ({
             label: group.group_name,
             value: group.id,

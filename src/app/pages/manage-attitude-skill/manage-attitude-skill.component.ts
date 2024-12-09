@@ -140,9 +140,9 @@ export class ManageAttitudeSkillComponent implements OnInit {
 
           this.groupedSkills = groups.map((group: any) => ({
             ...group,
-            skills: attSkills.filter(
-              (skill: any) => skill.group_id === group.id
-            ),
+            skills:
+              attSkills.filter((skill: any) => skill.group_id === group.id) ||
+              [],
           }));
           this.allAttSkills = attSkills;
 

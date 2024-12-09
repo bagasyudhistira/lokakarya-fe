@@ -145,6 +145,11 @@ export class ManageRoleAccessComponent implements OnInit {
       .join(' ');
   }
 
+  isCheckboxDisabled(roleName: string, menuName: string): boolean {
+    if (!roleName || !menuName) return false;
+    return roleName === 'HR' && menuName === 'Role Access';
+  }
+
   toggleAssociation(roleId: string, menuId: string): void {
     const key = `${roleId}~${menuId}`;
     if (this.checkboxStates[key]) {

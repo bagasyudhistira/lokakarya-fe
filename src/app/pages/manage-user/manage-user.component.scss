@@ -183,13 +183,13 @@ td button:last-child {
   justify-content: center;
   align-items: center;
   height: 100%; /* or specify a fixed height */
-  width: 100%;  /* or specify a fixed width */
+  width: 100%; /* or specify a fixed width */
 }
 
 .pi-check-circle {
   font-size: 5rem; /* Make the icon larger */
-  margin: 1rem;    /* Add spacing around the icon */
-  color: green;    /* Keep the green color */
+  margin: 1rem; /* Add spacing around the icon */
+  color: green; /* Keep the green color */
 }
 
 .message-container {
@@ -251,4 +251,3 @@ td button:last-child {
 .clickable-text:hover {
   color: #007bff; /* Optional: Change color on hover for better feedback */
 }
-

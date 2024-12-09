@@ -792,8 +792,8 @@ export class EmployeeAchievementSkillComponent implements OnInit {
           (ach: any) => ach.achievement_id === achievementId
         );
         if (achievement) {
-          achievement.notes = empSkill.notes;
-          achievement.score = empSkill.score;
+          achievement.notes = empSkill.notes ?? '';
+          achievement.score = empSkill.score ?? null;
           achievement.emp_skill_id = empSkill.id; // Store the employee skill ID for updates
         }
       }
