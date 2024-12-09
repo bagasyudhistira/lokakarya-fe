@@ -45,6 +45,7 @@
     </div>
   </div>
 
+  <!-- Achievements Table -->
   <h4>Achievements</h4>
 
   <div class="table-container">
@@ -58,7 +59,7 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngIf="achievements.length > 0; else noData">
+        <ng-container *ngIf="achievements.length > 0; else noDataAchievements">
           <ng-container *ngFor="let achievement of achievements">
             <tr>
               <td>{{ achievement.group_name }}</td>
@@ -75,16 +76,17 @@
         </ng-container>
       </tbody>
 
-      <ng-template #noData>
+      <ng-template #noDataAchievements>
         <tr>
           <td colspan="4" style="text-align: center; font-style: italic">
-            No data available for the selected assessment year.
+            No Achievements data available for the selected assessment year.
           </td>
         </tr>
       </ng-template>
     </table>
   </div>
 
+  <!-- Attitude Skills Table -->
   <h4>Attitude Skill</h4>
 
   <div class="table-container">
@@ -98,7 +100,9 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngIf="attitudeSkills.length > 0; else noData">
+        <ng-container
+          *ngIf="attitudeSkills.length > 0; else noDataAttitudeSkills"
+        >
           <ng-container *ngFor="let attitudeSkill of attitudeSkills">
             <tr>
               <td>{{ attitudeSkill.group_name }}</td>
@@ -115,13 +119,27 @@
         </ng-container>
       </tbody>
 
-      <ng-template #noData>
+      <ng-template #noDataAttitudeSkills>
         <tr>
           <td colspan="4" style="text-align: center; font-style: italic">
-            No data available for the selected assessment year.
+            No Attitude Skill data available for the selected assessment year.
           </td>
         </tr>
       </ng-template>
+    </table>
+  </div>
+  <div class="table-container">
+    <table class="total-final-score-table">
+      <tbody>
+        <tr>
+          <td colspan="4" style="text-align: right; font-weight: bold">
+            Total Final Score:
+          </td>
+          <td>
+            {{ totalFinalScore | number : "1.2-2" }}
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
 
@@ -130,10 +148,10 @@
   <div class="table-container">
     <table class="suggestion-table">
       <tbody>
-        <ng-container *ngIf="suggestions.length > 0; else noData">
-          <ng-container *ngFor="let suggestion of suggestions">
+        <ng-container *ngIf="suggestion; else noData">
+          <ng-container>
             <tr>
-              <td>{{ suggestion.suggestion }}</td>
+              <td>{{ suggestion }}</td>
             </tr>
           </ng-container>
         </ng-container>

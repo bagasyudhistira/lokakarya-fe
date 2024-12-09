@@ -69,10 +69,9 @@ export class AssessmentSummaryComponent implements OnInit {
   selectedYear: number = this.selectedAssessmentYear.getFullYear();
   achievements: any[] = [];
   attitudeSkills: any[] = [];
-  suggestions: any[] = [];
+  suggestion: string = '';
   assessmentYear: Date | null = null;
-
-  devPlansMap: Map<string, string> = new Map();
+  totalScore: number = 0;
 
   constructor(
     private http: HttpClient,
@@ -205,22 +204,12 @@ export class AssessmentSummaryComponent implements OnInit {
 
       this.loading = true;
 
-      const summaryUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/achievementsummary`;
+      const summaryUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/achievementsummary/${this.selectedUserId}/${this.selectedYear}`;
 
-      const requestBody = {
-        user_id: this.selectedUserId,
-        assessment_year: this.selectedYear,
-      };
-
-      console.log(
-        'Sending Request to URL:',
-        summaryUrl,
-        'with body:',
-        requestBody
-      );
+      console.log('Sending Request to URL:', summaryUrl);
 
       this.http
-        .post<any>(summaryUrl, requestBody)
+        .get<any>(summaryUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
@@ -256,22 +245,12 @@ export class AssessmentSummaryComponent implements OnInit {
 
       this.loading = true;
 
-      const summaryUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/attitudeskillsummary`;
+      const summaryUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/attitudeskillsummary/${this.selectedUserId}/${this.selectedYear}`;
 
-      const requestBody = {
-        user_id: this.selectedUserId,
-        assessment_year: this.selectedYear,
-      };
-
-      console.log(
-        'Sending Request to URL:',
-        summaryUrl,
-        'with body:',
-        requestBody
-      );
+      console.log('Sending Request to URL:', summaryUrl);
 
       this.http
-        .post<any>(summaryUrl, requestBody)
+        .get<any>(summaryUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
@@ -313,19 +292,15 @@ export class AssessmentSummaryComponent implements OnInit {
         '/' +
         this.selectedYear;
 
-      console.log(
-        'Sending Request to URL:',
-        summaryUrl,
-        'with: ' + this.selectedUserId + ' ' + this.selectedYear
-      );
+      console.log('Sending Suggestion Request to URL:', summaryUrl);
 
       this.http
         .get<any>(summaryUrl)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
-            this.suggestions = response.content || [];
-            console.log('Fetched Suggestions:', this.suggestions);
+            this.suggestion = response.content.suggestion || '';
+            console.log('Fetched Suggestions:', this.suggestion);
             resolve();
           },
           error: (error) => {
@@ -341,9 +316,99 @@ export class AssessmentSummaryComponent implements OnInit {
     });
   }
 
-  fetchAssessmentSummary(): void {
-    this.fetchAchievementSummary();
-    this.fetchAttitudeSkillSummary();
-    this.fetchSuggestion();
+  async fetchAssessmentSummary(): Promise<void> {
+    try {
+      await Promise.all([
+        this.fetchAchievementSummary(),
+        this.fetchAttitudeSkillSummary(),
+      ]);
+      this.fetchSuggestion();
+      this.adjustPercentages();
+    } catch (error) {
+      console.error('Error fetching summaries:', error);
+
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch summaries.',
+      });
+    }
+  }
+
+  adjustPercentages(): void {
+    const totalAchievementPercentage = this.achievements.reduce(
+      (sum, achievement) => sum + achievement.percentage,
+      0
+    );
+
+    const totalAttitudePercentage = this.attitudeSkills.reduce(
+      (sum, skill) => sum + skill.percentage,
+      0
+    );
+
+    const combinedTotalPercentage =
+      totalAchievementPercentage + totalAttitudePercentage;
+
+    console.log('Total Achievement Percentage:', totalAchievementPercentage);
+    console.log('Total Attitude Percentage:', totalAttitudePercentage);
+    console.log('Combined Total Percentage:', combinedTotalPercentage);
+
+    if (combinedTotalPercentage === 0) {
+      console.warn(
+        'Combined total percentage is 0. Cannot adjust percentages.'
+      );
+      return;
+    }
+
+    const scalingFactor = 100 / combinedTotalPercentage;
+
+    console.log('Scaling Factor:', scalingFactor);
+
+    this.achievements = this.achievements.map((achievement) => ({
+      ...achievement,
+      percentage: parseFloat(
+        (achievement.percentage * scalingFactor).toFixed(2)
+      ),
+    }));
+
+    this.attitudeSkills = this.attitudeSkills.map((skill) => ({
+      ...skill,
+      percentage: parseFloat((skill.percentage * scalingFactor).toFixed(2)),
+    }));
+
+    const newTotalAchievementPercentage = this.achievements.reduce(
+      (sum, achievement) => sum + achievement.percentage,
+      0
+    );
+
+    const newTotalAttitudePercentage = this.attitudeSkills.reduce(
+      (sum, skill) => sum + skill.percentage,
+      0
+    );
+
+    const newCombinedTotal =
+      newTotalAchievementPercentage + newTotalAttitudePercentage;
+
+    console.log(
+      'New Total Achievement Percentage:',
+      newTotalAchievementPercentage
+    );
+    console.log('New Total Attitude Percentage:', newTotalAttitudePercentage);
+    console.log('New Combined Total Percentage:', newCombinedTotal);
+  }
+
+  get totalFinalScore(): number {
+    const achievementFinalScore = this.achievements.reduce(
+      (sum, achievement) =>
+        sum + (achievement.sum_score * achievement.percentage) / 100,
+      0
+    );
+
+    const attitudeFinalScore = this.attitudeSkills.reduce(
+      (sum, skill) => sum + (skill.sum_score * skill.percentage) / 100,
+      0
+    );
+
+    return achievementFinalScore + attitudeFinalScore;
   }
 }
