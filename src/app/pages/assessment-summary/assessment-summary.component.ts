@@ -19,10 +19,12 @@ import { MessageService, PrimeNGConfig, PrimeTemplate } from 'primeng/api';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { PrimeNgModule } from '../../shared/primeng/primeng.module';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { jwtDecode } from 'jwt-decode';
 import { finalize } from 'rxjs/operators';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
+import { switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-assessment-summary',
@@ -51,22 +53,19 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
   providers: [MessageService],
 })
 export class AssessmentSummaryComponent implements OnInit {
-  empDevPlans: any[] = [];
   loading: boolean = false;
   isProcessing: boolean = false;
   maxDate: Date = new Date();
   employees: any[] = [];
   currentUserId: string = this.extractCurrentUserId() || '';
-  isEditFormLoading: boolean = false;
-  displayEditDialog: boolean = false;
   editForm!: FormGroup;
-  globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   devPlans: any[] = [];
   selectedUserId: string = '';
   selectedName: string = '';
   selectedAssessmentYear: Date = new Date();
   selectedYear: number = this.selectedAssessmentYear.getFullYear();
+  selectedStatus: number = 0;
   achievements: any[] = [];
   attitudeSkills: any[] = [];
   suggestion: string = '';
@@ -316,25 +315,6 @@ export class AssessmentSummaryComponent implements OnInit {
     });
   }
 
-  async fetchAssessmentSummary(): Promise<void> {
-    try {
-      await Promise.all([
-        this.fetchAchievementSummary(),
-        this.fetchAttitudeSkillSummary(),
-      ]);
-      this.fetchSuggestion();
-      this.adjustPercentages();
-    } catch (error) {
-      console.error('Error fetching summaries:', error);
-
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to fetch summaries.',
-      });
-    }
-  }
-
   adjustPercentages(): void {
     const totalAchievementPercentage = this.achievements.reduce(
       (sum, achievement) => sum + achievement.percentage,
@@ -410,5 +390,109 @@ export class AssessmentSummaryComponent implements OnInit {
     );
 
     return achievementFinalScore + attitudeFinalScore;
+  }
+
+  async fetchAssessmentSummary(): Promise<void> {
+    try {
+      await Promise.all([
+        this.fetchAchievementSummary(),
+        this.fetchAttitudeSkillSummary(),
+        this.fetchSuggestion(),
+      ]);
+      this.adjustPercentages();
+    } catch (error) {
+      console.error('Error fetching summaries:', error);
+
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch summaries.',
+      });
+    }
+  }
+
+  createAssessmentSummary(): void {
+    const checkUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/${this.selectedUserId}/${this.selectedYear}`;
+    const createUrl =
+      'https://lokakarya-be.up.railway.app/assessmentsummary/create';
+
+    interface AssessmentSummary {
+      id: string;
+      user_id: string;
+      year: number;
+      score: number;
+      status: number;
+      created_by: string;
+    }
+
+    this.http
+      .get<AssessmentSummary>(checkUrl)
+      .pipe(
+        switchMap((existingSummary) => {
+          if (existingSummary && existingSummary.id) {
+            const updateUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/update/${existingSummary.id}`;
+
+            const updateBody: Partial<AssessmentSummary> = {
+              score: this.totalFinalScore,
+              status: this.selectedStatus,
+            };
+
+            console.log('Existing Summary Found. Updating:', existingSummary);
+            console.log('Update Body:', updateBody);
+
+            return this.http.put<AssessmentSummary>(updateUrl, updateBody).pipe(
+              catchError((err) => {
+                console.error('Error updating Assessment Summary:', err);
+                let errorMessage = 'Failed to update assessment summary.';
+                if (err.error && err.error.message) {
+                  errorMessage = err.error.message;
+                }
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Error',
+                  detail: errorMessage,
+                });
+                return of(null);
+              })
+            );
+          } else {
+            const requestBody: AssessmentSummary = {
+              id: '',
+              user_id: this.selectedUserId,
+              year: this.selectedYear,
+              score: this.totalFinalScore,
+              status: this.selectedStatus,
+              created_by: this.currentUserId,
+            };
+
+            console.log('No Existing Summary Found. Creating:', requestBody);
+
+            return this.http
+              .post<AssessmentSummary>(createUrl, requestBody)
+              .pipe(
+                catchError((err) => {
+                  console.error('Error creating Assessment Summary:', err);
+                  let errorMessage = 'Failed to create assessment summary.';
+                  if (err.error && err.error.message) {
+                    errorMessage = err.error.message;
+                  }
+                  this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: errorMessage,
+                  });
+                  return of(null);
+                })
+              );
+          }
+        })
+      )
+      .subscribe((response) => {
+        if (response) {
+          if (response.id) {
+            response.created_by === this.currentUserId ? 'created' : 'updated';
+          }
+        }
+      });
   }
 }
