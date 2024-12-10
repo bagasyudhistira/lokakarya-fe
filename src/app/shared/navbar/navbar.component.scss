@@ -38,9 +38,7 @@
     }
 
     .assessment-summary-button {
-      @extend .home-item; /* Inherit styles from .home-item */
-
-      /* Add any additional specific styles if necessary */
+      @extend .home-item;
     }
 
     .dropdown {

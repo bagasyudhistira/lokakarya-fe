@@ -45,6 +45,11 @@
     </div>
   </div>
 
+  <p><strong>Division:</strong> {{ selectedDivision }}</p>
+  <p><strong>Position:</strong> {{ selectedPosition }}</p>
+  <p *ngIf="selectedStatus === 1"><strong>Status:</strong> Permanent</p>
+  <p *ngIf="selectedStatus === 2"><strong>Status:</strong> Contract</p>
+
   <!-- Achievements Table -->
   <h4>Achievements</h4>
 
@@ -59,7 +64,9 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngIf="achievements.length > 0; else noDataAchievements">
+        <ng-container
+          *ngIf="achievements.length > 0 && !isLoading; else noDataAchievements"
+        >
           <ng-container *ngFor="let achievement of achievements">
             <tr>
               <td>{{ achievement.group_name }}</td>
@@ -101,7 +108,10 @@
       </thead>
       <tbody>
         <ng-container
-          *ngIf="attitudeSkills.length > 0; else noDataAttitudeSkills"
+          *ngIf="
+            attitudeSkills.length > 0 && !isLoading;
+            else noDataAttitudeSkills
+          "
         >
           <ng-container *ngFor="let attitudeSkill of attitudeSkills">
             <tr>
@@ -143,12 +153,12 @@
     </table>
   </div>
 
-  <h4>Suggestions</h4>
+  <h4>Suggestion</h4>
 
   <div class="table-container">
     <table class="suggestion-table">
       <tbody>
-        <ng-container *ngIf="suggestion; else noData">
+        <ng-container *ngIf="suggestion && !isLoading; else noData">
           <ng-container>
             <tr>
               <td>{{ suggestion }}</td>

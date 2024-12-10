@@ -34,6 +34,12 @@
       </span>
       <ul class="dropdown-content">
         <li
+          [ngClass]="{ active: isActiveRoute('assessment-summary') }"
+          (click)="navigateTo('assessment-summary')"
+        >
+          Summary
+        </li>
+        <li
           *ngFor="let menu of submitMenus"
           [ngClass]="{ active: isActiveRoute(menu) }"
           (click)="navigateTo(menu)"
@@ -41,14 +47,6 @@
           {{ formatMenuName(menu) }}
         </li>
       </ul>
-    </li>
-
-    <li
-      class="assessment-summary-button"
-      [ngClass]="{ active: isActiveRoute('assessment-summary') }"
-      (click)="navigateTo('assessment-summary')"
-    >
-      Assessment Summary
     </li>
 
     <span class="user-name">{{ userName }} ({{ roles }}) </span>
