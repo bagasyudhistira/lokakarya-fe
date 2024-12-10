@@ -402,8 +402,9 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
           score: entry.entryScore,
         };
 
+        console.log('Payload:', payload);
+
         if (entry.id && !entry.id.startsWith('new_')) {
-          // Update existing entry
           payload['id'] = entry.id;
           payload['updated_by'] = this.currentUserId;
           requests.push(

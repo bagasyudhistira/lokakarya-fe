@@ -10,7 +10,7 @@
 
   .navbar-menu {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start; /* We'll use margin-left:auto on user-info to push it right */
     align-items: center;
     list-style: none;
     margin: 0;
@@ -35,10 +35,6 @@
         background-color: #003d80;
         font-weight: bold;
       }
-    }
-
-    .assessment-summary-button {
-      @extend .home-item;
     }
 
     .dropdown {
@@ -101,20 +97,29 @@
         display: block;
       }
     }
-  }
 
-  .user-name {
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 0.5rem 1rem;
-    position: relative;
-    padding-right: 0.5rem;
-  }
+    .user-info {
+      margin-left: auto; /* Push this and anything after it to the right */
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      color: white;
+      padding: 0.5rem 1rem;
 
-  /* Logout Item Styling */
-  .logout-item {
-    margin-left: auto; /* Push logout to the far right */
+      .user-name {
+        font-size: 1rem;
+        font-weight: bold;
+      }
+
+      .user-roles {
+        font-size: 0.85rem;
+        color: #e0e0e0; /* slightly lighter for contrast */
+      }
+    }
+
+    .logout-item {
+      /* No margin-left:auto here */
+    }
 
     .logout-button {
       background-color: #b71c1c; /* Dark red background */
@@ -140,19 +145,6 @@
         outline: none;
         box-shadow: 0 0 0 2px rgba(151, 71, 71, 0.5); /* Subtle focus ring */
       }
-
-      /* Optional: Smooth transition for background color */
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
   }
-}
-
-/* Optional: Ensure no global styles interfere with the logout button */
-.logout-item .logout-button {
-  box-shadow: none;
-}
-
-/* Optional: Adjust z-index if necessary */
-.logout-item .logout-button {
-  z-index: 1001; /* Above other elements */
 }

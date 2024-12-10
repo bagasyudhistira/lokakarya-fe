@@ -49,7 +49,10 @@
       </ul>
     </li>
 
-    <span class="user-name">{{ userName }} ({{ roles }}) </span>
+    <li class="user-info">
+      <span class="user-name">{{ userName }}</span>
+      <span class="user-roles">{{ roles }}</span>
+    </li>
 
     <li class="logout-item">
       <button class="logout-button" (click)="logout()" aria-label="Logout">
