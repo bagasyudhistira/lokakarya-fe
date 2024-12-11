@@ -55,6 +55,7 @@ import { of } from 'rxjs';
 export class AssessmentSummaryComponent implements OnInit {
   maxDate: Date = new Date();
   employees: any[] = [];
+  divisions: any[] = [];
   currentUserId: string = this.extractCurrentUserId() || '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   selectedUserId: string = '';
@@ -68,8 +69,10 @@ export class AssessmentSummaryComponent implements OnInit {
   assessmentYear: Date | null = null;
   totalScore: number = 0;
   selectedDivision: string = '';
+  selectedDivisionId: string = '';
   selectedPosition: string = '';
   isLoading: boolean = true;
+  empUrl: string = '';
 
   constructor(
     private http: HttpClient,
@@ -80,46 +83,75 @@ export class AssessmentSummaryComponent implements OnInit {
   ngOnInit(): void {
     this.primengConfig.ripple = true;
 
-    if (
-      this.currentRoles.includes('HR') ||
-      this.currentRoles.includes('SVP') ||
-      this.currentRoles.includes('MGR')
-    ) {
-      this.fetchEmployees();
-      this.selectedUserId = '';
-    } else {
-      this.selectedUserId = this.currentUserId;
-    }
-
-    Promise.all([
-      this.fetchSelectedUserDetails(),
-      this.fetchAssessmentSummary(),
-    ])
+    this.fetchSelectedUserDetails()
+      .then(() => {
+        if (
+          this.currentRoles.includes('HR') ||
+          this.currentRoles.includes('SVP') ||
+          this.currentRoles.includes('MGR')
+        ) {
+          return Promise.all([
+            this.fetchDivisions(),
+            this.fetchEmployees(),
+          ]).then(() => {
+            return;
+          });
+        } else {
+          this.selectedUserId = this.currentUserId;
+          return Promise.resolve();
+        }
+      })
+      .then(() => {
+        return this.fetchAssessmentSummary();
+      })
       .then(() => {
         this.createAssessmentSummary();
-      })
-      .finally(() => {
         this.isLoading = false;
       })
       .catch((error) => {
-        console.error('Error while loading assessment summary:', error);
+        console.error('Error while loading data:', error);
       });
   }
 
   fetchEmployees(): void {
+    if (this.selectedDivisionId === '') {
+      this.empUrl = 'https://lokakarya-be.up.railway.app/appuser/all';
+    } else {
+      this.empUrl =
+        'https://lokakarya-be.up.railway.app/appuser/div/' +
+        this.selectedDivisionId;
+    }
+
+    this.http.get<any>(this.empUrl).subscribe({
+      next: (response) => {
+        this.employees = response.content || [];
+        console.log('Fetched Employees:', this.employees);
+      },
+      error: (error) => {
+        console.error('Error fetching employees:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch employees.',
+        });
+      },
+    });
+  }
+
+  fetchDivisions(): void {
     this.http
-      .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
+      .get<any>('https://lokakarya-be.up.railway.app/division/all')
       .subscribe({
         next: (response) => {
-          this.employees = response.content || [];
-          console.log('Fetched Employees:', this.employees);
+          this.divisions = response.content || [];
+          console.log('Fetched Divisions:', this.divisions);
         },
         error: (error) => {
-          console.error('Error fetching employees:', error);
+          console.error('Error fetching divisions:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch employees.',
+            detail: 'Failed to fetch divisions.',
           });
         },
       });
@@ -148,35 +180,45 @@ export class AssessmentSummaryComponent implements OnInit {
       return null;
     }
   }
-
-  fetchSelectedUserDetails(): void {
+  fetchSelectedUserDetails(): Promise<void> {
     if (!this.selectedUserId || this.selectedUserId === '') {
       console.warn('No user selected.');
       this.selectedUserId = this.currentUserId;
     }
+
     const userUrl = `https://lokakarya-be.up.railway.app/appuser/get/${this.selectedUserId}`;
 
-    this.http.get<any>(userUrl).subscribe({
-      next: (response) => {
-        const user = response.content;
-        if (user && user.full_name) {
-          this.selectedName = user.full_name;
-          console.log('Fetched User Full Name:', this.selectedName);
-          this.selectedDivision = user.division_name;
-          console.log('Fetched User Division:', this.selectedDivision);
-          this.selectedPosition = user.position;
-          console.log('Fetched User Position:', this.selectedPosition);
-          this.selectedStatus = user.employee_status;
-          console.log('Fetched User Status:', this.selectedStatus);
-        } else {
-          console.warn('User full name not found in response.');
+    return new Promise((resolve, reject) => {
+      this.http.get<any>(userUrl).subscribe({
+        next: (response) => {
+          const user = response.content;
+          if (user && user.full_name) {
+            this.selectedName = user.full_name;
+            console.log('Fetched User Full Name:', this.selectedName);
+
+            this.selectedDivision = user.division_name;
+            console.log('Fetched User Division:', this.selectedDivision);
+
+            this.selectedDivisionId = user.division_id;
+            console.log('Fetched User DivisionId:', this.selectedDivisionId);
+
+            this.selectedPosition = user.position;
+            console.log('Fetched User Position:', this.selectedPosition);
+
+            this.selectedStatus = user.employee_status;
+            console.log('Fetched User Status:', this.selectedStatus);
+          } else {
+            console.warn('User full name not found in response.');
+            this.selectedName = '';
+          }
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error fetching user full name:', error);
           this.selectedName = '';
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching user full name:', error);
-        this.selectedName = '';
-      },
+          reject(error);
+        },
+      });
     });
   }
 
@@ -397,6 +439,7 @@ export class AssessmentSummaryComponent implements OnInit {
   async fetchAssessmentSummary(): Promise<void> {
     try {
       await Promise.all([
+        this.fetchSelectedUserDetails(),
         this.fetchAchievementSummary(),
         this.fetchAttitudeSkillSummary(),
         this.fetchSuggestion(),

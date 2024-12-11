@@ -7,7 +7,14 @@
   </div>
   <div class="header-actions">
     <div class="top-row">
-      <div *ngIf="currentRoles.includes('HR')" class="user-selection">
+      <div
+        *ngIf="
+          currentRoles.includes('HR') ||
+          currentRoles.includes('MGR') ||
+          currentRoles.includes('SVP')
+        "
+        class="user-selection"
+      >
         <label for="userSelect">Select User: </label>
         <p-dropdown
           id="userSelect"
@@ -79,7 +86,9 @@
           <ng-template #noachievements>
             <tr>
               <td>{{ group.group_name }}</td>
-              <td colspan="3">No achievements available</td>
+              <td colspan="3" style="text-align: center; font-style: italic">
+                No achievements available
+              </td>
             </tr>
           </ng-template>
         </ng-container>
@@ -87,6 +96,7 @@
     </table>
     <div class="edit-button-container">
       <button
+        *ngIf="currentRoles.includes('USER')"
         pButton
         label="Edit"
         icon="pi pi-pencil"

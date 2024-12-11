@@ -8,7 +8,14 @@
   <div class="header-actions">
     <div class="top-row">
       <!-- For HR users, show the user dropdown -->
-      <div *ngIf="currentRoles.includes('HR')" class="user-selection">
+      <div
+        *ngIf="
+          currentRoles.includes('HR') ||
+          currentRoles.includes('MGR') ||
+          currentRoles.includes('SVP')
+        "
+        class="user-selection"
+      >
         <label for="userSelect">Select User: </label>
         <p-dropdown
           id="userSelect"
@@ -83,6 +90,7 @@
 
     <div class="edit-button-container">
       <button
+        *ngIf="currentRoles.includes('USER')"
         pButton
         label="Edit"
         icon="pi pi-pencil"

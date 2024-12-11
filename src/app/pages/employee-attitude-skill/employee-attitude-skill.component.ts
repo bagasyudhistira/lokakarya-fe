@@ -70,6 +70,7 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   roles: any[] = [];
   selectedRoles: { [roleId: string]: boolean } = {};
   currentUserId: string = this.extractCurrentUserId() || '';
+  currentDivisionId: string = this.extractCurrentDivisionId() || '';
   isEditFormLoading: boolean = false;
   displayEditDialog: boolean = false;
   editForm!: FormGroup;
@@ -82,6 +83,7 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   selectedName: string = '';
   selectedAssessmentYear: Date = new Date();
   selectedYear: number = this.selectedAssessmentYear.getFullYear();
+  empUrl: string = '';
 
   groupedEmpAttitudeSkills: any[] = []; // For grouped data
 
@@ -131,7 +133,11 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
       });
 
     this.fetchSelectedUserName();
-    if (this.currentRoles.includes('HR')) {
+    if (
+      this.currentRoles.includes('HR') ||
+      this.currentRoles.includes('SVP') ||
+      this.currentRoles.includes('MGR')
+    ) {
       this.fetchEmployees();
       this.selectedUserId = '';
     } else {
@@ -139,6 +145,30 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
     }
     this.selectedAssessmentYear = new Date();
     console.log('Component Initialized');
+  }
+
+  private extractCurrentDivisionId(): string | null {
+    const token = localStorage.getItem('auth-token');
+
+    if (!token) {
+      console.error('No JWT found in session storage.');
+      return null;
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      if (decoded && decoded.divisionId) {
+        console.log('Decoded userId:', decoded.divisionId);
+        return decoded.divisionId;
+      } else {
+        console.error('divisionId not found in JWT.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
   }
 
   private extractCurrentUserId(): string | null {
@@ -230,22 +260,29 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   }
 
   fetchEmployees(): void {
-    this.http
-      .get<any>('https://lokakarya-be.up.railway.app/appuser/all')
-      .subscribe({
-        next: (response) => {
-          this.employees = response.content || [];
-          console.log('Fetched Employees:', this.employees);
-        },
-        error: (error) => {
-          console.error('Error fetching employees:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch employees.',
-          });
-        },
-      });
+    if (this.currentRoles.includes('HR') || this.currentRoles.includes('SVP')) {
+      this.empUrl = 'https://lokakarya-be.up.railway.app/appuser/all';
+    } else {
+      this.empUrl =
+        'https://lokakarya-be.up.railway.app/appuser/div/' +
+        this.currentDivisionId;
+    }
+    console.log('Fetching employees from URL:', this.empUrl);
+    this.http.get<any>(this.empUrl).subscribe({
+      next: (response) => {
+        this.employees = response.content || [];
+        console.log('Fetched Employees:', this.employees);
+      },
+
+      error: (error) => {
+        console.error('Error fetching employees:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch employees.',
+        });
+      },
+    });
   }
 
   fetchEmpAttitudeSkills(): void {

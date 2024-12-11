@@ -19,6 +19,7 @@
           </span>
         </div>
         <button
+          *ngIf="currentRoles.includes('USER')"
           pButton
           label="Create"
           icon="pi pi-plus"
@@ -27,7 +28,10 @@
           [disabled]="isProcessing || isEditFormLoading"
         ></button>
       </div>
-      <div class="checkbox-container" *ngIf="currentRoles.includes('HR')">
+      <div
+        class="checkbox-container"
+        *ngIf="currentRoles.includes('HR') && currentRoles.includes('USER')"
+      >
         <p-checkbox
           binary="true"
           [(ngModel)]="showOnlyMine"
