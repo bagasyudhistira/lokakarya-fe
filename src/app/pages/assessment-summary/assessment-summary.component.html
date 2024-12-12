@@ -23,7 +23,9 @@
           [(ngModel)]="selectedUserId"
           optionLabel="full_name"
           optionValue="id"
-          placeholder="{{ selectedName }}"
+          placeholder="{{
+            employees.length > 0 ? employees[0].full_name : selectedName
+          }}"
           (onChange)="fetchAssessmentSummary()"
           appendTo="body"
         ></p-dropdown>
@@ -41,7 +43,7 @@
           optionLabel="division_name"
           optionValue="id"
           placeholder="{{ selectedDivision }}"
-          (onChange)="fetchEmployees()"
+          (onChange)="fetchAssessmentSummaryFirstEmployee()"
           appendTo="body"
         ></p-dropdown>
       </div>

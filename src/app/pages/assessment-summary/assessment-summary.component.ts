@@ -113,28 +113,32 @@ export class AssessmentSummaryComponent implements OnInit {
       });
   }
 
-  fetchEmployees(): void {
-    if (this.selectedDivisionId === '') {
-      this.empUrl = 'https://lokakarya-be.up.railway.app/appuser/all';
-    } else {
-      this.empUrl =
-        'https://lokakarya-be.up.railway.app/appuser/div/' +
-        this.selectedDivisionId;
-    }
+  async fetchEmployees(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.selectedDivisionId === '') {
+        this.empUrl = 'https://lokakarya-be.up.railway.app/appuser/all';
+      } else {
+        this.empUrl =
+          'https://lokakarya-be.up.railway.app/appuser/div/' +
+          this.selectedDivisionId;
+      }
 
-    this.http.get<any>(this.empUrl).subscribe({
-      next: (response) => {
-        this.employees = response.content || [];
-        console.log('Fetched Employees:', this.employees);
-      },
-      error: (error) => {
-        console.error('Error fetching employees:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch employees.',
-        });
-      },
+      this.http.get<any>(this.empUrl).subscribe({
+        next: (response) => {
+          this.employees = response.content || [];
+          console.log('Fetched Employees:', this.employees);
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error fetching employees:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch employees.',
+          });
+          reject(error);
+        },
+      });
     });
   }
 
@@ -454,6 +458,12 @@ export class AssessmentSummaryComponent implements OnInit {
         detail: 'Failed to fetch summaries.',
       });
     }
+  }
+
+  async fetchAssessmentSummaryFirstEmployee(): Promise<void> {
+    await this.fetchEmployees();
+    this.selectedUserId = this.employees[0].id;
+    await this.fetchAssessmentSummary();
   }
 
   createAssessmentSummary(): void {
