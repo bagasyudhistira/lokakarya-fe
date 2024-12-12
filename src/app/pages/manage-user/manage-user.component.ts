@@ -448,7 +448,7 @@ export class ManageUserComponent implements OnInit {
     return this.rolesFormArray.at(index) as FormControl<boolean>;
   }
 
-  saveEmployee(): void {
+  async saveEmployee(): Promise<void> {
     console.log('Saving Employee. Mode:', this.mode);
 
     this.selectedUserId = '';
@@ -461,6 +461,29 @@ export class ManageUserComponent implements OnInit {
         detail: 'Please fill in all required fields.',
       });
       return;
+    }
+
+    if (this.mode === 'create') {
+      try {
+        const selectedUsername = this.editForm.value.username;
+        const isDuplicate = await this.confirmDuplicate(selectedUsername);
+        console.log('Duplicate Check Result:', isDuplicate);
+        if (isDuplicate) {
+          console.log(selectedUsername);
+          this.isProcessing = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail:
+              'Username already exists. Please choose a different username.',
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error during duplicate check:', error);
+        this.isProcessing = false;
+        return;
+      }
     }
 
     const payload = {
@@ -766,80 +789,36 @@ export class ManageUserComponent implements OnInit {
       .catch((err) => console.error('Error updating roles:', err));
   }
 
-  private validatePassword(
-    username: string,
-    password: string
-  ): Promise<boolean> {
-    return new Promise((resolve) => {
-      this.http
-        .post(
-          'https://lokakarya-be.up.railway.app/auth/sign-in',
-          {
-            username,
-            password,
-          },
-          { responseType: 'text' }
+  async confirmDuplicate(username: string): Promise<boolean> {
+    try {
+      const response = await this.http
+        .get<{ content: boolean }>(
+          `https://lokakarya-be.up.railway.app/appuser/user/${username}`
         )
-        .subscribe({
-          next: (response: any) => {
-            console.log('Password validation response:', response);
-            resolve(true);
-          },
-          error: (error) => {
-            console.error('Password validation failed:', error);
+        .toPromise();
 
-            if (error.status != 500) {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail:
-                  'An unexpected error occurred while validating the password.',
-              });
-            }
-            resolve(false);
-          },
+      if (response && response.content !== null) {
+        return response.content;
+      } else {
+        console.error('Unexpected API response:', response);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'Unexpected response from the server while checking duplicates.',
         });
-    });
+        return false;
+      }
+    } catch (error) {
+      console.error('Error Checking Duplicate:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to check for duplicates.',
+      });
+      throw error;
+    }
   }
-
-  // submitEmployee(): void {
-  //   console.log('Submitting Employee. Mode:', this.mode);
-  //
-  //   this.isProcessing = true;
-  //
-  //   const username = this.editForm.get('username')?.value;
-  //
-  //   if (this.mode === 'create') {
-  //     this.validateUsername(username).then((isUnique) => {
-  //       if (!isUnique) {
-  //         this.isProcessing = false;
-  //         this.messageService.add({
-  //           severity: 'error',
-  //           summary: 'Error',
-  //           detail:
-  //             'Username already exists. Please choose a different username.',
-  //         });
-  //         return;
-  //       }
-  //       this.saveEmployee();
-  //     });
-  //   } else if (this.mode === 'edit') {
-  //     const password = this.editForm.get('password')?.value;
-  //
-  //     this.validatePassword(username, password).then((isValid) => {
-  //       if (!isValid) {
-  //         this.isProcessing = false;
-  //         this.messageService.add({
-  //           severity: 'error',
-  //           summary: 'Error',
-  //           detail: 'Invalid password. Please try again.',
-  //         });
-  //         return;
-  //       }
-  //       this.saveEmployee();
-  //     });
-  //   }
-  // }
 
   submitEmployee(): void {
     console.log('Submitting Employee. Mode:', this.mode);
@@ -923,24 +902,6 @@ export class ManageUserComponent implements OnInit {
       }
     );
   }
-
-  // resetPassword(): void {
-  //   const payload = {
-  //       user_id : this.selectedUserId
-  //   };
-  //   const request$ =
-  //       this.http.put<any>(
-  //         'https://lokakarya-be.up.railway.app/auth/resetpassword',
-  //         payload
-  //       ).subscribe({
-  //         next: (response: any) => {
-  //           console.log('Password validation response:', response);
-  //           this.generatedPassword = response?.content;
-  //         }
-  //       });
-  //   this.displayEditDialog = false;
-  //   this.displayCreatedDialog = true;
-  // }
 
   async resetPassword(): Promise<void> {
     this.confirmationService.confirm({
