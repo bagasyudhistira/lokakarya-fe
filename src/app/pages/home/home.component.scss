@@ -147,3 +147,7 @@ h1 {
   button.p-button-text:hover:not(:disabled) {
   background-color: rgba(217, 83, 79, 0.1);
 }
+
+.required {
+  color: red;
+}

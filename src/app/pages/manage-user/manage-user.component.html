@@ -114,7 +114,10 @@
       <form [formGroup]="editForm" (ngSubmit)="submitEmployee()">
         <div class="p-fluid">
           <div *ngIf="mode === 'create'" class="p-field">
-            <label for="username">Username</label>
+            <label for="username"
+              >Username
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <input
                 id="username"
@@ -126,7 +129,10 @@
           </div>
 
           <div class="p-field">
-            <label for="full_name">Full Name</label>
+            <label for="full_name"
+              >Full Name
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <input
                 id="full_name"
@@ -138,7 +144,10 @@
           </div>
 
           <div class="p-field">
-            <label for="position">Position</label>
+            <label for="position"
+              >Position
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <input
                 id="position"
@@ -150,7 +159,10 @@
           </div>
 
           <div class="p-field">
-            <label for="email_address">Email</label>
+            <label for="email_address"
+              >Email
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <input
                 id="email_address"
@@ -162,7 +174,10 @@
           </div>
 
           <div class="p-field">
-            <label for="division_id">Division</label>
+            <label for="division_id"
+              >Division
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <p-dropdown
                 [options]="divisions"
@@ -197,7 +212,10 @@
           </div>
 
           <div class="p-field">
-            <label for="employee_status">Status</label>
+            <label for="employee_status"
+              >Status
+              <span class="required">*</span>
+            </label>
             <div class="radio-buttons" style="padding: 0.5rem 0">
               <p-radioButton
                 name="employee_status"
@@ -227,7 +245,10 @@
             </div>
           </div>
           <div class="p-field">
-            <label for="join_date">Join Date</label>
+            <label for="join_date"
+              >Join Date
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <p-calendar
                 id="join_date"
@@ -254,6 +275,7 @@
             ></p-button>
           </div>
         </div>
+        <span class="required">*Required</span>
         <div class="dialog-footer">
           <button
             pButton

@@ -96,7 +96,10 @@
         <div class="p-fluid">
           <div *ngIf="mode === 'create'" class="p-field"></div>
           <div class="p-field">
-            <label for="plan">Plan</label>
+            <label for="plan"
+              >Plan
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <input
                 id="plan"
@@ -118,6 +121,7 @@
             </div>
           </div>
         </div>
+        <span class="required">*Required</span>
         <div class="dialog-footer">
           <button
             pButton

@@ -127,7 +127,10 @@
         <div class="p-fluid">
           <div *ngIf="mode === 'create'" class="p-field"></div>
           <div class="p-field">
-            <label for="suggestion">Suggestion</label>
+            <label for="suggestion"
+              >Suggestion
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <textarea
                 id="suggestion"
@@ -142,7 +145,10 @@
           </div>
 
           <div class="p-field">
-            <label for="assessment_year">Assessment Year</label>
+            <label for="assessment_year"
+              >Assessment Year
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <p-calendar
                 id="assessment_year"
@@ -155,6 +161,7 @@
             </div>
           </div>
         </div>
+        <span class="required">*Required</span>
         <div class="dialog-footer">
           <button
             pButton

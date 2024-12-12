@@ -167,7 +167,10 @@
       <form [formGroup]="editForm" (ngSubmit)="submitAchievement()">
         <div class="p-fluid">
           <div class="p-field">
-            <label for="achievement">Achievement</label>
+            <label for="achievement"
+              >Achievement
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <textarea
                 id="achievement"
@@ -179,7 +182,10 @@
           </div>
 
           <div class="p-field">
-            <label for="group_id">Group</label>
+            <label for="group_id"
+              >Group
+              <span class="required">*</span>
+            </label>
             <p-dropdown
               id="group_id"
               formControlName="group_id"
@@ -203,6 +209,7 @@
             </div>
           </div>
         </div>
+        <span class="required">*Required</span>
         <div class="dialog-footer">
           <button
             pButton

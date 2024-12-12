@@ -451,7 +451,7 @@ export class EmployeeSuggestionComponent implements OnInit {
         )
         .toPromise();
 
-      if (response && response.content !== undefined) {
+      if (response && response.content !== null) {
         return response.content;
       } else {
         console.error('Unexpected API response:', response);
@@ -461,7 +461,7 @@ export class EmployeeSuggestionComponent implements OnInit {
           detail:
             'Unexpected response from the server while checking duplicates.',
         });
-        return false; // Default to no duplicates if response is invalid
+        return false;
       }
     } catch (error) {
       console.error('Error Checking Duplicate:', error);
@@ -470,7 +470,7 @@ export class EmployeeSuggestionComponent implements OnInit {
         summary: 'Error',
         detail: 'Failed to check for duplicates.',
       });
-      throw error; // Propagate the error to handle it in the calling function
+      throw error;
     }
   }
 
