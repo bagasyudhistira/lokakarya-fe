@@ -5,14 +5,6 @@ $warning-color: #f0ad4e !default;
 $warning-background: #fff3cd !default;
 $warning-border: #ffeeba !default;
 
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
 .login-container {
   display: flex;
   justify-content: center;
