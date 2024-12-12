@@ -51,7 +51,14 @@
 
     <li class="user-info">
       <span class="user-name">{{ userName }}</span>
-      <span class="user-roles">{{ roles }}</span>
+      <span class="user-roles">
+        <span *ngFor="let role of roles">
+          {{ role }}
+          <span>
+            <span *ngIf="role !== roles[roles.length - 1]">•</span>
+          </span>
+        </span>
+      </span>
     </li>
 
     <li class="logout-item">

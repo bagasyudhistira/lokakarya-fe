@@ -3,14 +3,14 @@
   top: 0;
   left: 0;
   width: 100%;
-  background: #007bff;
+  background: #0b3c5d; // A dignified deep blue—like a tailored suit of a Parisian magnate
   padding: 0.5rem 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 
   .navbar-menu {
     display: flex;
-    justify-content: flex-start; /* We'll use margin-left:auto on user-info to push it right */
+    justify-content: flex-start;
     align-items: center;
     list-style: none;
     margin: 0;
@@ -19,20 +19,20 @@
 
     .home-item,
     .dropdown-content li {
-      color: white;
+      color: #eaf2f8; // A crisp, near-white with a subtle blue hue
       font-size: 1rem;
       font-weight: bold;
       padding: 0.5rem 1rem;
       border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
 
       &:hover {
-        background-color: #003d80;
+        background-color: #103d60; // Slightly lighter navy, subtle elegance
       }
 
       &.active {
-        background-color: #003d80;
+        background-color: #103d60;
         font-weight: bold;
       }
     }
@@ -42,12 +42,12 @@
 
       .dropdown-button {
         @extend .home-item;
-        background-color: #0056b3;
+        background-color: #145a92; // A more vibrant marine blue, like a hint of adventure
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
 
         &:hover {
-          background-color: #003d80;
+          background-color: #103d60;
         }
 
         .dropdown-icon {
@@ -65,7 +65,7 @@
         position: absolute;
         top: 100%;
         left: 0;
-        background-color: #ffffff;
+        background-color: #eaf2f8; // Light and airy, like a quiet morning sky
         min-width: 150px;
         padding: 0.5rem 0;
         margin: 0;
@@ -77,17 +77,17 @@
         li {
           font-size: 0.9rem;
           padding: 0.5rem 1rem;
-          color: #007bff;
+          color: #0b3c5d; // Echoing the main navbar blue for consistency
           cursor: pointer;
           transition: background-color 0.3s ease, color 0.3s ease;
 
           &:hover {
-            background-color: #f0f0f0;
+            background-color: #d4e6f1; // A subtle pale blue highlight
           }
 
           &.active {
-            background-color: #007bff;
-            color: white;
+            background-color: #0b3c5d;
+            color: #eaf2f8;
             font-weight: bold;
           }
         }
@@ -99,31 +99,31 @@
     }
 
     .user-info {
-      margin-left: auto; /* Push this and anything after it to the right */
+      margin-left: auto;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      color: white;
-      padding: 0.5rem 1rem;
+      padding: 0.25rem 1rem;
+      background-color: #103d60; // A nice intermediary blue for contrast
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
       .user-name {
         font-size: 1rem;
         font-weight: bold;
+        color: #eaf2f8;
+        text-align: center;
       }
 
       .user-roles {
         font-size: 0.85rem;
-        color: #e0e0e0; /* slightly lighter for contrast */
+        color: #bed1e6; // A softer, cooler blue tone for secondary text
       }
     }
 
-    .logout-item {
-      /* No margin-left:auto here */
-    }
-
     .logout-button {
-      background-color: #b71c1c; /* Dark red background */
-      color: white;
+      background-color: #bf110f;
+      color: #eaf2f8;
       font-size: 1rem;
       font-weight: bold;
       padding: 0.5rem 1rem;
@@ -131,19 +131,19 @@
       border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      box-shadow: none; /* Remove box-shadow */
+      box-shadow: none;
 
       &:hover {
-        background-color: #9f1b1b;
+        background-color: #a91310;
       }
 
       &:active {
-        background-color: #7f1515;
+        background-color: #b50d0a;
       }
 
       &:focus {
         outline: none;
-        box-shadow: 0 0 0 2px rgba(151, 71, 71, 0.5); /* Subtle focus ring */
+        box-shadow: 0 0 0 2px rgba(16, 61, 96, 0.5); // Soft focus glow
       }
     }
   }

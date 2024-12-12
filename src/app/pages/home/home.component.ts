@@ -13,6 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { EMPTY, finalize, switchMap } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-home',
@@ -37,6 +38,7 @@ export class HomeComponent {
   changePasswordForm!: FormGroup;
   changePassLoading: boolean = false;
   passwordMatches: boolean = false;
+  currentRoles: any[] = this.extractCurrentRoles() || [];
 
   constructor(
     private router: Router,
@@ -213,5 +215,29 @@ export class HomeComponent {
       this.changePasswordForm.value.confirmPassword;
     console.log('Password Match:', this.passwordMatches);
     return this.passwordMatches;
+  }
+
+  private extractCurrentRoles(): any[] {
+    const token = localStorage.getItem('auth-token');
+
+    if (!token) {
+      console.error('No JWT found in session storage.');
+      return [];
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      if (decoded && decoded.roles) {
+        console.log('Decoded roles:', decoded.roles);
+        return decoded.roles;
+      } else {
+        console.error('roles not found in JWT.');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return [];
+    }
   }
 }

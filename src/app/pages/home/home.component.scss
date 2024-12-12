@@ -1,37 +1,110 @@
 .home-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 3rem;
   min-height: 100vh;
-  background: var(--surface-b, #f0f8ff);
+  background-image: url("https://images.unsplash.com/photo-1733778567678-e9ccb470b22d?q=80&w=1770&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: multiply;
+  font-family: "Open Sans", "Segoe UI", Tahoma, sans-serif;
+  color: #0d47a1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.75);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  > * {
+    position: relative;
+    z-index: 2;
+  }
 }
 
+/* Headings refined for a more luxurious feel */
 h1 {
-  font-size: 2rem;
-  color: #2c3e50;
-  margin-top: 6rem; /* Offset for navbar */
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #103d60;
+  margin-top: 3rem; /* Offset for navbar */
+  text-shadow: 1px 1px 2px rgba(0, 61, 96, 0.15);
+  letter-spacing: 0.5px;
 }
 
 .profile-card {
-  margin-top: 2rem;
-  padding: 2rem;
-  background: #e3f2fd;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  padding-left: 2rem;
+  padding-bottom: 2rem;
+  padding-right: 2rem;
+  background: #f4fbff;
   border-radius: 12px;
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 600px;
   text-align: left;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 24px rgba(0, 0, 0, 0.1), 0 8px 8px rgba(0, 0, 0, 0.05);
+  }
 
   .card-title {
     margin-bottom: 1rem;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 700;
     color: #1565c0;
     text-align: center;
+    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+
+  .card-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #000;
+    margin: 0.5rem auto 0;
+    border-radius: 2px;
   }
 
   p {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #0d47a1;
+    margin: 0.5rem 0;
+  }
+
+  strong {
+    color: #103d60;
+    font-weight: 600;
+  }
+
+  .change-password-button {
+    display: block;
+    margin: 2rem auto 0;
+    text-align: center;
+    background-color: #cd7313;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    &:hover {
+      background-color: #b16819;
+      transform: translateY(-2px);
+    }
   }
 }
 
@@ -39,115 +112,124 @@ h1 {
   margin-top: 6rem;
   font-size: 1.5rem;
   color: #6c757d;
+  text-shadow: 1px 1px 1px rgba(108, 117, 125, 0.1);
 }
 
 .error-message {
   margin-top: 6rem;
-  color: #d9534f;
+  color: #c0392b;
   font-weight: bold;
   text-align: center;
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
 }
 
 .validation-message {
-  color: #d9534f;
+  color: #c0392b;
   font-weight: bold;
   text-align: center;
+  font-size: 1rem;
 }
 
-/* Scoped styles for Change Password Dialog */
+/* Dialog Styling - elevating the change password dialog to a private boutique */
 .change-password-dialog {
-  width: 500px !important; /* Sets the dialog width */
-  max-width: 90vw; /* Ensures responsiveness on smaller screens */
-}
+  width: 500px !important;
+  max-width: 90vw;
 
-/* Header Styling */
-.change-password-dialog ::ng-deep .p-dialog-header {
-  background-color: #1565c0;
-  color: #fff;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  padding: 1rem;
-}
+  ::ng-deep .p-dialog-header {
+    background-color: #1565c0;
+    color: #fff;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 1rem;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
 
-/* Content Styling */
-.change-password-dialog ::ng-deep .p-dialog-content {
-  padding: 2rem;
-}
+  ::ng-deep .p-dialog-content {
+    padding: 2rem;
+    background: #f4fbff;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
 
-.change-password-dialog ::ng-deep .p-dialog-content form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem; /* Space between form fields */
-}
+  ::ng-deep .p-dialog-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
 
-/* Form Field Styling */
-.change-password-dialog ::ng-deep .p-dialog-content form .p-field {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-}
+  ::ng-deep .p-dialog-content form .p-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
 
-.change-password-dialog ::ng-deep .p-dialog-content form .p-field label {
-  flex: 0 0 150px; /* Fixed width for labels */
-  text-align: left;
-  font-size: 1rem;
-  font-weight: bold;
-  color: #0d47a1;
-}
+    label {
+      flex: 0 0 150px;
+      text-align: left;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #103d60;
+    }
 
-.change-password-dialog ::ng-deep .p-dialog-content form .p-field input {
-  flex: 1; /* Input fills the remaining space */
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  transition: border-color 0.3s ease;
-}
+    input {
+      flex: 1;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+      font-size: 1rem;
 
-.change-password-dialog ::ng-deep .p-dialog-content form .p-field input:focus {
-  border-color: #1565c0;
-  box-shadow: 0 0 6px rgba(21, 101, 192, 0.5);
-}
+      &:focus {
+        border-color: #1565c0;
+        box-shadow: 0 0 6px rgba(21, 101, 192, 0.5);
+      }
+    }
+  }
 
-/* Footer Styling */
-.change-password-dialog ::ng-deep .dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
+  ::ng-deep .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
 
-/* Button Styling */
-.change-password-dialog ::ng-deep .dialog-footer button {
-  padding: 0.8rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 6px;
-}
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
 
-.change-password-dialog ::ng-deep .dialog-footer button.p-button-primary {
-  background-color: #1565c0;
-  color: #fff;
-}
+      &.p-button-primary {
+        background-color: #1565c0;
+        color: #fff;
 
-.change-password-dialog
-  ::ng-deep
-  .dialog-footer
-  button.p-button-primary:hover:not(:disabled) {
-  background-color: #0d47a1;
-}
+        &:hover:not(:disabled) {
+          background-color: #0d47a1;
+          transform: translateY(-2px);
+        }
+      }
 
-.change-password-dialog ::ng-deep .dialog-footer button.p-button-text {
-  color: #d9534f;
-}
+      &.p-button-text {
+        color: #c0392b;
 
-.change-password-dialog
-  ::ng-deep
-  .dialog-footer
-  button.p-button-text:hover:not(:disabled) {
-  background-color: rgba(217, 83, 79, 0.1);
-}
+        &:hover:not(:disabled) {
+          background-color: rgba(192, 57, 43, 0.1);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
 
-.required {
-  color: red;
+  .required {
+    color: red;
+    font-weight: bold;
+  }
+
+  .validation-message {
+    color: #c0392b;
+    font-weight: bold;
+    text-align: center;
+  }
 }
