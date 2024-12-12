@@ -800,13 +800,6 @@ export class ManageUserComponent implements OnInit {
       if (response && response.content !== null) {
         return response.content;
       } else {
-        console.error('Unexpected API response:', response);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail:
-            'Unexpected response from the server while checking duplicates.',
-        });
         return false;
       }
     } catch (error) {

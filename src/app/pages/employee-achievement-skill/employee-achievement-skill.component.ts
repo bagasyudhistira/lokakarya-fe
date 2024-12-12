@@ -615,17 +615,10 @@ export class EmployeeAchievementSkillComponent implements OnInit {
         )
         .toPromise();
 
-      if (response && response.content !== undefined) {
+      if (response && response.content !== null) {
         return response.content;
       } else {
-        console.error('Unexpected API response:', response);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail:
-            'Unexpected response from the server while checking duplicates.',
-        });
-        return false; // Default to no duplicates if response is invalid
+        return false;
       }
     } catch (error) {
       console.error('Error Checking Duplicate:', error);
