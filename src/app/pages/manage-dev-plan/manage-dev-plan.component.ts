@@ -278,6 +278,27 @@ export class ManageDevPlanComponent implements OnInit {
       return;
     }
 
+    if (this.mode === 'create') {
+      try {
+        const selectedName = this.editForm.value.plan;
+        const isDuplicate = await this.confirmDuplicate(selectedName);
+        console.log('Duplicate Check Result:', isDuplicate);
+        if (isDuplicate) {
+          this.isProcessing = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Development Plan already exists.',
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error during duplicate check:', error);
+        this.isProcessing = false;
+        return;
+      }
+    }
+
     const payload = {
       ...this.editForm.value,
       ...(this.mode === 'create'
@@ -347,5 +368,29 @@ export class ManageDevPlanComponent implements OnInit {
   onSearch(): void {
     console.log('Applying global search:', this.globalFilterValue);
     this.applyFiltersAndPagination({ first: 0 });
+  }
+
+  async confirmDuplicate(name: string): Promise<boolean> {
+    try {
+      const response = await this.http
+        .get<{ content: boolean }>(
+          `https://lokakarya-be.up.railway.app/devplan/name/${name}`
+        )
+        .toPromise();
+
+      if (response && response.content !== null) {
+        return response.content;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Error Checking Duplicate:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to check for duplicates.',
+      });
+      throw error;
+    }
   }
 }

@@ -202,6 +202,27 @@ export class ManageAchievementComponent implements OnInit {
       return;
     }
 
+    if (this.mode === 'create') {
+      try {
+        const selectedName = this.editGroupForm.value.group_name;
+        const isDuplicate = await this.confirmDuplicateGroup(selectedName);
+        console.log('Duplicate Check Result:', isDuplicate);
+        if (isDuplicate) {
+          this.isProcessing = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Group name already exists.',
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error during duplicate check:', error);
+        this.isProcessing = false;
+        return;
+      }
+    }
+
     const payload = {
       ...this.editGroupForm.value,
       ...(this.mode === 'create'
@@ -335,6 +356,29 @@ export class ManageAchievementComponent implements OnInit {
         detail: 'Please fill in all required fields.',
       });
       return;
+    }
+
+    if (this.mode === 'create') {
+      try {
+        const selectedName = this.editForm.value.achievement;
+        const isDuplicate = await this.confirmDuplicateAchievement(
+          selectedName
+        );
+        console.log('Duplicate Check Result:', isDuplicate);
+        if (isDuplicate) {
+          this.isProcessing = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Achievement already exists.',
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error during duplicate check:', error);
+        this.isProcessing = false;
+        return;
+      }
     }
 
     const payload = {
@@ -544,5 +588,60 @@ export class ManageAchievementComponent implements OnInit {
   onSearch(): void {
     console.log('Applying global search:', this.globalFilterValue);
     this.applyFiltersAndPagination({ first: 0 });
+  }
+
+  async confirmDuplicateAchievement(achievement: string): Promise<boolean> {
+    try {
+      const response = await this.http
+        .get<{ content: boolean }>(
+          `https://lokakarya-be.up.railway.app/achievement/name/${achievement}`
+        )
+        .toPromise();
+
+      if (response && response.content !== null) {
+        return response.content;
+      } else {
+        console.error('Unexpected API response:', response);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'Unexpected response from the server while checking duplicates.',
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('Error Checking Duplicate:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to check for duplicates.',
+      });
+      throw error;
+    }
+  }
+
+  async confirmDuplicateGroup(name: string): Promise<boolean> {
+    try {
+      const response = await this.http
+        .get<{ content: boolean }>(
+          `https://lokakarya-be.up.railway.app/groupachievement/name/${name}`
+        )
+        .toPromise();
+
+      if (response && response.content !== null) {
+        return response.content;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Error Checking Duplicate:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to check for duplicates.',
+      });
+      throw error;
+    }
   }
 }

@@ -258,7 +258,10 @@
       <form [formGroup]="editGroupForm" (ngSubmit)="submitGroupAttitudeSkill()">
         <div class="p-fluid">
           <div class="p-field">
-            <label for="group_name">Group Name</label>
+            <label for="group_name"
+              >Group Name
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <input
                 id="group_name"
@@ -270,7 +273,10 @@
           </div>
 
           <div class="p-field">
-            <label for="percentage">Weight</label>
+            <label for="percentage"
+              >Weight
+              <span class="required">*</span>
+            </label>
             <div style="padding: 0.5rem 0">
               <div class="radio-grid">
                 <ng-container
@@ -299,6 +305,7 @@
             </div>
           </div>
         </div>
+        <span class="required">*Required</span>
         <div class="dialog-footer">
           <button
             pButton
