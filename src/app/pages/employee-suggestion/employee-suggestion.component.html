@@ -78,11 +78,7 @@
             <td>{{ empSuggestion.assessment_year }}</td>
             <td>
               <button
-                *ngIf="
-                  !currentRoles.includes('HR') ||
-                  (currentRoles.includes('HR') &&
-                    empSuggestion.user_id === currentUserId)
-                "
+                *ngIf="empSuggestion.user_id === currentUserId"
                 pButton
                 [icon]="
                   isEditFormLoading || isProcessing
@@ -94,6 +90,7 @@
                 [disabled]="isEditFormLoading || isProcessing"
               ></button>
               <button
+                *ngIf="empSuggestion.user_id === currentUserId"
                 pButton
                 [icon]="
                   isEditFormLoading || isProcessing

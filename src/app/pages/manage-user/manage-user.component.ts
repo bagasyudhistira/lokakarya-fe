@@ -463,29 +463,6 @@ export class ManageUserComponent implements OnInit {
       return;
     }
 
-    if (this.mode === 'create') {
-      try {
-        const selectedUsername = this.editForm.value.username;
-        const isDuplicate = await this.confirmDuplicate(selectedUsername);
-        console.log('Duplicate Check Result:', isDuplicate);
-        if (isDuplicate) {
-          console.log(selectedUsername);
-          this.isProcessing = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail:
-              'Username already exists. Please choose a different username.',
-          });
-          return;
-        }
-      } catch (error) {
-        console.error('Error during duplicate check:', error);
-        this.isProcessing = false;
-        return;
-      }
-    }
-
     const payload = {
       ...this.editForm.value,
       ...(this.mode === 'create'
@@ -789,61 +766,50 @@ export class ManageUserComponent implements OnInit {
       .catch((err) => console.error('Error updating roles:', err));
   }
 
-  async confirmDuplicate(username: string): Promise<boolean> {
-    try {
-      const response = await this.http
-        .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/appuser/user/${username}`
-        )
-        .toPromise();
-
-      if (response && response.content !== null) {
-        return response.content;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      console.error('Error Checking Duplicate:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to check for duplicates.',
-      });
-      throw error;
-    }
-  }
-
   submitEmployee(): void {
     console.log('Submitting Employee. Mode:', this.mode);
 
     this.isProcessing = true;
 
     const username = this.editForm.get('username')?.value;
+    const email = this.editForm.get('email_address')?.value;
+    console.log('Username:', username);
+    console.log('Email:', email);
 
-    if (this.mode === 'create') {
-      this.validateUsername(username).then((isUnique) => {
-        if (!isUnique) {
-          this.isProcessing = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail:
-              'Username already exists. Please choose a different username.',
-          });
-          return;
-        }
-        this.saveEmployee();
-      });
-    } else if (this.mode === 'edit') {
+    Promise.all([
+      this.validateUsername(username),
+      this.validateEmail(email),
+    ]).then(([isUsernameUnique, isEmailUnique]) => {
+      if (!isUsernameUnique) {
+        this.isProcessing = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'Username already exists. Please choose a different username.',
+        });
+        return;
+      }
+
+      if (!isEmailUnique) {
+        this.isProcessing = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Email already exists. Please provide a different email.',
+        });
+        return;
+      }
+
       this.saveEmployee();
-    }
+    });
   }
 
   private validateUsername(username: string): Promise<boolean> {
     return new Promise((resolve) => {
       this.http
         .get<any>(
-          `https://lokakarya-be.up.railway.app/appuser/user/${username}`
+          `https://lokakarya-be.up.railway.app/appuser/username/${username}`
         )
         .subscribe({
           next: (response: any) => {
@@ -862,6 +828,29 @@ export class ManageUserComponent implements OnInit {
         });
     });
   }
+
+  private validateEmail(email: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.http
+        .get<any>(`https://lokakarya-be.up.railway.app/appuser/email/${email}`)
+        .subscribe({
+          next: (response: any) => {
+            console.log('Email validation response:', response);
+            resolve(response.content === null);
+          },
+          error: (err) => {
+            console.error('Unexpected error during email validation:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'An error occurred while validating the email.',
+            });
+            resolve(false);
+          },
+        });
+    });
+  }
+
   onSearch(): void {
     console.log('Applying global search:', this.globalFilterValue);
     this.applyFiltersAndPagination({ first: 0 });

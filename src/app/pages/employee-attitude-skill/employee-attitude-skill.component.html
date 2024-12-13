@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 <app-navbar></app-navbar>
 <br />
 <div class="manage-user-container">
@@ -28,7 +29,6 @@
           appendTo="body"
         ></p-dropdown>
       </div>
-      <!-- Assessment Year -->
       <div class="assessment-year-selection">
         <label for="assessmentYear">Assessment Year: </label>
         <p-calendar
@@ -44,163 +44,77 @@
     </div>
   </div>
 
-  <div class="table-container">
-    <!-- Attitude Skill Table -->
-    <table class="attitude-skill-table">
-      <thead>
-        <tr>
-          <th>Group</th>
-          <th>Attitude Skill</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngFor="let group of groupedEmpAttitudeSkills">
-          <tr *ngIf="group.attitudeSkills.length === 0">
-            <!-- Row for groups with no attitude skills -->
-            <td>{{ group.group_name }}</td>
-            <td colspan="2" style="text-align: center; font-style: italic">
-              No attitude skills available
-            </td>
-          </tr>
-
-          <ng-container *ngIf="group.attitudeSkills.length > 0">
+  <form (ngSubmit)="submitEmployeeAttitudeSkill()">
+    <div class="p-fluid">
+      <div class="p-field">
+        <table class="p-datatable edit-form-table">
+          <thead>
             <tr>
-              <td [attr.rowspan]="group.attitudeSkills.length">
-                {{ group.group_name }}
-              </td>
-              <td>{{ group.attitudeSkills[0]?.attitude_skill_name }}</td>
-              <td>{{ getScoreLabel(group.attitudeSkills[0]?.score) }}</td>
+              <th>Group Name</th>
+              <th>Attitude Skill</th>
+              <th>Score</th>
             </tr>
-            <tr
-              *ngFor="
-                let attitudeSkill of group.attitudeSkills;
-                let i = index;
-                trackBy: trackByIndex
-              "
-              [hidden]="i === 0"
-            >
-              <td>{{ attitudeSkill.attitude_skill_name }}</td>
-              <td>{{ getScoreLabel(attitudeSkill.score) }}</td>
-            </tr>
-          </ng-container>
-        </ng-container>
-      </tbody>
-    </table>
-
-    <div class="edit-button-container">
-      <button
-        *ngIf="currentRoles.includes('USER')"
-        pButton
-        label="Edit"
-        icon="pi pi-pencil"
-        class="p-button-primary"
-        (click)="openEditDialog()"
-        [disabled]="isProcessing || isEditFormLoading"
-      ></button>
-    </div>
-  </div>
-
-  <!-- Edit Dialog -->
-  <p-dialog
-    header="Edit Employee Attitude Skills"
-    [(visible)]="displayEditDialog"
-    [modal]="true"
-    [closable]="true"
-    [dismissableMask]="true"
-    [style]="{ width: '70vw' }"
-    [resizable]="false"
-    (onHide)="fetchEmpAttitudeSkills()"
-  >
-    <form (ngSubmit)="submitEmployeeAttitudeSkill()">
-      <div class="p-fluid">
-        <div class="p-field">
-          <label for="assessment_year">Assessment Year</label>
-          <div style="padding: 0.5rem 0">
-            <p-calendar
-              id="assessment_year"
-              [(ngModel)]="assessmentYear"
-              name="assessment_year"
-              view="year"
-              dateFormat="yy"
-              [maxDate]="maxDate"
-              required
-              placeholder="{{ selectedYear }}"
-              [disabled]="true"
-            ></p-calendar>
-          </div>
-        </div>
-
-        <div class="p-field">
-          <table>
-            <thead>
-              <tr>
-                <th>Group Name</th>
-                <th>Attitude Skill</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngFor="let group of groupedEmpAttitudeSkills">
-                <!-- Ensure the group has attitudeSkills before rendering -->
-                <ng-container *ngIf="group.attitudeSkills.length > 0">
-                  <ng-container
-                    *ngFor="
-                      let attitudeSkill of group.attitudeSkills;
-                      let i = index;
-                      trackBy: trackById
-                    "
-                  >
-                    <tr>
-                      <td
-                        *ngIf="i === 0"
-                        [attr.rowspan]="group.attitudeSkills.length"
-                      >
-                        {{ group.group_name }}
-                      </td>
-                      <td>{{ attitudeSkill.attitude_skill_name }}</td>
-                      <td>
-                        <p-dropdown
-                          [(ngModel)]="attitudeSkill.score"
-                          name="Score_{{ group.group_id }}_{{ i }}"
-                          [options]="scoreOptions"
-                          optionLabel="label"
-                          optionValue="value"
-                          placeholder="Select Score"
-                          [disabled]="isProcessing"
-                          appendTo="body"
-                        ></p-dropdown>
-                      </td>
-                    </tr>
-                  </ng-container>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let group of groupedEmpAttitudeSkills">
+              <ng-container *ngIf="group.attitudeSkills.length > 0">
+                <ng-container
+                  *ngFor="
+                    let attitudeSkill of group.attitudeSkills;
+                    let i = index;
+                    trackBy: trackById
+                  "
+                >
+                  <tr>
+                    <td
+                      *ngIf="i === 0"
+                      [attr.rowspan]="group.attitudeSkills.length"
+                    >
+                      {{ group.group_name }}
+                    </td>
+                    <td>{{ attitudeSkill.attitude_skill_name }}</td>
+                    <td>
+                      <p-dropdown
+                        [(ngModel)]="attitudeSkill.score"
+                        name="Score_{{ group.group_id }}_{{ i }}"
+                        [options]="scoreOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Select Score"
+                        [disabled]="
+                          isProcessing ||
+                          !currentRoles.includes('USER') ||
+                          selectedUserId !== currentUserId ||
+                          isExist
+                        "
+                        appendTo="body"
+                      ></p-dropdown>
+                    </td>
+                  </tr>
                 </ng-container>
               </ng-container>
-            </tbody>
-          </table>
-        </div>
+            </ng-container>
+          </tbody>
+        </table>
       </div>
-      <div class="dialog-footer">
-        <button
-          pButton
-          type="button"
-          icon="pi pi-times"
-          class="p-button-text"
-          label="Cancel"
-          [disabled]="isProcessing"
-          (click)="displayEditDialog = false"
-        ></button>
-        <button
-          pButton
-          type="submit"
-          [label]="isProcessing ? 'Saving...' : 'Save'"
-          [disabled]="isProcessing"
-          class="p-button-primary"
-        >
-          <ng-container *ngIf="isProcessing">
-            <i class="pi pi-spin pi-spinner"></i>
-          </ng-container>
-        </button>
-      </div>
-    </form>
-  </p-dialog>
+    </div>
+    <div class="dialog-footer">
+      <button
+        *ngIf="
+          currentRoles.includes('USER') &&
+          selectedUserId === currentUserId &&
+          !isExist
+        "
+        pButton
+        type="submit"
+        [label]="isProcessing ? 'Saving...' : 'Save'"
+        [disabled]="isProcessing"
+        class="p-button-primary"
+      >
+        <ng-container *ngIf="isProcessing">
+          <i class="pi pi-spin pi-spinner"></i>
+        </ng-container>
+      </button>
+    </div>
+  </form>
 </div>

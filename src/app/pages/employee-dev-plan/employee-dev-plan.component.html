@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 <app-navbar></app-navbar>
 <br />
 <div class="manage-user-container">
@@ -39,171 +40,116 @@
     </div>
   </div>
 
-  <div class="table-container">
-    <!-- Development Plan Table -->
-    <table class="dev-plan-table">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Plan</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngIf="groupedEmpDevPlans.length > 0; else noData">
-          <ng-container
-            *ngFor="let group of groupedEmpDevPlans; trackBy: trackByDevPlanId"
-          >
+  <form (ngSubmit)="submitEmployeeDevPlan()">
+    <div class="p-fluid">
+      <div class="p-field">
+        <table class="p-datatable edit-form-table">
+          <thead>
             <tr>
-              <td [attr.rowspan]="group.descriptions.length">
-                {{ group.dev_plan_name }}
-              </td>
-              <td>{{ group.descriptions[0]?.description }}</td>
-            </tr>
-            <tr
-              *ngFor="
-                let entry of group.descriptions;
-                let i = index;
-                trackBy: trackByIndex
-              "
-              [hidden]="i === 0"
-            >
-              <td>{{ entry.description }}</td>
-            </tr>
-          </ng-container>
-        </ng-container>
-      </tbody>
-
-      <ng-template #noData>
-        <tr>
-          <td colspan="3">
-            No data available for the selected assessment year.
-          </td>
-        </tr>
-      </ng-template>
-    </table>
-    <div class="edit-button-container">
-      <button
-        *ngIf="currentRoles.includes('USER')"
-        pButton
-        label="Edit"
-        icon="pi pi-pencil"
-        class="p-button-primary"
-        (click)="openEditDialog()"
-        [disabled]="isProcessing || isEditFormLoading"
-      ></button>
-    </div>
-  </div>
-
-  <p-dialog
-    header="Edit Employee Development Plans"
-    [(visible)]="displayEditDialog"
-    [modal]="true"
-    [closable]="true"
-    [dismissableMask]="true"
-    [style]="{ width: '70vw' }"
-    [resizable]="false"
-    (onHide)="fetchEmpDevPlans()"
-  >
-    <form (ngSubmit)="submitEmployeeDevPlan()">
-      <div class="p-fluid">
-        <div class="p-field">
-          <label for="assessment_year">Assessment Year</label>
-          <div style="padding: 0.5rem 0">
-            <p-calendar
-              id="assessment_year"
-              [(ngModel)]="assessmentYear"
-              name="assessment_year"
-              view="year"
-              dateFormat="yy"
-              [maxDate]="maxDate"
-              required
-              placeholder="{{ selectedYear }}"
-              disabled
-            ></p-calendar>
-          </div>
-        </div>
-
-        <div class="p-field">
-          <table class="p-datatable edit-form-table">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Plan</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container
-                *ngFor="
-                  let group of groupedEmpDevPlans;
-                  trackBy: trackByDevPlanId
+              <th>Category</th>
+              <th>Plan</th>
+              <th
+                *ngIf="
+                  !isExist &&
+                  selectedUserId === currentUserId &&
+                  currentRoles.includes('USER')
                 "
               >
-                <tr>
-                  <td [attr.rowspan]="group.descriptions.length + 1">
-                    {{ group.dev_plan_name }}
-                  </td>
-                  <td colspan="3">
-                    <button
-                      type="button"
-                      (click)="addPlanEntry(group)"
-                      pButton
-                      label="Add Plan"
-                    ></button>
-                  </td>
-                </tr>
-                <!-- Skill Entries -->
-                <tr
-                  *ngFor="
-                    let entry of group.descriptions;
-                    let i = index;
-                    trackBy: trackByIndex
-                  "
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+              *ngFor="
+                let group of groupedEmpDevPlans;
+                trackBy: trackByDevPlanId
+              "
+            >
+              <tr>
+                <td [attr.rowspan]="group.descriptions.length + 1">
+                  {{ group.dev_plan_name }}
+                </td>
+                <td *ngIf="!isExist" colspan="3">
+                  <button
+                    *ngIf="
+                      currentRoles.includes('USER') &&
+                      selectedUserId === currentUserId
+                    "
+                    type="button"
+                    (click)="addPlanEntry(group)"
+                    pButton
+                    label="Add Plan"
+                  ></button>
+                  <p
+                    *ngIf="
+                      group.descriptions.length === 0 &&
+                      selectedUserId !== currentUserId
+                    "
+                    style="text-align: center; font-style: italic"
+                  >
+                    No Plan
+                  </p>
+                </td>
+                <td
+                  *ngIf="isExist && group.descriptions.length === 0"
+                  colspan="3"
                 >
-                  <td>
-                    <input
-                      [(ngModel)]="entry.description"
-                      name="PlanEntry_{{ group.dev_plan_id }}_{{ i }}"
-                      pInputText
-                      required
-                    />
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      (click)="removePlanEntry(group, i)"
-                      pButton
-                      icon="pi pi-trash"
-                    ></button>
-                  </td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
+                  <p style="text-align: center; font-style: italic">No Plan</p>
+                </td>
+              </tr>
+              <!-- Skill Entries -->
+              <tr
+                *ngFor="
+                  let entry of group.descriptions;
+                  let i = index;
+                  trackBy: trackByIndex
+                "
+              >
+                <td>
+                  <input
+                    [(ngModel)]="entry.description"
+                    name="PlanEntry_{{ group.dev_plan_id }}_{{ i }}"
+                    pInputText
+                    required
+                    [disabled]="
+                      !currentRoles.includes('USER') ||
+                      selectedUserId !== currentUserId ||
+                      isExist
+                    "
+                  />
+                </td>
+                <td *ngIf="!isExist">
+                  <button
+                    type="button"
+                    (click)="removePlanEntry(group, i)"
+                    pButton
+                    icon="pi pi-trash"
+                  ></button>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
       </div>
-      <div class="dialog-footer">
-        <button
-          pButton
-          type="button"
-          icon="pi pi-times"
-          class="p-button-text"
-          label="Cancel"
-          [disabled]="isProcessing"
-          (click)="displayEditDialog = false"
-        ></button>
-        <button
-          pButton
-          type="submit"
-          [label]="isProcessing ? 'Saving...' : 'Save'"
-          [disabled]="isProcessing"
-          class="p-button-primary"
-        >
-          <ng-container *ngIf="isProcessing">
-            <i class="pi pi-spin pi-spinner"></i>
-          </ng-container>
-        </button>
-      </div>
-    </form>
-  </p-dialog>
+    </div>
+    <div class="dialog-footer">
+      <button
+        *ngIf="
+          currentRoles.includes('USER') &&
+          selectedUserId === currentUserId &&
+          !isExist
+        "
+        pButton
+        type="submit"
+        [label]="isProcessing ? 'Saving...' : 'Save'"
+        [disabled]="isProcessing"
+        class="p-button-primary"
+      >
+        <ng-container *ngIf="isProcessing">
+          <i class="pi pi-spin pi-spinner"></i>
+        </ng-container>
+      </button>
+    </div>
+  </form>
 </div>
