@@ -87,7 +87,6 @@
                     ></p-dropdown>
                   </td>
                 </tr>
-                <!-- Skill Rows -->
                 <tr
                   *ngFor="
                     let skill of group.achievements;
@@ -102,7 +101,12 @@
                       [(ngModel)]="skill.notes"
                       name="Notes_{{ group.group_id }}_{{ i }}"
                       pInputText
-                      [disabled]="isProcessing || isExist"
+                      [disabled]="
+                        isProcessing ||
+                        !currentRoles.includes('USER') ||
+                        selectedUserId !== currentUserId ||
+                        isExist
+                      "
                     />
                   </td>
                   <td>
@@ -113,13 +117,17 @@
                       optionLabel="label"
                       optionValue="value"
                       placeholder="Select Score"
-                      [disabled]="isProcessing || isExist"
+                      [disabled]="
+                        isProcessing ||
+                        !currentRoles.includes('USER') ||
+                        selectedUserId !== currentUserId ||
+                        isExist
+                      "
                       appendTo="body"
                     ></p-dropdown>
                   </td>
                 </tr>
               </ng-container>
-              <!-- Template for Groups with No achievements in Edit Dialog -->
               <ng-template #noEditachievements>
                 <tr>
                   <td>{{ group.group_name }}</td>
@@ -138,7 +146,7 @@
     </div>
     <div class="dialog-footer">
       <button
-        *ngIf="!isExist"
+        *ngIf="!isExist && currentRoles.includes('USER')"
         pButton
         type="submit"
         [label]="isProcessing ? 'Saving...' : 'Save'"
@@ -151,17 +159,4 @@
       </button>
     </div>
   </form>
-
-  <!-- Edit Dialog -->
-  <p-dialog
-    header="Edit Employee Achievement achievements"
-    [(visible)]="displayEditDialog"
-    [modal]="true"
-    [closable]="true"
-    [dismissableMask]="true"
-    [style]="{ width: '70vw' }"
-    [resizable]="false"
-    (onHide)="fetchEmpAchievementSkills()"
-  >
-  </p-dialog>
 </div>
