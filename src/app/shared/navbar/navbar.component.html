@@ -34,11 +34,27 @@
       </span>
       <ul class="dropdown-content">
         <li
-          [ngClass]="{ active: isActiveRoute('assessment-summary') }"
-          (click)="navigateTo('assessment-summary')"
+          *ngIf="
+            roles.includes('HR') ||
+              roles.includes('SVP') ||
+              roles.includes('MGR');
+            else user
+          "
+          [ngClass]="{ active: isActiveRoute('view-assessment-summary') }"
+          (click)="navigateTo('view-assessment-summary')"
         >
           Summary
         </li>
+
+        <ng-template #user>
+          <li
+            [ngClass]="{ active: isActiveRoute('assessment-summary') }"
+            (click)="navigateTo('assessment-summary')"
+          >
+            Summary
+          </li>
+        </ng-template>
+
         <li
           *ngFor="let menu of submitMenus"
           [ngClass]="{ active: isActiveRoute(menu) }"

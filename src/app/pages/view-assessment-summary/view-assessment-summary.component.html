@@ -1,0 +1,250 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+<app-navbar></app-navbar>
+<div class="manage-user-container">
+  <h1 class="page-title">Assessment Summary</h1>
+  <div class="card-container">
+    <div class="header-actions">
+      <div class="top-row">
+        <div class="search-container">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="globalFilterValue"
+              (input)="onSearch()"
+            />
+          </span>
+        </div>
+      </div>
+      <div class="second-row">
+        <div
+          *ngIf="currentRoles.includes('HR') || currentRoles.includes('SVP')"
+          class="user-selection"
+        >
+          <label for="userSelect">Select Division: </label>
+          <p-dropdown
+            id="divisionSelect"
+            [options]="divisions"
+            [(ngModel)]="selectedDivisionId"
+            optionLabel="division_name"
+            optionValue="id"
+            placeholder="Select division"
+            (onChange)="fetchAssessmentSummaries()"
+            appendTo="body"
+          ></p-dropdown>
+        </div>
+
+        <div class="assessment-year-selection">
+          <label for="assessmentYear">Assessment Year: </label>
+          <p-calendar
+            id="assessmentYear"
+            [(ngModel)]="selectedAssessmentYear"
+            view="year"
+            dateFormat="yy"
+            (onSelect)="fetchAssessmentSummaries()"
+            [maxDate]="maxDate"
+            placeholder="{{ selectedYear }}"
+            appendTo="body"
+          ></p-calendar>
+        </div>
+      </div>
+    </div>
+
+    <p-card>
+      <p-table
+        #dt
+        [value]="summaries"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="rowsPerPage"
+        [totalRecords]="totalRecords"
+        [loading]="isLoading"
+        (onLazyLoad)="fetchAssessmentSummaries($event)"
+        [resizableColumns]="true"
+        responsiveLayout="scroll"
+        sortMode="single"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="full_name">
+              Name <p-sortIcon field="full_name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="division_name">
+              Division <p-sortIcon field="division_name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="status">
+              Status <p-sortIcon field="status"></p-sortIcon>
+            </th>
+            <th pSortableColumn="score">
+              Score <p-sortIcon field="score"></p-sortIcon>
+            </th>
+            <!-- Add a class to the actions header for centering -->
+            <th class="actions-column">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-summaries>
+          <tr>
+            <td>{{ summaries.full_name }}</td>
+            <td>{{ summaries.division_name }}</td>
+            <td *ngIf="summaries.status == 1">Permanent</td>
+            <td *ngIf="summaries.status == 2">Contract</td>
+            <td>{{ summaries.score }}</td>
+            <td class="actions-cell">
+              <button
+                pButton
+                [icon]="
+                  isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-external-link'
+                "
+                class="p-button-rounded"
+                (click)="fetchViewAssessmentSummary(summaries.user_id)"
+                [disabled]="isLoading"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+
+  <p-dialog
+    header="{{ selectedName }}'s {{ selectedYear }} Assessment Summary"
+    [(visible)]="displayAssessmentSummaryDialog"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [style]="{ width: '50vw' }"
+    [resizable]="false"
+  >
+    <p><strong>Division:</strong> {{ selectedDivision }}</p>
+    <p><strong>Position:</strong> {{ selectedPosition }}</p>
+    <p *ngIf="selectedStatus === 1"><strong>Status:</strong> Permanent</p>
+    <p *ngIf="selectedStatus === 2"><strong>Status:</strong> Contract</p>
+
+    <h4>Achievements</h4>
+    <div class="table-container">
+      <table class="achievement-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Final Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngIf="
+              achievements.length > 0 && !isLoading;
+              else noDataAchievements
+            "
+          >
+            <ng-container *ngFor="let achievement of achievements">
+              <tr>
+                <td>{{ achievement.group_name }}</td>
+                <td>{{ achievement.sum_score }}</td>
+                <td>{{ achievement.percentage }}%</td>
+                <td>
+                  {{
+                    (achievement.sum_score * achievement.percentage) / 100
+                      | number : "1.2-2"
+                  }}
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+
+        <ng-template #noDataAchievements>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic">
+              No Achievements data available for the selected assessment year.
+            </td>
+          </tr>
+        </ng-template>
+      </table>
+    </div>
+
+    <h4>Attitude Skill</h4>
+    <div class="table-container">
+      <table class="attitude-skill-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Final Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngIf="
+              attitudeSkills.length > 0 && !isLoading;
+              else noDataAttitudeSkills
+            "
+          >
+            <ng-container *ngFor="let attitudeSkill of attitudeSkills">
+              <tr>
+                <td>{{ attitudeSkill.group_name }}</td>
+                <td>{{ attitudeSkill.sum_score }}</td>
+                <td>{{ attitudeSkill.percentage }}%</td>
+                <td>
+                  {{
+                    (attitudeSkill.sum_score * attitudeSkill.percentage) / 100
+                      | number : "1.2-2"
+                  }}
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+
+        <ng-template #noDataAttitudeSkills>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic">
+              No Attitude Skill data available for the selected assessment year.
+            </td>
+          </tr>
+        </ng-template>
+      </table>
+    </div>
+
+    <div class="table-container">
+      <table class="total-final-score-table">
+        <tbody>
+          <tr>
+            <td colspan="4" style="text-align: right; font-weight: bold">
+              Total Final Score:
+            </td>
+            <td>
+              {{ totalFinalScore | number : "1.2-2" }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Suggestion</h4>
+    <div class="table-container">
+      <table class="suggestion-table">
+        <tbody>
+          <ng-container *ngIf="suggestion && !isLoading; else noData">
+            <tr>
+              <td>{{ suggestion }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+
+        <ng-template #noData>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic">
+              No data available for the selected assessment year.
+            </td>
+          </tr>
+        </ng-template>
+      </table>
+    </div>
+  </p-dialog>
+</div>

@@ -139,7 +139,6 @@ export class ManageUserComponent implements OnInit {
             this.allEmployees = response.content || [];
             this.totalRecords = this.allEmployees.length;
 
-            // Apply filtering, sorting, and pagination
             this.applyFiltersAndPagination(event);
           },
           error: (error) => {

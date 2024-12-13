@@ -15,12 +15,7 @@ import {
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { NgForOf, NgIf } from '@angular/common';
-import {
-  MessageService,
-  PrimeNGConfig,
-  PrimeTemplate,
-  ConfirmationService,
-} from 'primeng/api';
+import { MessageService, PrimeNGConfig, PrimeTemplate } from 'primeng/api';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { PrimeNgModule } from '../../shared/primeng/primeng.module';
@@ -30,9 +25,10 @@ import { finalize } from 'rxjs/operators';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
-  selector: 'app-assessment-summary',
+  selector: 'app-view-assessment-summary',
   standalone: true,
   imports: [
     ButtonDirective,
@@ -53,11 +49,11 @@ import { of } from 'rxjs';
     PrimeNgModule,
     NavbarComponent,
   ],
-  templateUrl: './assessment-summary.component.html',
-  styleUrls: ['./assessment-summary.component.scss'],
-  providers: [MessageService, ConfirmationService],
+  templateUrl: './view-assessment-summary.component.html',
+  styleUrls: ['./view-assessment-summary.component.scss'],
+  providers: [ConfirmationService, MessageService],
 })
-export class AssessmentSummaryComponent implements OnInit {
+export class ViewAssessmentSummaryComponent implements OnInit {
   maxDate: Date = new Date();
   employees: any[] = [];
   divisions: any[] = [];
@@ -78,74 +74,31 @@ export class AssessmentSummaryComponent implements OnInit {
   selectedPosition: string = '';
   isLoading: boolean = true;
   empUrl: string = '';
-  isExist: boolean = false;
+  displayAssessmentSummaryDialog: boolean = false;
+  summaries: any[] = [];
+  allSummaries: any[] = [];
+  totalRecords: number = 0;
+  rowsPerPage: number = 5;
+  globalFilterValue: string = '';
+  fetchAllUrl: string = '';
 
   constructor(
     private http: HttpClient,
     private messageService: MessageService,
-    private primengConfig: PrimeNGConfig,
-    private confirmationService: ConfirmationService
+    private primengConfig: PrimeNGConfig
   ) {}
 
   ngOnInit(): void {
     this.primengConfig.ripple = true;
+    if (
+      this.currentRoles.includes('MGR') &&
+      (!this.currentRoles.includes('HR') || !this.currentRoles.includes('SVP'))
+    ) {
+      this.selectedDivisionId = this.extractCurrentDivisionId() || '';
+    }
 
-    this.fetchSelectedUserDetails()
-      .then(() => {
-        if (
-          this.currentRoles.includes('HR') ||
-          this.currentRoles.includes('SVP') ||
-          this.currentRoles.includes('MGR')
-        ) {
-          return Promise.all([
-            this.fetchDivisions(),
-            this.fetchEmployees(),
-          ]).then(() => {
-            return;
-          });
-        } else {
-          this.selectedUserId = this.currentUserId;
-          return Promise.resolve();
-        }
-      })
-      .then(() => {
-        return this.fetchAssessmentSummary();
-      })
-      .then(() => {
-        this.isLoading = false;
-      })
-      .catch((error) => {
-        console.error('Error while loading data:', error);
-      });
-  }
-
-  async fetchEmployees(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.selectedDivisionId === '') {
-        this.empUrl = 'https://lokakarya-be.up.railway.app/appuser/all';
-      } else {
-        this.empUrl =
-          'https://lokakarya-be.up.railway.app/appuser/div/' +
-          this.selectedDivisionId;
-      }
-
-      this.http.get<any>(this.empUrl).subscribe({
-        next: (response) => {
-          this.employees = response.content || [];
-          console.log('Fetched Employees:', this.employees);
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error fetching employees:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch employees.',
-          });
-          reject(error);
-        },
-      });
-    });
+    this.fetchAssessmentSummaries();
+    this.fetchDivisions();
   }
 
   fetchDivisions(): void {
@@ -165,28 +118,6 @@ export class AssessmentSummaryComponent implements OnInit {
           });
         },
       });
-  }
-
-  checkAssessmentSummary(): void {
-    const url = `https://lokakarya-be.up.railway.app/assessmentsummary/get/${this.selectedUserId}/${this.selectedYear}`;
-    this.http.get<any>(url).subscribe({
-      next: (response) => {
-        if (response.content !== null) {
-          this.isExist = true;
-        } else {
-          this.isExist = false;
-        }
-        console.log('Fetched Summary:', response?.content);
-      },
-      error: (error) => {
-        console.error('Error summary:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch summary.',
-        });
-      },
-    });
   }
 
   private extractCurrentUserId(): string | null {
@@ -213,10 +144,10 @@ export class AssessmentSummaryComponent implements OnInit {
     }
   }
   fetchSelectedUserDetails(): Promise<void> {
-    if (!this.selectedUserId || this.selectedUserId === '') {
-      console.warn('No user selected.');
-      this.selectedUserId = this.currentUserId;
-    }
+    // if (!this.selectedUserId || this.selectedUserId === '') {
+    //   console.warn('No user selected.');
+    //   this.selectedUserId = this.currentUserId;
+    // }
 
     const userUrl = `https://lokakarya-be.up.railway.app/appuser/get/${this.selectedUserId}`;
 
@@ -278,13 +209,32 @@ export class AssessmentSummaryComponent implements OnInit {
     }
   }
 
+  private extractCurrentDivisionId(): string | null {
+    const token = localStorage.getItem('auth-token');
+
+    if (!token) {
+      console.error('No JWT found in session storage.');
+      return null;
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      if (decoded && decoded.divisionId) {
+        console.log('Decoded divisionId:', decoded.divisionId);
+        return decoded.divisionId;
+      } else {
+        console.error('divisionId not found in JWT.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
+
   fetchAchievementSummary(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.selectedUserId) {
-        console.warn('No user selected.');
-        this.selectedUserId = this.currentUserId;
-      }
-
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
       console.log(
@@ -317,10 +267,10 @@ export class AssessmentSummaryComponent implements OnInit {
 
   fetchAttitudeSkillSummary(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.selectedUserId) {
-        console.warn('No user selected.');
-        this.selectedUserId = this.currentUserId;
-      }
+      // if (!this.selectedUserId) {
+      //   console.warn('No user selected.');
+      //   this.selectedUserId = this.currentUserId;
+      // }
 
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
@@ -353,10 +303,10 @@ export class AssessmentSummaryComponent implements OnInit {
 
   fetchSuggestion(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.selectedUserId) {
-        console.warn('No user selected.');
-        this.selectedUserId = this.currentUserId;
-      }
+      // if (!this.selectedUserId) {
+      //   console.warn('No user selected.');
+      //   this.selectedUserId = this.currentUserId;
+      // }
 
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
@@ -389,6 +339,50 @@ export class AssessmentSummaryComponent implements OnInit {
         },
       });
     });
+  }
+
+  fetchAssessmentSummaries(event?: any): void {
+    console.log('Selected divisionId:', this.selectedDivisionId);
+    console.log(
+      'Fetching assessment summaries from division: ',
+      this.selectedDivision
+    );
+
+    this.selectedYear = this.selectedAssessmentYear.getFullYear();
+
+    if (!this.allSummaries.length || this.allSummaries.length > 0) {
+      this.isLoading = true;
+
+      if (this.selectedDivisionId) {
+        this.fetchAllUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/divyear/${this.selectedDivisionId}/${this.selectedYear}`;
+        console.log('Sending Request to URL:', this.fetchAllUrl);
+      } else {
+        this.fetchAllUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/year/${this.selectedYear}`;
+        console.log('Sending Request to URL:', this.fetchAllUrl);
+      }
+
+      this.http
+        .get<any>(this.fetchAllUrl)
+        .pipe(finalize(() => (this.isLoading = false)))
+        .subscribe({
+          next: (response) => {
+            this.allSummaries = response.content || [];
+            this.totalRecords = this.allSummaries.length;
+
+            this.applyFiltersAndPagination(event);
+          },
+          error: (error) => {
+            console.error('Error Fetching Assessment Summaries:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to fetch assessment summaries.',
+            });
+          },
+        });
+    } else {
+      this.applyFiltersAndPagination(event);
+    }
   }
 
   adjustPercentages(): void {
@@ -468,15 +462,17 @@ export class AssessmentSummaryComponent implements OnInit {
     return achievementFinalScore + attitudeFinalScore;
   }
 
-  async fetchAssessmentSummary(): Promise<void> {
+  async fetchViewAssessmentSummary(userId: string): Promise<void> {
+    console.log('Fetching summaries for user: ', userId);
+    this.displayAssessmentSummaryDialog = true;
     try {
+      this.selectedUserId = userId;
       await Promise.all([
         this.fetchSelectedUserDetails(),
         this.fetchAchievementSummary(),
         this.fetchAttitudeSkillSummary(),
         this.fetchSuggestion(),
       ]);
-      this.checkAssessmentSummary();
       this.adjustPercentages();
     } catch (error) {
       console.error('Error fetching summaries:', error);
@@ -489,118 +485,58 @@ export class AssessmentSummaryComponent implements OnInit {
     }
   }
 
-  async fetchAssessmentSummaryFirstEmployee(): Promise<void> {
-    await this.fetchEmployees();
-    this.selectedUserId = this.employees[0].id;
-    await this.fetchAssessmentSummary();
-  }
+  applyFiltersAndPagination(event?: any): void {
+    const startIndex = event?.first || 0;
+    const endIndex = startIndex + this.rowsPerPage;
 
-  submitAssessmentSummary(): void {
-    this.isLoading = true;
-    this.confirmationService.confirm({
-      message: 'Are you sure? Once submitted, changes cannot be undone.',
-      header: 'Confirm Submission',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        console.log('Submitting Assessment Summary...');
-        this.createAssessmentSummary();
-      },
-      reject: () => {
-        console.log('Submission canceled.');
-        this.isLoading = false;
-      },
-    });
-  }
+    let filteredSummaries = this.globalFilterValue
+      ? this.allSummaries.filter((summary) =>
+          Object.values(summary).some((value) =>
+            String(value)
+              .toLowerCase()
+              .includes(this.globalFilterValue.toLowerCase())
+          )
+        )
+      : [...this.allSummaries];
 
-  createAssessmentSummary(): void {
-    const checkUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/get/${this.selectedUserId}/${this.selectedYear}`;
-    const createUrl =
-      'https://lokakarya-be.up.railway.app/assessmentsummary/create';
+    if (event?.sortField) {
+      const sortOrder = event.sortOrder || 1;
+      filteredSummaries.sort((a, b) => {
+        const valueA = a[event.sortField];
+        const valueB = b[event.sortField];
 
-    console.log(
-      'Checking for existing Assessment Summary using URL:',
-      checkUrl
-    );
+        if (valueA == null || valueB == null) return 0;
 
-    this.http
-      .get<any>(checkUrl)
-      .pipe(
-        switchMap((existingSummary) => {
-          const fetchedSummary = existingSummary.content;
-          console.log('Fetched Summary:', fetchedSummary);
-          if (existingSummary && fetchedSummary?.id) {
-            const updateUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/update`;
-
-            const updateBody: any = {
-              id: fetchedSummary.id,
-              user_id: this.selectedUserId,
-              year: this.selectedYear,
-              score: this.totalFinalScore,
-              status: this.selectedStatus,
-              updated_by: this.currentUserId,
-            };
-
-            console.log('Existing Summary Found. Updating:', existingSummary);
-            console.log('Update Body:', updateBody);
-
-            return this.http.put<any>(updateUrl, updateBody).pipe(
-              catchError((err) => {
-                console.error('Error updating Assessment Summary:', err);
-                let errorMessage = 'Failed to update assessment summary.';
-                if (err.error && err.error.message) {
-                  errorMessage = err.error.message;
-                }
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: errorMessage,
-                });
-                return of(null);
-              })
-            );
-          } else {
-            const requestBody: any = {
-              user_id: this.selectedUserId,
-              year: this.selectedYear,
-              score: this.totalFinalScore,
-              status: this.selectedStatus,
-              created_by: this.currentUserId,
-            };
-
-            console.log('No Existing Summary Found. Creating:', requestBody);
-
-            return this.http.post<any>(createUrl, requestBody).pipe(
-              catchError((err) => {
-                console.error('Error creating Assessment Summary:', err);
-                let errorMessage = 'Failed to create assessment summary.';
-                if (err.error && err.error.message) {
-                  errorMessage = err.error.message;
-                }
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: errorMessage,
-                });
-                return of(null);
-              })
-            );
-          }
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          if (response) {
-            console.log('Assessment Summary successfully processed:', response);
-          } else {
-            console.log('No action was taken (possibly due to an error).');
-          }
-        },
-        error: (error) => {
-          console.error('Unhandled error:', error);
-        },
-        complete: () => {
-          console.log('Create Assessment Summary process complete.');
-        },
+        return (
+          valueA.toString().localeCompare(valueB.toString()) * sortOrder || 0
+        );
       });
+    }
+
+    this.summaries = filteredSummaries.slice(startIndex, endIndex);
+
+    this.totalRecords = filteredSummaries.length;
+  }
+
+  paginateSummaries(event?: any): void {
+    const startIndex = event?.first || 0;
+    const endIndex = startIndex + this.rowsPerPage;
+
+    this.summaries = this.allSummaries.slice(startIndex, endIndex);
+  }
+
+  onSearch(): void {
+    console.log('Applying global search:', this.globalFilterValue);
+    this.applyFiltersAndPagination({ first: 0 });
+  }
+
+  filterGlobal(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    const table = document.querySelector('p-table') as any;
+    table.filterGlobal(filterValue, 'contains');
+  }
+
+  applyGlobalFilter(): void {
+    console.log('Global filter applied:', this.globalFilterValue);
   }
 }
