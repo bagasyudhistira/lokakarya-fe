@@ -73,6 +73,8 @@ export class AssessmentSummaryComponent implements OnInit {
   selectedPosition: string = '';
   isLoading: boolean = true;
   empUrl: string = '';
+  isProcessing: boolean = false;
+  isExist: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -105,7 +107,6 @@ export class AssessmentSummaryComponent implements OnInit {
         return this.fetchAssessmentSummary();
       })
       .then(() => {
-        this.createAssessmentSummary();
         this.isLoading = false;
       })
       .catch((error) => {
