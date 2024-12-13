@@ -15,7 +15,12 @@ import {
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { NgForOf, NgIf } from '@angular/common';
-import { MessageService, PrimeNGConfig, PrimeTemplate } from 'primeng/api';
+import {
+  MessageService,
+  PrimeNGConfig,
+  PrimeTemplate,
+  ConfirmationService,
+} from 'primeng/api';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { PrimeNgModule } from '../../shared/primeng/primeng.module';
@@ -49,7 +54,7 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
   ],
   templateUrl: './employee-technical-skill.component.html',
   styleUrls: ['./employee-technical-skill.component.scss'],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
 })
 export class EmployeeTechnicalSkillComponent implements OnInit {
   empTechnicalSkills: any[] = [];
@@ -64,12 +69,13 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   globalFilterValue: string = '';
   currentRoles: any[] = this.extractCurrentRoles() || [];
   technicalSkills: any[] = [];
-  selectedUserId: string = '';
+  selectedUserId: string = this.extractCurrentUserId() || '';
   selectedName: string = '';
   selectedAssessmentYear: Date = new Date();
   selectedYear: number = this.selectedAssessmentYear.getFullYear();
   groupedEmpTechnicalSkills: any[] = []; // For grouped data
   assessmentYear: Date | null = null;
+  isExist: boolean = false;
 
   scoreOptions: { label: string; value: number }[] = [
     { label: 'Starting', value: 10 },
@@ -86,7 +92,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
     private messageService: MessageService,
     private fb: FormBuilder,
     private primengConfig: PrimeNGConfig,
-    private router: Router
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -288,6 +294,11 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (response) => {
+            if (response.content.length > 0) {
+              this.isExist = true;
+            } else {
+              this.isExist = false;
+            }
             this.empTechnicalSkills = response.content || [];
             console.log('Fetched EmpTechnicalSkills:', this.empTechnicalSkills);
 
@@ -336,15 +347,6 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
       }
     });
 
-    // If includeAll is false, filter out groups with empty skillEntrys
-    if (!includeAll) {
-      for (const [key, group] of grouped) {
-        if (group.skillEntrys.length === 0) {
-          grouped.delete(key);
-        }
-      }
-    }
-
     this.groupedEmpTechnicalSkills = Array.from(grouped.values());
   }
 
@@ -370,19 +372,6 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
 
   async saveEmployeeTechnicalSkill(): Promise<void> {
     console.log('Saving Employee Technical Skills.');
-
-    if (!this.assessmentYear) {
-      console.error('Assessment year is missing or invalid.');
-      this.isProcessing = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Assessment year is required.',
-      });
-      return;
-    }
-
-    const year = this.assessmentYear.getFullYear();
     this.isProcessing = true;
 
     const requests: Promise<any>[] = [];
@@ -397,7 +386,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
         const payload: any = {
           user_id: this.selectedUserId || this.currentUserId,
           technical_skill_id: group.technical_skill_id,
-          assessment_year: year,
+          assessment_year: this.selectedYear,
           skill: entry.skillEntry,
           score: entry.entryScore,
         };
@@ -427,6 +416,7 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
               .toPromise()
           );
         }
+        this.isExist = true;
       }
     }
 
@@ -453,9 +443,20 @@ export class EmployeeTechnicalSkillComponent implements OnInit {
   }
 
   submitEmployeeTechnicalSkill(): void {
-    console.log('Submitting Employee Technical Skills.');
     this.isProcessing = true;
-    this.saveEmployeeTechnicalSkill();
+    this.confirmationService.confirm({
+      message: 'Are you sure? Once submitted, changes cannot be undone',
+      header: 'Confirm Submission',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        console.log('Submitting Employee Technical Skills.');
+        this.saveEmployeeTechnicalSkill();
+      },
+      reject: () => {
+        console.log('Submission canceled.');
+        this.isProcessing = false;
+      },
+    });
   }
 
   getScoreLabel(scoreValue: number | null | undefined): string {

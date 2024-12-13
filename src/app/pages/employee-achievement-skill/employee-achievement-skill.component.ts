@@ -79,11 +79,12 @@ export class EmployeeAchievementSkillComponent implements OnInit {
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
   achievementSkills: any[] = [];
-  selectedUserId: string = '';
+  selectedUserId: string = this.extractCurrentUserId() || '';
   selectedName: string = '';
   selectedAssessmentYear: Date = new Date();
   selectedYear: number = this.selectedAssessmentYear.getFullYear();
   empUrl: string = '';
+  isExist: boolean = false;
 
   groupedEmpAchievementSkills: any[] = []; // For grouped data
 
@@ -113,7 +114,8 @@ export class EmployeeAchievementSkillComponent implements OnInit {
     private http: HttpClient,
     private messageService: MessageService,
     private fb: FormBuilder,
-    private primengConfig: PrimeNGConfig
+    private primengConfig: PrimeNGConfig,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -311,6 +313,13 @@ export class EmployeeAchievementSkillComponent implements OnInit {
       .pipe(finalize(() => (this.loading = false))) // Hide spinner after loading
       .subscribe({
         next: (response) => {
+          if (response.content.length > 0) {
+            this.isExist = true;
+          } else {
+            this.isExist = false;
+          }
+          console.log('Fetched EmpAchievementSkills:', response.content);
+          console.log('isExist:', this.isExist);
           this.empAchievementSkills = response.content || [];
           console.log(
             'Fetched EmpAchievementSkills:',
@@ -441,18 +450,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
   async saveEmployeeAchievementSkill(): Promise<void> {
     console.log('Saving Employee Achievement Skills.');
 
-    if (!this.assessmentYear) {
-      console.error('Assessment year is missing or invalid.');
-      this.isProcessing = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Assessment year is required.',
-      });
-      return;
-    }
-
-    const year = this.assessmentYear.getFullYear();
     this.isProcessing = true;
 
     const requests: Promise<any>[] = [];
@@ -469,7 +466,7 @@ export class EmployeeAchievementSkillComponent implements OnInit {
         const payload: any = {
           user_id: this.selectedUserId || this.currentUserId,
           achievement_id: achievement.achievement_id,
-          assessment_year: year,
+          assessment_year: this.selectedYear,
           notes: achievement.notes,
           score: achievement.score,
         };
@@ -495,6 +492,7 @@ export class EmployeeAchievementSkillComponent implements OnInit {
               )
               .toPromise()
           );
+          this.isExist = true;
         }
       }
     }
@@ -523,19 +521,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
 
   async updateEmployeeAchievementSkill(): Promise<void> {
     console.log('Updating Employee AchievementSkill.');
-
-    if (!this.assessmentYear) {
-      console.error('Assessment year is missing or invalid.');
-      this.isProcessing = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Assessment year is required.',
-      });
-      return;
-    }
-
-    const year = this.assessmentYear.getFullYear();
 
     const entry = this.achievementSkillEntries[0];
     const skillEntry = entry.skillEntrys[0];
@@ -567,7 +552,7 @@ export class EmployeeAchievementSkillComponent implements OnInit {
       id: skillEntry.id,
       user_id: this.currentUserId,
       achievement_id: entry.achievement_id,
-      assessment_year: year,
+      assessment_year: this.selectedYear,
       notes: skillEntry.value,
       score: scoreEntry.value,
       updated_by: this.currentUserId,
@@ -603,34 +588,6 @@ export class EmployeeAchievementSkillComponent implements OnInit {
     }
   }
 
-  async confirmDuplicate(
-    userId: string,
-    achievementSkillId: string,
-    assessmentYear: number
-  ): Promise<boolean> {
-    try {
-      const response = await this.http
-        .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/empachievementskill/${userId}/${achievementSkillId}/${assessmentYear}`
-        )
-        .toPromise();
-
-      if (response && response.content !== null) {
-        return response.content;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      console.error('Error Checking Duplicate:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to check for duplicates.',
-      });
-      throw error; // Propagate the error to handle it in the calling function
-    }
-  }
-
   resetSortAndFilter(): void {
     console.log('Resetting sort and filter...');
 
@@ -656,9 +613,20 @@ export class EmployeeAchievementSkillComponent implements OnInit {
   }
 
   submitEmployeeAchievementSkill(): void {
-    console.log('Submitting Employee Achievement Skills.');
     this.isProcessing = true;
-    this.saveEmployeeAchievementSkill();
+    this.confirmationService.confirm({
+      message: 'Are you sure? Once submitted, changes cannot be undone.',
+      header: 'Confirm Submission',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        console.log('Submitting Employee Achievement Skills.');
+        this.saveEmployeeAchievementSkill();
+      },
+      reject: () => {
+        console.log('Form submission cancelled.');
+        this.isProcessing = false;
+      },
+    });
   }
 
   onSearch(): void {

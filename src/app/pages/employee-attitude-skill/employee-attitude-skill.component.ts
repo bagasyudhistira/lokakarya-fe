@@ -79,11 +79,12 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   currentRoles: any[] = this.extractCurrentRoles() || [];
   showOnlyMine: boolean = false;
   attitudeSkills: any[] = [];
-  selectedUserId: string = '';
+  selectedUserId: string = this.extractCurrentUserId() || '';
   selectedName: string = '';
   selectedAssessmentYear: Date = new Date();
   selectedYear: number = this.selectedAssessmentYear.getFullYear();
   empUrl: string = '';
+  isExist: boolean = false;
 
   groupedEmpAttitudeSkills: any[] = []; // For grouped data
 
@@ -113,7 +114,8 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
     private http: HttpClient,
     private messageService: MessageService,
     private fb: FormBuilder,
-    private primengConfig: PrimeNGConfig
+    private primengConfig: PrimeNGConfig,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -286,15 +288,6 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   }
 
   fetchEmpAttitudeSkills(): void {
-    if (!this.selectedUserId) {
-      console.warn('No user selected.');
-      this.selectedUserId = this.currentUserId;
-    }
-    if (!this.selectedAssessmentYear) {
-      console.warn('No year selected.');
-      this.selectedAssessmentYear = new Date();
-    }
-
     this.fetchSelectedUserName();
     this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
@@ -311,10 +304,14 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
       .pipe(finalize(() => (this.loading = false))) // Hide spinner after loading
       .subscribe({
         next: (response) => {
+          if (response.content.length > 0) {
+            this.isExist = true;
+          } else {
+            this.isExist = false;
+          }
           this.empAttitudeSkills = response.content || [];
           console.log('Fetched EmpAttitudeSkills:', this.empAttitudeSkills);
 
-          // Prepare the data structure for the view
           this.groupAllAttitudeSkills();
         },
         error: (error) => {
@@ -432,18 +429,6 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   async saveEmployeeAttitudeSkill(): Promise<void> {
     console.log('Saving Employee Attitude Skills.');
 
-    if (!this.assessmentYear) {
-      console.error('Assessment year is missing or invalid.');
-      this.isProcessing = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Assessment year is required.',
-      });
-      return;
-    }
-
-    const year = this.assessmentYear.getFullYear();
     this.isProcessing = true;
 
     const requests: Promise<any>[] = [];
@@ -457,7 +442,7 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
         const payload: any = {
           user_id: this.selectedUserId || this.currentUserId,
           attitude_skill_id: attitudeSkill.attitude_skill_id,
-          assessment_year: year,
+          assessment_year: this.selectedYear,
           score: attitudeSkill.score,
         };
 
@@ -483,6 +468,7 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
               .toPromise()
           );
         }
+        this.isExist = true;
       }
     }
 
@@ -510,19 +496,6 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
 
   async updateEmployeeAttitudeSkill(): Promise<void> {
     console.log('Updating Employee AttitudeSkill.');
-
-    if (!this.assessmentYear) {
-      console.error('Assessment year is missing or invalid.');
-      this.isProcessing = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Assessment year is required.',
-      });
-      return;
-    }
-
-    const year = this.assessmentYear.getFullYear();
 
     const entry = this.attitudeSkillEntries[0];
     const skillEntry = entry.skillEntrys[0];
@@ -554,7 +527,7 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
       id: skillEntry.id,
       user_id: this.currentUserId,
       attitude_skill_id: entry.attitude_skill_id,
-      assessment_year: year,
+      assessment_year: this.selectedYear,
       notes: skillEntry.value,
       score: scoreEntry.value,
       updated_by: this.currentUserId,
@@ -593,41 +566,6 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
     }
   }
 
-  async confirmDuplicate(
-    userId: string,
-    attitudeSkillId: string,
-    assessmentYear: number
-  ): Promise<boolean> {
-    try {
-      const response = await this.http
-        .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/empattitudeskill/${userId}/${attitudeSkillId}/${assessmentYear}`
-        )
-        .toPromise();
-
-      if (response && response.content !== undefined) {
-        return response.content;
-      } else {
-        console.error('Unexpected API response:', response);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail:
-            'Unexpected response from the server while checking duplicates.',
-        });
-        return false; // Default to no duplicates if response is invalid
-      }
-    } catch (error) {
-      console.error('Error Checking Duplicate:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to check for duplicates.',
-      });
-      throw error; // Propagate the error to handle it in the calling function
-    }
-  }
-
   resetSortAndFilter(): void {
     console.log('Resetting sort and filter...');
 
@@ -653,9 +591,20 @@ export class EmployeeAttitudeSkillComponent implements OnInit {
   }
 
   submitEmployeeAttitudeSkill(): void {
-    console.log('Submitting Employee Attitude Skills.');
     this.isProcessing = true;
-    this.saveEmployeeAttitudeSkill();
+    this.confirmationService.confirm({
+      message: 'Are you sure? Once submitted, changes cannot be undone.',
+      header: 'Confirm Submission',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        console.log('Submitting Employee Attitude Skills.');
+        this.saveEmployeeAttitudeSkill();
+      },
+      reject: () => {
+        this.isProcessing = false;
+        console.log('Form submission cancelled.');
+      },
+    });
   }
 
   onSearch(): void {
