@@ -466,7 +466,11 @@ export class ManageUserComponent implements OnInit {
     if (this.mode === 'create') {
       try {
         const selectedUsername = this.editForm.value.username;
-        const isDuplicate = await this.confirmDuplicate(selectedUsername);
+        const selectedEmail = this.editForm.value.email;
+        const isDuplicate = await this.confirmDuplicate(
+          selectedUsername,
+          selectedEmail
+        );
         console.log('Duplicate Check Result:', isDuplicate);
         if (isDuplicate) {
           console.log(selectedUsername);
@@ -789,19 +793,32 @@ export class ManageUserComponent implements OnInit {
       .catch((err) => console.error('Error updating roles:', err));
   }
 
-  async confirmDuplicate(username: string): Promise<boolean> {
+  async confirmDuplicate(username: string, email: string): Promise<any> {
     try {
-      const response = await this.http
-        .get<{ content: boolean }>(
-          `https://lokakarya-be.up.railway.app/appuser/user/${username}`
-        )
-        .toPromise();
+      const [usernameResponse, emailResponse] = await Promise.all([
+        this.http
+          .get<{ content: boolean }>(
+            `https://lokakarya-be.up.railway.app/appuser/username/${username}`
+          )
+          .toPromise(),
+        this.http
+          .get<{ content: boolean }>(
+            `https://lokakarya-be.up.railway.app/appuser/email/${email}`
+          )
+          .toPromise(),
+      ]);
 
-      if (response && response.content !== null) {
-        return response.content;
-      } else {
-        return false;
+      if (!usernameResponse || !emailResponse) {
+        console.warn(
+          'One of the API responses was null. Assuming duplicate exists.'
+        );
+        return true;
       }
+
+      const isUsernameTaken = usernameResponse.content === true;
+      const isEmailTaken = emailResponse.content === true;
+
+      return isUsernameTaken || isEmailTaken;
     } catch (error) {
       console.error('Error Checking Duplicate:', error);
       this.messageService.add({
@@ -809,7 +826,7 @@ export class ManageUserComponent implements OnInit {
         summary: 'Error',
         detail: 'Failed to check for duplicates.',
       });
-      throw error;
+      return true;
     }
   }
 
