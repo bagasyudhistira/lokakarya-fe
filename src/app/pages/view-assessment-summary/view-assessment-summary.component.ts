@@ -106,7 +106,10 @@ export class ViewAssessmentSummaryComponent implements OnInit {
       .get<any>('https://lokakarya-be.up.railway.app/division/all')
       .subscribe({
         next: (response) => {
-          this.divisions = response.content || [];
+          const all = { id: null, division_name: "All" };
+          const res = response.content || [];
+          this.divisions = res.slice(); // Ensure `this.divisions` starts fresh if needed
+          this.divisions.unshift(all); // Add `all` at the beginning
           console.log('Fetched Divisions:', this.divisions);
         },
         error: (error) => {
