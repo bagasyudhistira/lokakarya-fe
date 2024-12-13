@@ -92,6 +92,7 @@ export class ViewAssessmentSummaryComponent implements OnInit {
     this.primengConfig.ripple = true;
 
     this.fetchAssessmentSummaries();
+    this.fetchDivisions();
 
     // this.fetchSelectedUserDetails()
     //   .then(() => {
@@ -116,35 +117,6 @@ export class ViewAssessmentSummaryComponent implements OnInit {
     //   .catch((error) => {
     //     console.error('Error while loading data:', error);
     //   });
-  }
-
-  async fetchEmployees(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.selectedDivisionId === '') {
-        this.empUrl = 'https://lokakarya-be.up.railway.app/appuser/all';
-      } else {
-        this.empUrl =
-          'https://lokakarya-be.up.railway.app/appuser/div/' +
-          this.selectedDivisionId;
-      }
-
-      this.http.get<any>(this.empUrl).subscribe({
-        next: (response) => {
-          this.employees = response.content || [];
-          console.log('Fetched Employees:', this.employees);
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error fetching employees:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch employees.',
-          });
-          reject(error);
-        },
-      });
-    });
   }
 
   fetchDivisions(): void {
@@ -369,15 +341,18 @@ export class ViewAssessmentSummaryComponent implements OnInit {
   }
 
   fetchAssessmentSummaries(event?: any): void {
+    console.log('Selected divisionId:', this.selectedDivisionId);
     console.log(
       'Fetching assessment summaries from division: ',
       this.selectedDivision
     );
 
+    this.selectedYear = this.selectedAssessmentYear.getFullYear();
+
     if (!this.allSummaries.length || this.allSummaries.length > 0) {
       this.isLoading = true;
 
-      if (this.selectedDivision) {
+      if (this.selectedDivisionId) {
         this.fetchAllUrl = `https://lokakarya-be.up.railway.app/assessmentsummary/divyear/${this.selectedDivisionId}/${this.selectedYear}`;
         console.log('Sending Request to URL:', this.fetchAllUrl);
       } else {
