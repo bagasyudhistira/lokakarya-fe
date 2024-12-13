@@ -15,7 +15,12 @@ import {
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { NgForOf, NgIf } from '@angular/common';
-import { MessageService, PrimeNGConfig, PrimeTemplate } from 'primeng/api';
+import {
+  MessageService,
+  PrimeNGConfig,
+  PrimeTemplate,
+  ConfirmationService,
+} from 'primeng/api';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { PrimeNgModule } from '../../shared/primeng/primeng.module';
@@ -50,7 +55,7 @@ import { of } from 'rxjs';
   ],
   templateUrl: './assessment-summary.component.html',
   styleUrls: ['./assessment-summary.component.scss'],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
 })
 export class AssessmentSummaryComponent implements OnInit {
   maxDate: Date = new Date();
@@ -73,13 +78,13 @@ export class AssessmentSummaryComponent implements OnInit {
   selectedPosition: string = '';
   isLoading: boolean = true;
   empUrl: string = '';
-  isProcessing: boolean = false;
   isExist: boolean = false;
 
   constructor(
     private http: HttpClient,
     private messageService: MessageService,
-    private primengConfig: PrimeNGConfig
+    private primengConfig: PrimeNGConfig,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -160,6 +165,28 @@ export class AssessmentSummaryComponent implements OnInit {
           });
         },
       });
+  }
+
+  checkAssessmentSummary(): void {
+    const url = `https://lokakarya-be.up.railway.app/assessmentsummary/get/${this.selectedUserId}/${this.selectedYear}`;
+    this.http.get<any>(url).subscribe({
+      next: (response) => {
+        if (response.content !== null) {
+          this.isExist = true;
+        } else {
+          this.isExist = false;
+        }
+        console.log('Fetched Summary:', response?.content);
+      },
+      error: (error) => {
+        console.error('Error summary:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch summary.',
+        });
+      },
+    });
   }
 
   private extractCurrentUserId(): string | null {
@@ -449,6 +476,7 @@ export class AssessmentSummaryComponent implements OnInit {
         this.fetchAttitudeSkillSummary(),
         this.fetchSuggestion(),
       ]);
+      this.checkAssessmentSummary();
       this.adjustPercentages();
     } catch (error) {
       console.error('Error fetching summaries:', error);
@@ -465,6 +493,23 @@ export class AssessmentSummaryComponent implements OnInit {
     await this.fetchEmployees();
     this.selectedUserId = this.employees[0].id;
     await this.fetchAssessmentSummary();
+  }
+
+  submitAssessmentSummary(): void {
+    this.isLoading = true;
+    this.confirmationService.confirm({
+      message: 'Are you sure? Once submitted, changes cannot be undone.',
+      header: 'Confirm Submission',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        console.log('Submitting Assessment Summary...');
+        this.createAssessmentSummary();
+      },
+      reject: () => {
+        console.log('Submission canceled.');
+        this.isLoading = false;
+      },
+    });
   }
 
   createAssessmentSummary(): void {

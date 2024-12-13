@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 <app-navbar></app-navbar>
 <br />
 <div class="manage-user-container">
@@ -63,149 +64,156 @@
       </div>
     </div>
   </div>
-  <form (ngSubmit)="createAssessmentSummary()">
-  <p><strong>Division:</strong> {{ selectedDivision }}</p>
-  <p><strong>Position:</strong> {{ selectedPosition }}</p>
-  <p *ngIf="selectedStatus === 1"><strong>Status:</strong> Permanent</p>
-  <p *ngIf="selectedStatus === 2"><strong>Status:</strong> Contract</p>
+  <form (ngSubmit)="submitAssessmentSummary()">
+    <p><strong>Division:</strong> {{ selectedDivision }}</p>
+    <p><strong>Position:</strong> {{ selectedPosition }}</p>
+    <p *ngIf="selectedStatus === 1"><strong>Status:</strong> Permanent</p>
+    <p *ngIf="selectedStatus === 2"><strong>Status:</strong> Contract</p>
 
-  <!-- Achievements Table -->
-  <h4>Achievements</h4>
+    <!-- Achievements Table -->
+    <h4>Achievements</h4>
 
-  <div class="table-container">
-    <table class="achievement-table">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Score</th>
-          <th>Percentage</th>
-          <th>Final Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container
-          *ngIf="achievements.length > 0 && !isLoading; else noDataAchievements"
-        >
-          <ng-container *ngFor="let achievement of achievements">
-            <tr>
-              <td>{{ achievement.group_name }}</td>
-              <td>{{ achievement.sum_score }}</td>
-              <td>{{ achievement.percentage }}%</td>
-              <td>
-                {{
-                  (achievement.sum_score * achievement.percentage) / 100
-                    | number : "1.2-2"
-                }}
-              </td>
-            </tr>
+    <div class="table-container">
+      <table class="achievement-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Final Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngIf="
+              achievements.length > 0 && !isLoading;
+              else noDataAchievements
+            "
+          >
+            <ng-container *ngFor="let achievement of achievements">
+              <tr>
+                <td>{{ achievement.group_name }}</td>
+                <td>{{ achievement.sum_score }}</td>
+                <td>{{ achievement.percentage }}%</td>
+                <td>
+                  {{
+                    (achievement.sum_score * achievement.percentage) / 100
+                      | number : "1.2-2"
+                  }}
+                </td>
+              </tr>
+            </ng-container>
           </ng-container>
-        </ng-container>
-      </tbody>
+        </tbody>
 
-      <ng-template #noDataAchievements>
-        <tr>
-          <td colspan="4" style="text-align: center; font-style: italic">
-            No Achievements data available for the selected assessment year.
-          </td>
-        </tr>
-      </ng-template>
-    </table>
-  </div>
+        <ng-template #noDataAchievements>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic">
+              No Achievements data available for the selected assessment year.
+            </td>
+          </tr>
+        </ng-template>
+      </table>
+    </div>
 
-  <!-- Attitude Skills Table -->
-  <h4>Attitude Skill</h4>
+    <!-- Attitude Skills Table -->
+    <h4>Attitude Skill</h4>
 
-  <div class="table-container">
-    <table class="attitude-skill-table">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Score</th>
-          <th>Percentage</th>
-          <th>Final Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container
-          *ngIf="
-            attitudeSkills.length > 0 && !isLoading;
-            else noDataAttitudeSkills
-          "
-        >
-          <ng-container *ngFor="let attitudeSkill of attitudeSkills">
-            <tr>
-              <td>{{ attitudeSkill.group_name }}</td>
-              <td>{{ attitudeSkill.sum_score }}</td>
-              <td>{{ attitudeSkill.percentage }}%</td>
-              <td>
-                {{
-                  (attitudeSkill.sum_score * attitudeSkill.percentage) / 100
-                    | number : "1.2-2"
-                }}
-              </td>
-            </tr>
+    <div class="table-container">
+      <table class="attitude-skill-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Final Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngIf="
+              attitudeSkills.length > 0 && !isLoading;
+              else noDataAttitudeSkills
+            "
+          >
+            <ng-container *ngFor="let attitudeSkill of attitudeSkills">
+              <tr>
+                <td>{{ attitudeSkill.group_name }}</td>
+                <td>{{ attitudeSkill.sum_score }}</td>
+                <td>{{ attitudeSkill.percentage }}%</td>
+                <td>
+                  {{
+                    (attitudeSkill.sum_score * attitudeSkill.percentage) / 100
+                      | number : "1.2-2"
+                  }}
+                </td>
+              </tr>
+            </ng-container>
           </ng-container>
-        </ng-container>
-      </tbody>
+        </tbody>
 
-      <ng-template #noDataAttitudeSkills>
-        <tr>
-          <td colspan="4" style="text-align: center; font-style: italic">
-            No Attitude Skill data available for the selected assessment year.
-          </td>
-        </tr>
-      </ng-template>
-    </table>
-  </div>
-  <div class="table-container">
-    <table class="total-final-score-table">
-      <tbody>
-        <tr>
-          <td colspan="4" style="text-align: right; font-weight: bold">
-            Total Final Score:
-          </td>
-          <td>
-            {{ totalFinalScore | number : "1.2-2" }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        <ng-template #noDataAttitudeSkills>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic">
+              No Attitude Skill data available for the selected assessment year.
+            </td>
+          </tr>
+        </ng-template>
+      </table>
+    </div>
+    <div class="table-container">
+      <table class="total-final-score-table">
+        <tbody>
+          <tr>
+            <td colspan="4" style="text-align: right; font-weight: bold">
+              Total Final Score:
+            </td>
+            <td>
+              {{ totalFinalScore | number : "1.2-2" }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  <h4>Suggestion</h4>
+    <h4>Suggestion</h4>
 
-  <div class="table-container">
-    <table class="suggestion-table">
-      <tbody>
-        <ng-container *ngIf="suggestion && !isLoading; else noData">
-          <ng-container>
-            <tr>
-              <td>{{ suggestion }}</td>
-            </tr>
+    <div class="table-container">
+      <table class="suggestion-table">
+        <tbody>
+          <ng-container *ngIf="suggestion && !isLoading; else noData">
+            <ng-container>
+              <tr>
+                <td>{{ suggestion }}</td>
+              </tr>
+            </ng-container>
           </ng-container>
-        </ng-container>
-      </tbody>
+        </tbody>
 
-      <ng-template #noData>
-        <tr>
-          <td colspan="4" style="text-align: center; font-style: italic">
-            No data available for the selected assessment year.
-          </td>
-        </tr>
-      </ng-template>
-    </table>
-  </div>
-  <button
-    *ngIf="!isExist"
-    pButton
-    type="submit"
-    [label]="isProcessing ? 'Saving...' : 'Save'"
-    [disabled]="isProcessing"
-    class="p-button-primary"
-  >
-    <ng-container *ngIf="isProcessing">
-      <i class="pi pi-spin pi-spinner"></i>
-    </ng-container>
-  </button>
+        <ng-template #noData>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic">
+              No data available for the selected assessment year.
+            </td>
+          </tr>
+        </ng-template>
+      </table>
+    </div>
+    <button
+      *ngIf="
+        !isExist &&
+        selectedUserId === currentUserId &&
+        currentRoles.includes('USER')
+      "
+      pButton
+      type="submit"
+      [label]="isLoading ? 'Saving...' : 'Save'"
+      [disabled]="isLoading"
+      class="p-button-primary"
+    >
+      <ng-container *ngIf="isLoading">
+        <i class="pi pi-spin pi-spinner"></i>
+      </ng-container>
+    </button>
   </form>
 </div>

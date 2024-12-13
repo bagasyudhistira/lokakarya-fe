@@ -15,7 +15,7 @@ import { EmployeeAttitudeSkillComponent } from './pages/employee-attitude-skill/
 import { EmployeeAchievementSkillComponent } from './pages/employee-achievement-skill/employee-achievement-skill.component';
 import { AssessmentSummaryComponent } from './pages/assessment-summary/assessment-summary.component';
 import { ManageDivisionComponent } from './pages/manage-division/manage-division.component';
-import { ViewAssessmentSummaryComponent } from './pages/view-assessment-summary/view-assessment-summary.component';
+// import { ViewAssessmentSummaryComponent } from './pages/view-assessment-summary/view-assessment-summary.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -90,10 +90,10 @@ export const routes: Routes = [
     component: AssessmentSummaryComponent,
     canActivate: [authGuard],
   },
-  {
-    path: 'view-assessment-summary',
-    component: ViewAssessmentSummaryComponent,
-    canActivate: [authGuard],
-  },
+  // {
+  //   path: 'view-assessment-summary',
+  //   component: ViewAssessmentSummaryComponent,
+  //   canActivate: [authGuard],
+  // },
   { path: '**', redirectTo: '/home' },
 ];
