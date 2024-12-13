@@ -63,7 +63,7 @@
       </div>
     </div>
   </div>
-
+  <form (ngSubmit)="createAssessmentSummary()">
   <p><strong>Division:</strong> {{ selectedDivision }}</p>
   <p><strong>Position:</strong> {{ selectedPosition }}</p>
   <p *ngIf="selectedStatus === 1"><strong>Status:</strong> Permanent</p>
@@ -195,4 +195,17 @@
       </ng-template>
     </table>
   </div>
+  <button
+    *ngIf="!isExist"
+    pButton
+    type="submit"
+    [label]="isProcessing ? 'Saving...' : 'Save'"
+    [disabled]="isProcessing"
+    class="p-button-primary"
+  >
+    <ng-container *ngIf="isProcessing">
+      <i class="pi pi-spin pi-spinner"></i>
+    </ng-container>
+  </button>
+  </form>
 </div>
