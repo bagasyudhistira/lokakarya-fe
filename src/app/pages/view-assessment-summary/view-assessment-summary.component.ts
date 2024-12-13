@@ -25,6 +25,7 @@ import { finalize } from 'rxjs/operators';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-view-assessment-summary',
@@ -50,7 +51,7 @@ import { of } from 'rxjs';
   ],
   templateUrl: './view-assessment-summary.component.html',
   styleUrls: ['./view-assessment-summary.component.scss'],
-  providers: [MessageService],
+  providers: [ConfirmationService, MessageService],
 })
 export class ViewAssessmentSummaryComponent implements OnInit {
   maxDate: Date = new Date();
@@ -90,29 +91,31 @@ export class ViewAssessmentSummaryComponent implements OnInit {
   ngOnInit(): void {
     this.primengConfig.ripple = true;
 
-    this.fetchSelectedUserDetails()
-      .then(() => {
-        if (
-          this.currentRoles.includes('HR') ||
-          this.currentRoles.includes('SVP') ||
-          this.currentRoles.includes('MGR')
-        ) {
-          return Promise.all([
-            this.fetchDivisions(),
-            this.fetchEmployees(),
-          ]).then(() => {
-            return;
-          });
-        } else {
-          return Promise.resolve();
-        }
-      })
-      .then(() => {
-        this.isLoading = false;
-      })
-      .catch((error) => {
-        console.error('Error while loading data:', error);
-      });
+    this.fetchAssessmentSummaries();
+
+    // this.fetchSelectedUserDetails()
+    //   .then(() => {
+    //     if (
+    //       this.currentRoles.includes('HR') ||
+    //       this.currentRoles.includes('SVP') ||
+    //       this.currentRoles.includes('MGR')
+    //     ) {
+    //       return Promise.all([
+    //         this.fetchDivisions(),
+    //         this.fetchEmployees(),
+    //       ]).then(() => {
+    //         return;
+    //       });
+    //     } else {
+    //       return Promise.resolve();
+    //     }
+    //   })
+    //   .then(() => {
+    //     this.isLoading = false;
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error while loading data:', error);
+    //   });
   }
 
   async fetchEmployees(): Promise<void> {
@@ -187,10 +190,10 @@ export class ViewAssessmentSummaryComponent implements OnInit {
     }
   }
   fetchSelectedUserDetails(): Promise<void> {
-    if (!this.selectedUserId || this.selectedUserId === '') {
-      console.warn('No user selected.');
-      this.selectedUserId = this.currentUserId;
-    }
+    // if (!this.selectedUserId || this.selectedUserId === '') {
+    //   console.warn('No user selected.');
+    //   this.selectedUserId = this.currentUserId;
+    // }
 
     const userUrl = `https://lokakarya-be.up.railway.app/appuser/get/${this.selectedUserId}`;
 
@@ -254,10 +257,10 @@ export class ViewAssessmentSummaryComponent implements OnInit {
 
   fetchAchievementSummary(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.selectedUserId) {
-        console.warn('No user selected.');
-        this.selectedUserId = this.currentUserId;
-      }
+      // if (!this.selectedUserId) {
+      //   console.warn('No user selected.');
+      //   this.selectedUserId = this.currentUserId;
+      // }
 
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
@@ -291,10 +294,10 @@ export class ViewAssessmentSummaryComponent implements OnInit {
 
   fetchAttitudeSkillSummary(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.selectedUserId) {
-        console.warn('No user selected.');
-        this.selectedUserId = this.currentUserId;
-      }
+      // if (!this.selectedUserId) {
+      //   console.warn('No user selected.');
+      //   this.selectedUserId = this.currentUserId;
+      // }
 
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
@@ -327,10 +330,10 @@ export class ViewAssessmentSummaryComponent implements OnInit {
 
   fetchSuggestion(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.selectedUserId) {
-        console.warn('No user selected.');
-        this.selectedUserId = this.currentUserId;
-      }
+      // if (!this.selectedUserId) {
+      //   console.warn('No user selected.');
+      //   this.selectedUserId = this.currentUserId;
+      // }
 
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
@@ -484,6 +487,8 @@ export class ViewAssessmentSummaryComponent implements OnInit {
   }
 
   async fetchViewAssessmentSummary(userId: string): Promise<void> {
+    console.log('Fetching summaries for user: ', userId);
+    this.displayAssessmentSummaryDialog = true;
     try {
       this.selectedUserId = userId;
       await Promise.all([

@@ -108,6 +108,7 @@ export class NavbarComponent implements OnInit {
   }
 
   navigateTo(menu: string): void {
+    console.log(menu);
     const route = `/${menu}`;
     if (!this.isActiveRoute(menu)) {
       this.router.navigate([route]);

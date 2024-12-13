@@ -155,7 +155,8 @@
         <ng-template #noDataAttitudeSkills>
           <tr>
             <td colspan="4" style="text-align: center; font-style: italic">
-              No Attitude Skill data available for the selected assessment year.
+              Please insert the data for the selected assessment year before
+              submitting.
             </td>
           </tr>
         </ng-template>
@@ -208,7 +209,7 @@
       pButton
       type="submit"
       [label]="isLoading ? 'Saving...' : 'Save'"
-      [disabled]="isLoading"
+      [disabled]="isLoading || attitudeSkills.length === 0"
       class="p-button-primary"
     >
       <ng-container *ngIf="isLoading">

@@ -19,6 +19,36 @@
           </span>
         </div>
       </div>
+      <div
+        *ngIf="currentRoles.includes('HR') || currentRoles.includes('SVP')"
+        class="user-selection"
+      >
+        <label for="userSelect">Select Division: </label>
+        <p-dropdown
+          id="divisionSelect"
+          [options]="divisions"
+          [(ngModel)]="selectedDivisionId"
+          optionLabel="division_name"
+          optionValue="id"
+          placeholder="{{ selectedDivision }}"
+          (onChange)="fetchAssessmentSummaries()"
+          appendTo="body"
+        ></p-dropdown>
+      </div>
+
+      <div class="assessment-year-selection">
+        <label for="assessmentYear">Assessment Year: </label>
+        <p-calendar
+          id="assessmentYear"
+          [(ngModel)]="selectedAssessmentYear"
+          view="year"
+          dateFormat="yy"
+          (onSelect)="fetchAssessmentSummaries()"
+          [maxDate]="maxDate"
+          placeholder="{{ selectedYear }}"
+          appendTo="body"
+        ></p-calendar>
+      </div>
     </div>
 
     <p-card>
@@ -59,7 +89,7 @@
               <button
                 pButton
                 [icon]="
-                  isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-pi-external-link'
+                  isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-external-link'
                 "
                 class="p-button-rounded p-button-primary"
                 (click)="fetchViewAssessmentSummary(summaries.user_id)"
