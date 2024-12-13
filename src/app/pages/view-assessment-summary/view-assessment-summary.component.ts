@@ -90,33 +90,15 @@ export class ViewAssessmentSummaryComponent implements OnInit {
 
   ngOnInit(): void {
     this.primengConfig.ripple = true;
+    if (
+      this.currentRoles.includes('MGR') &&
+      (!this.currentRoles.includes('HR') || !this.currentRoles.includes('SVP'))
+    ) {
+      this.selectedDivisionId = this.extractCurrentDivisionId() || '';
+    }
 
     this.fetchAssessmentSummaries();
     this.fetchDivisions();
-
-    // this.fetchSelectedUserDetails()
-    //   .then(() => {
-    //     if (
-    //       this.currentRoles.includes('HR') ||
-    //       this.currentRoles.includes('SVP') ||
-    //       this.currentRoles.includes('MGR')
-    //     ) {
-    //       return Promise.all([
-    //         this.fetchDivisions(),
-    //         this.fetchEmployees(),
-    //       ]).then(() => {
-    //         return;
-    //       });
-    //     } else {
-    //       return Promise.resolve();
-    //     }
-    //   })
-    //   .then(() => {
-    //     this.isLoading = false;
-    //   })
-    //   .catch((error) => {
-    //     console.error('Error while loading data:', error);
-    //   });
   }
 
   fetchDivisions(): void {
@@ -227,13 +209,32 @@ export class ViewAssessmentSummaryComponent implements OnInit {
     }
   }
 
+  private extractCurrentDivisionId(): string | null {
+    const token = localStorage.getItem('auth-token');
+
+    if (!token) {
+      console.error('No JWT found in session storage.');
+      return null;
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      if (decoded && decoded.divisionId) {
+        console.log('Decoded divisionId:', decoded.divisionId);
+        return decoded.divisionId;
+      } else {
+        console.error('divisionId not found in JWT.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
+
   fetchAchievementSummary(): Promise<void> {
     return new Promise((resolve, reject) => {
-      // if (!this.selectedUserId) {
-      //   console.warn('No user selected.');
-      //   this.selectedUserId = this.currentUserId;
-      // }
-
       this.selectedYear = this.selectedAssessmentYear.getFullYear();
 
       console.log(
